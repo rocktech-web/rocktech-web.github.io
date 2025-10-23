@@ -140,6 +140,50 @@
 }
 
 
+#modal-placeholders table th,
+#modal-placeholders table td {
+  font-family: 'Montserrat', Arial, sans-serif;
+  border: 1px solid #e2dbbb;
+  padding: 7px 9px;
+  font-size: 15px;
+}
+#modal-placeholders table th {
+  background: #faefd0;
+  color: #7d532c;
+  font-weight: 600;
+}
+#modal-placeholders table td:first-child {
+  font-weight: 600;
+  color: #ba6f58;
+}
+#modal-placeholders .tool-head {
+  background: #f5ecd7;
+  font-size: 16.5px;
+  padding: 9px 17px 7px 17px;
+  border-bottom: 1px solid #e2dbbb;
+}
+
+
+
+/* (highlighting और outline color के लिए) */
+
+.highlight-field {
+  outline: 2.5px solid #C67B65 !important;      /* हाइलाइट कलर */
+  
+}
+.app-field-comment {
+  font-size: 13px;
+  color: #ba6f58;
+  margin-top: 2px;
+  margin-bottom: 7px;
+  background: #fdeedb;
+  border-radius: 7px;
+  padding: 5px 11px;
+  display: inline-block;
+  max-width: 96%;
+}
+
+
 
   </style>
 </head>
@@ -201,6 +245,7 @@
     <section id="view-tools" class="view" role="region" aria-labelledby="h-tools">
       <!---- <h3 id="h-tools" style="margin:0 0 10px">Tools</h3> -->
       <div class="tools-grid">
+        
         <article class="tool">
           <h3>Application & Reports</h3>
           <p>Generate applications and patwari reports with accurate data and instant Word exports.</p>
@@ -209,7 +254,7 @@
 
         <article class="tool">
           <h3>Data from .txt file</h3>
-          <p>Upload Khatauli (B1) .txt and instantly parse land records into clean, usable fields.</p>
+          <p>Upload Khatauni (B1) .txt and instantly parse land records into clean, usable fields.</p>
           <button class="btn" data-open="modal-extractor">Open</button>
         </article>
 
@@ -224,6 +269,19 @@
           <p>Add, subtract, and divide fractions with automatic denominator alignment.</p>
           <button class="btn" data-open="modal-fractions">Open</button>
         </article>
+
+        <article class="tool">
+          <h3>Placeholders Reference</h3>
+          <p>Find all placeholders for your doc here.</p>
+          <button class="btn" data-open="modal-placeholders">Open</button>
+        </article>
+
+        <article class="tool">
+          <h3>Upload your own files</h3>
+          <p>You can upload your own docx files with placeholders and use with Application & Reports Module.</p>
+          <button class="btn" data-open="modal-upload">Open</button>
+        </article>
+
       </div>
     </section>
 
@@ -287,8 +345,10 @@
           </select>
         </div>
         <div class="col">
-          
-          
+          <label for="application_court">Application Type</label>
+          <select id="application_court">
+            <option value="">Select Application Type</option>
+          </select>          
         </div>
       </div>
 
@@ -306,11 +366,11 @@
         </div>
         <div class="col">
           <label for="app_appfull">Applicant Name (full)</label>
-          <textarea id="app_appfull" rows="3"></textarea>
+          <textarea id="app_appfull" rows="6"></textarea>
         </div>
         <div class="col">
           <label for="app_appaddr">Applicant Address</label>
-          <textarea id="app_appaddr" rows="3">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
+          <textarea id="app_appaddr" rows="6">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
         </div>
         <div class="col">
           <label for="app_appjoin">Applicant Join (full)</label>
@@ -332,11 +392,11 @@
         </div>
         <div class="col">
           <label for="app_depofull">Deponent Name (full)</label>
-          <textarea id="app_depofull" rows="3"></textarea>
+          <textarea id="app_depofull" rows="6"></textarea>
         </div>
         <div class="col">
           <label for="app_depoaddr">Deponent Address</label>
-          <textarea id="app_depoaddr" rows="3">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
+          <textarea id="app_depoaddr" rows="6">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
         </div>
         <div class="col">
           <label for="app_depojoin">Deponent Join (full)</label>
@@ -354,15 +414,21 @@
         </div>
         <div class="col">
           <label for="app_khasara">Khasara & Rakava Details</label>
-          <textarea id="app_khasara" rows="3"></textarea>
+          <textarea id="app_khasara" rows="6"></textarea>
+          <span class="app-field-comment" id="comment-app_khasara"></span>
         </div>
         <div class="col">
           <label for="app_lowner">Land Owner Details</label>
-          <textarea id="app_lowner" rows="3"></textarea>
+          <textarea id="app_lowner" rows="6"></textarea>
+          <span class="app-field-comment" id="comment-app_lowner"></span>
         </div>
         <div class="col">
           <label for="app_boundary">Boundary (if available)</label>
-          <textarea id="app_boundary" rows="3"></textarea>
+          <textarea id="app_boundary" rows="6">उत्‍तर-
+दक्षिण-
+पूर्व-
+पश्चिम-</textarea>
+          <span class="app-field-comment" id="comment-app_boundary"></span>
         </div>
         <div class="col">
           <label for="app_boundaryjoin">Boundary Join</label>
@@ -378,15 +444,17 @@
         </div>
         <div class="col">
           <label for="app_dlowner">Deceased Owner (if available)</label>
-          <textarea id="app_dlowner" rows="3"></textarea>
+          <textarea id="app_dlowner" rows="6"></textarea>
+          <span class="app-field-comment" id="comment-app_dlowner"></span>
         </div>
         <div class="col">
           <label for="app_lheirs">Legal heirs (full)</label>
-          <textarea id="app_lheirs" rows="3"></textarea>
+          <textarea id="app_lheirs" rows="6"></textarea>
         </div>
         <div class="col">
           <label for="app_lheirsjoin">Legal heirs Join</label>
           <input type="text" id="app_lheirsjoin" readonly>
+          <span class="app-field-comment" id="comment-app_lheirsjoin"></span>
         </div>
       </div>
 
@@ -548,6 +616,71 @@
     </div>
   </div>
 
+
+  <!-- Placeholder Reference -->
+  <div class="tool-modal" id="modal-placeholders" hidden>
+    <div class="tool-dialog">
+      <div class="tool-head"><span>Placeholders Reference</span><button class="tool-close" data-close>Close</button></div>
+      <div class="tool-body" style="padding:18px 23px 11px;font-size:15px;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f5eddc;">
+          <th style="padding:7px 9px;border:1px solid #e2dbbb;text-align:left;width:27%;">Placeholder</th>
+          <th style="padding:7px 9px;border:1px solid #e2dbbb;text-align:left;">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>{DOCID}</td><td>Document No (if available)</td></tr>
+        <tr><td>{DOCDT}</td><td>Document Dt. (dd.mm.yyyy)</td></tr>
+        <tr><td>{COURT}</td><td>Court</td></tr>
+        <tr><td>{APPTYPE}</td><td>Applicant Type</td></tr>
+        <tr><td>{APPSHORT}</td><td>Applicant Name (short)</td></tr>
+        <tr><td>{APPFULL}</td><td>Applicant Name (full)</td></tr>
+        <tr><td>{APPADDR}</td><td>Applicant Address</td></tr>
+        <tr><td>{APPJOIN}</td><td>Applicant Join</td></tr>
+        <tr><td>{DEPOTYPE}</td><td>Deponent Type</td></tr>
+        <tr><td>{DEPOSHORT}</td><td>Deponent Name (short)</td></tr>
+        <tr><td>{DEPOFULL}</td><td>Deponent Name (full)</td></tr>
+        <tr><td>{DEPOADDR}</td><td>Deponent Address</td></tr>
+        <tr><td>{DEPOJOIN}</td><td>Deponent Join</td></tr>
+        <tr><td>{VILL}</td><td>Village</td></tr>
+        <tr><td>{KHASARA}</td><td>Khasara & Rakava Details</td></tr>
+        <tr><td>{L_OWNER}</td><td>Land Owner Details</td></tr>
+        <tr><td>{DO_DATE}</td><td>Deceased Date (dd.mm.yyyy)</td></tr>
+        <tr><td>{DL_OWNER}</td><td>Deceased Owner (if available)</td></tr>
+        <tr><td>{BOUNDARY}</td><td>Boundary (if available)</td></tr>
+        <tr><td>{BOUNDARYJOIN}</td><td>Boundary Join</td></tr>
+        <tr><td>{LHEIRS}</td><td>Legal heirs (full)</td></tr>
+        <tr><td>{LHEIRSJOIN}</td><td>Legal heirs Join</td></tr>
+      </tbody>
+    </table>
+    </div>
+    </div>
+  </div>
+
+
+  <!-- GitHub Uploader Module -->
+<div class="tool-modal" id="modal-upload" hidden>
+  <div class="tool-dialog">
+    <div class="tool-head">
+      <span>Upload File to rocktech-web</span>
+      <button class="tool-close" data-close>Close</button>
+    </div>
+    <div class="tool-body" style="padding:16px 18px;">
+      <label>Choose a file to upload (.docx)</label>
+      <input id="gh_upload_file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+      <div style="margin-top:12px;">
+        <label>GitHub Personal Access Token:</label>
+        <input type="password" id="gh_token" placeholder="ghp_xxxxxxx..." style="width:100%;margin-bottom:8px;">
+      </div>
+      <button id="gh_upload_btn" class="btn">Upload</button>
+      <div id="gh_upload_status" style="margin-top:14px;color: #2b6b22; font-weight:500;"></div>
+    </div>
+  </div>
+</div>
+
+
+  
   <script>
     // App title
     const SITE_TITLE='ROCKTechnology — Standardized Forms, Smart Math, Clean Exports'; document.title=SITE_TITLE;
@@ -853,6 +986,7 @@
 
   // Dropdown options (adjust as needed)
   const courtOptions = ["तहसील-सिंगरौली नगर", "वृत्‍त-पंजरेह, तहसील-सिंगरौली नगर", "वृत्‍त-कचनी, तहसील-सिंगरौली नगर"];
+  const applicationOptions = ["तरमीम", "सीमांकन", "वारिसाना"];
   const apptypeOptions = ["आवेदक", "आवेदिका", "आवेदकगण", "आवेदिकागण"];
   const depotypeOptions = ["अनावेदक", "अनावेदिका", "अनावेदकगण", "अनावेदिकागण"];
   const villageOptions = ["गनियारी", "बैढ़न", "देवरा"];
@@ -883,6 +1017,7 @@
       DOCID: qs('#app_docid')?.value||'',
       DOCDT: ddmmyyyy(qs('#app_docdt')?.value||''),
       COURT: qs('#app_court')?.value||'',
+      APPLICATION: qs('#application_court')?.value||'',
       APPTYPE: qs('#app_apptype')?.value||'',
       APPSHORT: qs('#app_appshort')?.value||'',
       APPFULL: appfull.join('\n'),
@@ -969,6 +1104,7 @@
     if(visible && !inited){
       inited = true;
       populate('#app_court', courtOptions);
+      populate('#application_court', applicationOptions);
       populate('#app_apptype', apptypeOptions);
       populate('#app_depotype', depotypeOptions);
       populate('#app_vill', villageOptions);
@@ -993,6 +1129,132 @@
   });
   observer.observe(modal, { attributes:true, attributeFilter:['hidden'] });
 })();
+
+
+/* onchange इवेंट पर highlighting और comment जोड़ना*/
+// Field Configurations and comments per Type (Sample)
+// Hindi comments for User Guidance
+const fieldSettings = {
+    तरमीम:{
+        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_lowner']
+    },
+    
+    सीमांकन: {
+        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_lowner', 'app_boundary'],
+    },
+
+    वारिसाना: {
+        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_dodate', 'app_dlowner', 'app_lheirs'],
+    }
+};
+
+// Reset highlights/comments on all provided fields
+function resetHighlightsAndComments() {
+  document.querySelectorAll('.highlight-field').forEach(el => el.classList.remove('highlight-field'));
+  document.querySelectorAll('.app-field-comment').forEach(el => el.textContent = '');
+}
+
+// APPLICATION TYPE select बदलने पर
+document.getElementById('application_court').addEventListener('change', function () {
+  resetHighlightsAndComments();
+  const selectedText = this.options[this.selectedIndex].text.trim();
+  if (!fieldSettings[selectedText]) return;
+
+  // नया कोड: highlight और comments दोनों को setTimeout से थोड़ा-थोड़ा delay के साथ apply करें
+  fieldSettings[selectedText].fields.forEach((fid, idx) => {
+    setTimeout(() => {
+      const field = document.getElementById(fid);
+      if (field) field.classList.add('highlight-field');
+      const cmnt = document.getElementById('comment-' + fid);
+      if (cmnt) cmnt.textContent = fieldSettings[selectedText].comments[fid] || '';
+    }, idx * 0); // हर फील्ड पर 15ms से बढ़ाते जाएँ
+  });
+});
+
+
+/* यहां पर GitHub पर upload हेतु js code है*/
+
+document.getElementById('gh_upload_btn').addEventListener('click', async function() {
+  const fileInput = document.getElementById('gh_upload_file');
+  const token = document.getElementById('gh_token').value.trim();
+  const statusDiv = document.getElementById('gh_upload_status');
+  if (!fileInput.files[0] || !token) {
+    statusDiv.textContent = "Please select a .docx file and enter your token!";
+    statusDiv.style.color = "#d73a49";
+    return;
+  }
+  const file = fileInput.files[0];
+  // File extension check
+  if (!file.name.toLowerCase().endsWith('.docx')) {
+    statusDiv.textContent = "Only .docx files are allowed!";
+    statusDiv.style.color = "#d73a49";
+    return;
+  }
+  
+  const filename = file.name;
+  const owner  = "rocktech-web";
+  const repo   = "AIOFormat";
+  const branch = "main";
+  const repoPath = filename;
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${repoPath}`;
+
+  // 1. Check if file already exists
+  let shaValue = null;
+  let fileExists = false;
+  const check = await fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      "Authorization": "token " + token,
+      "Accept": "application/vnd.github.v3+json"
+    }
+  });
+  if (check.ok) {
+    fileExists = true;
+    const resJson = await check.json();
+    shaValue = resJson.sha;
+  }
+
+  // 2. If file exists, confirm replacement
+  if (fileExists) {
+    const confirmation = window.confirm("File already exists. Do you want to replace (overwrite) it?");
+    if (!confirmation) {
+      statusDiv.textContent = "Upload cancelled by user!";
+      statusDiv.style.color = "#d73a49";
+      return;
+    }
+  }
+
+  // 3. Proceed with upload (if replacing, add sha)
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const content = btoa(e.target.result);
+    let bodyObj = {
+      message: fileExists ? "File replaced via web tool" : "File uploaded via web tool",
+      content: content,
+      branch: branch
+    };
+    if (fileExists) bodyObj.sha = shaValue;
+
+    const response = await fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        "Authorization": "token " + token,
+        "Accept": "application/vnd.github.v3+json"
+      },
+      body: JSON.stringify(bodyObj)
+    });
+    const result = await response.json();
+    if (response.ok) {
+      statusDiv.textContent = (fileExists ? "File replaced successfully!" : "Upload successful! File: " + repoPath);
+      statusDiv.style.color = "#2b6b22";
+    } else {
+      statusDiv.textContent = "Upload failed: " + (result.message || "UNKNOWN ERROR");
+      statusDiv.style.color = "#d73a49";
+    }
+  };
+  reader.readAsBinaryString(file);
+});
+
 
   </script>
 </body>
