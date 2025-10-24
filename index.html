@@ -1,817 +1,1392 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RockTech Document Processor</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ROCKTechnology — Standardized Forms, Smart Math, Clean Exports</title>
 
-  <!-- Libraries -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Add for DOCX generation and preview -->
   <script src="https://unpkg.com/pizzip@3.1.0/dist/pizzip.js"></script>
   <script src="https://unpkg.com/docxtemplater@3.28.0/build/docxtemplater.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
-    :root {
-      --bg-light: #FFE5CF;
-      --bg-card: #ffffff;
-      --text-dark: #33372C;
-      --accent-rose: #FF885B;
-      --border-coffee: #557C56;
-      --gradient: linear-gradient(135deg, #FFE5CF 0%, #FF885B 100%);
+    :root{
+      --bg:#595551; --panel:#3f3f3d; --cream:#E0DACE; --ink:#e9e6df; --ink-dark:#3c3a37;
+      --accent:#C67B65; --accent-2:#B96953; --muted:#bdb6ad; --shadow:0 14px 32px rgba(0,0,0,.22);
+      --w: min(100%, 92vw);
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    a{color:inherit;text-decoration:none}
 
-      /* Responsive layout variables */
-      --preview-w: clamp(320px, 28vw, 560px);
-      --content-max: min(1800px, 96vw);
-      --gap: 20px;
-    }
-    body {
-      background: var(--gradient);
-      color: var(--text-dark);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-    }
-    .container {
-      width: 100%;
-      max-width: var(--content-max);
-      margin: 0 auto;
-      padding: 20px;
-      display: grid;
-      grid-template-columns: 1fr var(--preview-w);
-      gap: var(--gap);
-      align-items: start;
-    }
-    .form-container {
-      min-width: 0;
-    }
-    .title-bar {
-      background: linear-gradient(90deg, var(--accent-rose), #FFE5CF);
-      width: 100%;
-      padding: 15px 20px;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(255, 136, 91, 0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      margin-bottom: 20px;
-    }
-    .title-bar h1 {
-      margin: 0;
-      color: var(--text-dark);
-      font-size: 24px;
-      font-weight: bold;
-    }
-    .header-subtitle {
-      color: var(--text-dark);
-      margin: 5px 0 0;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-    .row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-      padding: 25px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-coffee);
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(255, 136, 91, 0.1);
-    }
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 8px;
-      color: var(--border-coffee);
-      font-size: 14px;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--accent-rose);
-      border-radius: 8px;
-      box-sizing: border-box;
-      font-size: 14px;
-      background: #fffaf0;
-      color: var(--text-dark);
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    input[readonly] { background: #f5f0e6; color: var(--text-dark); }
-    button {
-      background: linear-gradient(90deg, var(--accent-rose), #FFE5CF);
-      color: var(--text-dark);
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: transform 0.2s;
-    }
-    button:hover { transform: translateY(-2px); }
+    header.site{position:sticky;top:0;z-index:30;background:linear-gradient(180deg, rgba(63,63,61,.96), rgba(63,63,61,.86));border-top:8px solid #4a4844;backdrop-filter:blur(6px) saturate(1.1)}
+    .bar{width:var(--w);margin:auto;padding:18px 10px;display:flex;align-items:center;justify-content:space-between}
+    .brand{font-weight:700;letter-spacing:.5px;user-select:none;font-size:clamp(20px,2.2vw,30px)}
+    .brand .rock{color:var(--accent)} .brand .tech{font-weight:400;color:#f1eee7}
+    nav ul{list-style:none;display:flex;gap:28px;margin:0;padding:0;align-items:center}
+    nav a{font-weight:700;letter-spacing:.6px;padding:6px 2px;position:relative}
+    nav a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:.25s}
+    nav a:hover{color:var(--accent)} nav a:hover::after{transform:scaleX(1)} nav a.active{color:var(--accent)}
+    .hamb{display:none;width:36px;aspect-ratio:1;border:0;background:transparent;cursor:pointer}
+    .hamb span,.hamb::before,.hamb::after{display:block;height:2px;margin:7px 4px;background:#eee;content:"";transition:.3s}
+    .hamb.active::before{transform:translateY(9px) rotate(45deg)} .hamb.active::after{transform:translateY(-9px) rotate(-45deg)} .hamb.active span{opacity:0}
 
-    /* Login */
-    .login-section {
-      display: flex; justify-content: center; align-items: center;
-      height: 100vh; flex-direction: column; background: var(--gradient);
-    }
-    .login-form {
-      background: var(--bg-card);
-      padding: 40px; border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(255, 136, 91, 0.2);
-      text-align: center; max-width: 400px; width: 100%;
-      border: 1px solid var(--border-coffee);
-    }
-    .login-form h2 { margin: 0 0 10px; color: var(--accent-rose); font-size: 28px; }
-    .login-form p { margin-bottom: 30px; color: var(--text-dark); font-size: 16px; line-height: 1.4; }
-    .login-form input {
-      width: 100%; padding: 15px; margin: 15px 0;
-      border: 1px solid var(--accent-rose); border-radius: 10px;
-      box-sizing: border-box; font-size: 16px; background: #fffaf0; color: var(--text-dark);
-    }
-    .login-form button {
-      background: linear-gradient(90deg, var(--accent-rose), #FFE5CF);
-      color: var(--text-dark); padding: 15px 30px; border: none; border-radius: 10px;
-      cursor: pointer; width: 100%; margin: 10px 0; font-size: 16px; font-weight: bold;
-    }
-    .login-footer { margin-top: 30px; color: var(--border-coffee); font-size: 12px; text-align: center; }
+    body.is-login header.site nav{display:none}
+    #logoutBtn{margin-left:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer;font-weight:700}
+    #logoutBtn[hidden]{display:none}
 
-    /* App shell */
-    .main-app { display: none; background: var(--gradient); }
-    .main-app.show { display: block; }
-    #themeToggle {
-      position: fixed; top: 20px; right: 20px;
-      background: #557C56; color: var(--bg-card);
-      padding: 10px 15px; border: none; border-radius: 8px;
-      cursor: pointer; z-index: 1000; font-size: 14px;
-    }
-    .logout {
-      position: fixed; top: 20px; left: 20px;
-      background: #557C56; color: var(--bg-card);
-      padding: 10px 15px; border: none; border-radius: 8px;
-      cursor: pointer; z-index: 1000; font-size: 14px;
-    }
+    main{min-height:60vh}
+    .wrap{width:var(--w);margin:auto;padding:40px 10px}
+    .view{display:none;animation:fadeIn .45s ease both}
+    .view.active{display:block}
 
-    /* Placeholder list reused */
-    .placeholder-list { list-style: none; padding: 0; margin: 0; }
-    .placeholder-list li {
-      padding: 8px 0; border-bottom: 1px solid rgba(85,124,86,0.2); font-size: 14px;
-    }
-    .placeholder-list code {
-      background: var(--accent-rose); color: var(--text-dark);
-      padding: 2px 6px; border-radius: 4px; font-family: monospace; margin-right: 8px;
-    }
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:44px;align-items:center}
+    .hero .left{background:var(--cream);color:var(--ink-dark);padding:min(6vw,70px);border-radius:30px 220px 30px 30px;box-shadow:var(--shadow)}
+    .hero h1{margin:0 0 16px;font-weight:700;line-height:1.18;font-size:clamp(26px,3.6vw,46px)}
+    .hero p{margin:0;color:#3f3e3b}
+    .hero .right{display:grid;gap:24px}
+    .oval{height:220px;border-radius:110px;background:var(--cream);color:var(--ink-dark);display:grid;place-items:center;font-weight:700;letter-spacing:1px;box-shadow:0 6px 16px rgba(0,0,0,.18);transition:transform .25s, box-shadow .25s;position:relative;overflow:hidden}
+    .oval:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 20px 36px rgba(0,0,0,.28)}
+    .oval > a, .oval > img{display:block;width:100%;height:100%} .oval > img{object-fit:cover;border-radius:inherit}
 
-    /* Icon buttons (reload/reset) */
-    .icon-btn{
-      width:38px; height:38px; border-radius:50%;
-      border:1px solid var(--accent-rose);
-      background:#fffaf0; color:var(--text-dark);
-      display:inline-flex; align-items:center; justify-content:center;
-      cursor:pointer; font-size:18px; line-height:1;
-    }
-    .icon-btn:disabled{ opacity:.6; cursor:not-allowed; }
-    .icon-btn.spin{ animation: spin .8s linear infinite; }
-    @keyframes spin{ from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .tools-grid{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+    .tool{background:var(--cream);color:var(--ink-dark);border-radius:26px;padding:22px 22px 18px;box-shadow:var(--shadow);transition:transform .25s, box-shadow .25s}
+    .tool:hover{transform:translateY(-6px);box-shadow:0 24px 42px rgba(0,0,0,.28)}
+    .tool h3{margin:6px 0 10px} .tool p{margin:0 0 14px;opacity:.92}
+    .btn{display:inline-grid;place-items:center;padding:10px 14px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;border:0;cursor:pointer;transition:background .25s, transform .08s}
+    .btn:hover{background:var(--accent-2)} .btn:active{transform:translateY(1px)}
 
-    /* Voice mic icon */
-    #voiceControls{
-      position:fixed; top:20px; right:160px; display:flex; gap:8px; z-index:1000;
-      align-items:center;
-    }
-    .mic-btn{
-      width:38px; height:38px; border-radius:50%;
-      border:1px solid var(--accent-rose);
-      background:#fffaf0; color:var(--text-dark);
-      display:inline-flex; align-items:center; justify-content:center;
-      position:relative; cursor:pointer;
-    }
-    .mic-btn:disabled{ opacity:.6; cursor:not-allowed; }
-    .mic-ico{ font-size:18px; line-height:1; }
-    .mic-dot{
-      position:absolute; right:4px; bottom:4px;
-      width:8px; height:8px; border-radius:50%; background:#d62b2b; display:none;
-    }
-    .mic-btn.listening { outline:2px solid #FF885B; animation:pulse 1s ease-in-out infinite; }
-    .mic-btn.listening .mic-dot{ display:block; }
-    .mic-btn.na { filter:grayscale(1); }
-    @keyframes pulse{
-      0%{box-shadow:0 0 0 0 rgba(255,136,91,.5)}
-      70%{box-shadow:0 0 0 6px rgba(255,136,91,0)}
-      100%{box-shadow:0 0 0 0 rgba(255,136,91,0)}
-    }
+    .about-card{background:var(--cream);color:var(--ink-dark);border-radius:30px 220px 30px 30px;padding:min(6vw,70px);box-shadow:var(--shadow)}
+    .support-card{background:var(--cream);color:var(--ink-dark);border-radius:30px 220px 30px 30px;padding:min(5vw,64px);box-shadow:var(--shadow)}
+    .tag{display:inline-block;margin:6px 8px 0 0;background:#f2ece0;color:#403f3b;border:1px dashed #c8bda9;padding:8px 12px;border-radius:999px;font-weight:700}
 
-    /* Live Preview panel (now grid child) */
-    .preview-panel{
-      width: 100%;
-      background: var(--bg-card); border: 1px solid var(--border-coffee);
-      border-radius: 15px; padding: 16px;
-      box-shadow: 0 5px 20px rgba(255, 136, 91, 0.1);
-      max-height: calc(100vh - 160px); overflow: hidden;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .preview-panel h3{
-      margin: 0 0 6px; color: var(--accent-rose); font-size: 18px;
-      text-align: center; border-bottom: 1px solid var(--border-coffee); padding-bottom: 8px;
-    }
-    .preview-status{ font-size: 12px; color: var(--border-coffee); }
-    .preview-content{
-      overflow: auto; padding: 10px; border: 1px dashed var(--border-coffee);
-      border-radius: 8px; background: #fffaf0; flex: 1;
-    }
+    #loginOverlay{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:auto 1fr;background:linear-gradient(180deg, rgba(89,85,81,.88), rgba(89,85,81,.96));transition:opacity .3s, visibility .3s}
+    #loginOverlay.hidden{opacity:0;visibility:hidden}
+    .login-topbar{background:#DFD0B8;color:#3e3d39;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-weight:700}
+    .login-topbar .brand{font-size:20px} .login-topbar .brand .rock{color:#C07A5B} .login-topbar .support{font-size:14px}
+    .login-stage{display:grid;place-items:center;padding:26px}
+    .login-card{width:min(520px,92vw);background:#C07A5B;color:#fff;border-radius:20px;padding:26px 22px 16px;text-align:center;position:relative;box-shadow:0 22px 46px rgba(0,0,0,.38)}
+    .login-title{font-size:clamp(24px,2.6vw,32px);font-weight:800;margin:4px 0 6px}
+    .login-sub{opacity:.95;text-decoration:underline;text-underline-offset:6px}
+    .login-note{font-weight: 800; opacity:.95;margin:.35rem 0 .9rem}
+    .field{background:#F0E6DA;border-radius:999px;display:flex;align-items:center;gap:10px;margin:14px auto;padding:12px 16px;color:#3f3e3b;border:2px solid rgba(0,0,0,.08)}
+    .field input{border:0;outline:0;background:transparent;width:100%;font-size:15px}
+    .showpass{cursor:pointer;color:#3f3e3b;opacity:.75}
+    .login-btn{width:160px;margin:8px auto 0;padding:12px 18px;border-radius:16px;border:0;cursor:pointer;background:#3e3d39;color:#fff;font-weight:800;letter-spacing:.4px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.2), 0 10px 24px rgba(0,0,0,.28)}
+    .login-version{position:absolute;right:12px;bottom:8px;font-size:12px;opacity:.9}
 
-    /* Responsive: single column under 1024px */
-    @media (max-width: 1024px){
-      .container { grid-template-columns: 1fr; }
-      #voiceControls { right: 20px; }
+    .login-page-wrap{min-height:70vh;display:grid;place-items:center}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none}}
+
+    @media (max-width:900px){
+      .hero{grid-template-columns:1fr;gap:26px}
+      .oval{height:180px;border-radius:90px}
+      nav{position:fixed;inset:58px 0 auto 0;background:rgba(63,63,61,.98);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:.25s}
+      nav.open{opacity:1;visibility:visible}
+      nav ul{flex-direction:column;align-items:center;padding:18px 0}
+      .hamb{display:block}
     }
+    @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+
+    /* Tool Modals */
+    .tool-modal[hidden]{display:none}
+    .tool-modal{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:20px}
+    .tool-dialog{width:min(1100px,96vw);max-height:90vh;overflow:auto;background:#F6F1E7;color:#2d2b28;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.45)}
+    .tool-head{position:sticky;top:0;background:#EADFCC;padding:12px 16px;border-bottom:1px solid #d8cfbf;display:flex;align-items:center;justify-content:space-between;font-weight:800;letter-spacing:.3px}
+    .tool-close{border:0;background:#C67B65;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:800}
+    .tool-body{padding:16px}
+    .tool-body input[type=text],.tool-body input[type=number],.tool-body textarea,.tool-body select{width:100%;padding:10px;border-radius:8px;border:1px solid #d6d0c6;font-family:inherit}
+    .tool-body table{width:100%;border-collapse:collapse;background:#fff}
+    .tool-body th,.tool-body td{border:1px solid #e6e0d6;padding:8px;text-align:left}
+    .tool-body .btn{background:#C67B65;color:#fff}
+    .tool-body .btn.ghost{background:#efe8dc;color:#6b5e50;border:1px solid #dacfbf}
+    .small{font-size:13px;color:#6b5e50}
+    .row{display:flex;gap: 9px;align-items:top;margin-bottom:9px}
+    .col{flex:1}
+
+/* Application & Reports: highlight “Join” fields */
+#modal-app #app_appjoin,
+#modal-app #app_depojoin,
+#modal-app #app_lheirsjoin,
+#modal-app #app_boundaryjoin{
+  background: #fff6ef;                 /* soft highlight */
+  border: 2px solid var(--accent);     /* uses your --accent (#C67B65) */
+  color: #2d2b28;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px rgba(198,123,101,.12);
+}
+
+/* Focus ring for keyboard users */
+#modal-app #app_appjoin:focus,
+#modal-app #app_depojoin:focus,
+#modal-app #app_lheirsjoin:focus,
+#modal-app #app_boundaryjoin:focus{
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(198,123,101,.25);
+}
+
+/* Optional: label tint to match highlight */
+#modal-app label[for="app_appjoin"],
+#modal-app label[for="app_depojoin"],
+#modal-app label[for="app_lheirsjoin"],
+#modal-app label[for="app_boundaryjoin"]{
+  color: var(--accent);
+}
+
+/*template css selection of docx files*/
+#app_template_panel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: start;
+}
+#app_template_panel label {
+  display: inline-block;
+  cursor: pointer;
+  
+}
+#app_template_panel .tplitem {
+  padding: 3px 0 3px 1px;
+  border: none;
+  background: #a9fff8;
+}
+
+
+#modal-placeholders table th,
+#modal-placeholders table td {
+  font-family: 'Montserrat', Arial, sans-serif;
+  border: 1px solid #e2dbbb;
+  padding: 7px 9px;
+  font-size: 15px;
+}
+#modal-placeholders table th {
+  background: #faefd0;
+  color: #7d532c;
+  font-weight: 600;
+}
+#modal-placeholders table td:first-child {
+  font-weight: 600;
+  color: #ba6f58;
+}
+#modal-placeholders .tool-head {
+  background: #f5ecd7;
+  font-size: 16.5px;
+  padding: 9px 17px 7px 17px;
+  border-bottom: 1px solid #e2dbbb;
+}
+
+
+
+/* (highlighting और outline color के लिए) */
+
+.highlight-field {
+  outline: 2.5px solid #C67B65 !important;      /* हाइलाइट कलर */
+  
+}
+.app-field-comment {
+  font-size: 13px;
+  color: #ba6f58;
+  margin-top: 2px;
+  margin-bottom: 7px;
+  background: #fdeedb;
+  border-radius: 7px;
+  padding: 5px 11px;
+  display: inline-block;
+  max-width: 96%;
+}
+
+
+
   </style>
 </head>
 <body>
-  <!-- Login Page -->
-  <div class="login-section" id="loginSection">
-    <form id="loginForm" class="login-form">
-      <h2>Welcome!</h2>
-      <p>Smart forms to flawless documents — fast, secure, and consistent.</p>
-      <input type="text" id="username" placeholder="Username" autocomplete="username">
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
-      <button type="submit">Login</button>
-    </form>
-    <div class="login-footer">
-      Support: 7869731689<br>
-      © 2025 Rock Technology - All rights reserved. Version 1.0.5
+  <!-- Login Overlay -->
+  <div id="loginOverlay" aria-hidden="false">
+    <div class="login-topbar">
+      <div class="brand"><span class="rock">ROCK</span><span class="tech">Technology</span></div>
+      <div class="support">Support: 7869731689</div>
+    </div>
+    <div class="login-stage">
+      <div class="login-card" role="dialog" aria-modal="true">
+        <div class="login-title">Welcome!</div>
+        <div class="login-sub">Continue to your workspace:</div>
+        <div class="login-note">Standardized Forms, Smart Math, Clean Exports.</div>
+        <label class="field"><input id="uid" type="text" placeholder="enter user name here" autocomplete="off"></label>
+        <label class="field"><input id="pwd" type="password" placeholder="enter password here" autocomplete="off"><span id="togglePass" class="showpass" title="Show/Hide">👁</span></label>
+        <button id="btnLogin" class="login-btn">Log in</button>
+        <div class="login-version">Version 1.0.0</div>
+      </div>
     </div>
   </div>
 
-  <!-- Main Page -->
-  <div class="main-app" id="mainApp">
-    <button class="logout" onclick="logout()" id="logoutBtn" style="display:none;">Logout</button>
-    <button id="themeToggle">Switch Theme</button>
-
-    <!-- Voice controls -->
-    <div id="voiceControls">
-      <select id="voiceLang" aria-label="Voice language">
-        <option value="hi-IN">Hindi (hi-IN)</option>
-        <option value="en-IN">English (en-IN)</option>
-        <option value="en-US">English (en-US)</option>
-      </select>
-      <button id="voiceToggle" type="button" class="mic-btn" aria-pressed="false"
-              title="Start voice typing" aria-label="Start voice typing">
-        <span class="mic-ico" aria-hidden="true">🎤</span>
-        <span class="mic-dot" aria-hidden="true"></span>
-      </button>
-              <button id="refreshTplBtn" type="button" class="icon-btn" title="Reload .docx list">🔄</button>
-              <button id="resetFieldsBtn" type="button" class="icon-btn" title="Reset all fields">🧹</button>
+  <!-- App Shell -->
+  <header class="site">
+    <div class="bar">
+      <div class="brand"><span class="rock">ROCK</span><span class="tech">Technology</span></div>
+      <button id="hamb" class="hamb" aria-label="Menu"><span></span></button>
+      <nav id="nav" aria-label="Primary">
+        <ul>
+          <li><a href="#home" data-view="home" class="active">HOME</a></li>
+          <li><a href="#tools" data-view="tools">TOOLS</a></li>
+          <li><a href="#about" data-view="about">ABOUT</a></li>
+          <li><a href="#support" data-view="support">SUPPORT</a></li>
+          <li id="nav-login-item"><a href="#login" data-view="login">LOGIN</a></li>
+          <li><button id="logoutBtn" hidden>Logout</button></li>
+        </ul>
+      </nav>
     </div>
+  </header>
 
-    <div class="title-bar">
-      <h1>RockTech — Document Processing Suite</h1>
-      <p class="header-subtitle">Smart forms to flawless documents — fast, secure, and consistent.</p>
+  <main class="wrap">
+    <!-- HOME -->
+    <section id="view-home" class="view active" role="region" aria-labelledby="h-home">
+      <div class="hero">
+        <div class="left">
+          <h1 id="h-home">Welcome to<br>MP Land Revenue Document<br>Processing System</h1>
+          <p>Streamline your Madhya Pradesh Land Revenue Department workflows with our comprehensive web application. Effortlessly create applications, patwari reports, orders, and official documents using pre-loaded templates from GitHub repository. Perform complex calculations including fraction operations, upload B-1 text files to extract landowner details, khasra numbers, and area measurements. Our intelligent partition calculator automatically computes remaining landowners' shares during property division (batwara). Access professional document templates anytime, anywhere without technical stress. Generate ready-to-use Word documents instantly for all your land revenue documentation needs. Designed specifically for government officials to enhance productivity and accuracy in land administration processes.</p>
+        </div>
+        <div class="right">
+          <div class="oval -img" style="background-image:url('https://img.freepik.com/free-photo/beautiful-women-walk-happily-meadow_1150-19404.jpg?w=740');background-size:cover;background-position:center;background-repeat:no-repeat"></div>
+          <div class="oval -img" style="background-image:url('https://img.freepik.com/free-photo/woman-picking-strawberries-farm_1150-36966.jpg?w=1480');background-size:cover;background-position:center;background-repeat:no-repeat"></div>
+          <div class="oval -img" style="background-image:url('https://img.freepik.com/free-photo/tribal-girls-are-collecting-strawberries_1150-7383.jpg?w=1480');background-size:cover;background-position:center;background-repeat:no-repeat"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOOLS -->
+    <section id="view-tools" class="view" role="region" aria-labelledby="h-tools">
+      <!---- <h3 id="h-tools" style="margin:0 0 10px">Tools</h3> -->
+      <div class="tools-grid">
+        
+        <article class="tool">
+          <h3>Application & Reports</h3>
+          <p>Generate applications and patwari reports with accurate data and instant Word exports.</p>
+          <button class="btn" data-open="modal-app">Open</button>
+        </article>
+
+        <article class="tool">
+          <h3>Data from .txt file</h3>
+          <p>Upload Khatauni (B1) .txt and instantly parse land records into clean, usable fields.</p>
+          <button class="btn" data-open="modal-extractor">Open</button>
+        </article>
+
+        <article class="tool">
+          <h3>Batwara Fraction Calculator</h3>
+          <p>Enter ownership fractions to compute proportional area and revised shares for co‑sharers.</p>
+          <button class="btn" data-open="modal-batwara">Open</button>
+        </article>
+
+        <article class="tool">
+          <h3>Fraction Calculator</h3>
+          <p>Add, subtract, and divide fractions with automatic denominator alignment.</p>
+          <button class="btn" data-open="modal-fractions">Open</button>
+        </article>
+
+        <article class="tool">
+          <h3>Placeholders Reference</h3>
+          <p>Find all placeholders for your doc here.</p>
+          <button class="btn" data-open="modal-placeholders">Open</button>
+        </article>
+
+        <article class="tool">
+          <h3>Upload your own files</h3>
+          <p>You can upload your own docx files with placeholders and use with Application & Reports Module.</p>
+          <button class="btn" data-open="modal-upload">Open</button>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="view-about" class="view" role="region" aria-labelledby="h-about">
+      <div class="about-card">
+        <h2 id="h-about">About us</h2>
+        <p>This web application is specifically designed for Madhya Pradesh Land Revenue Department employees and related officials. Our mission is to digitize and automate traditional document preparation processes. This platform provides instant creation of patwari reports, application forms, orders, and other land revenue documents. Professional templates linked from GitHub repository, smart calculation tools, and B-1 data processing features streamline your daily operations. Advanced fraction calculation capabilities and automated partition (batwara) calculations eliminate manual errors while saving valuable time. Our goal is to reduce paper-based processes and enhance operational efficiency. Developed by government employees, for government employees, ensuring practical functionality and user-friendly experience for all skill levels.</p>
+      </div>
+    </section>
+
+    <!-- SUPPORT -->
+    <section id="view-support" class="view" role="region" aria-labelledby="h-support">
+      <div class="support-card">
+        <h2 id="h-support">Support</h2>
+        <p>Your convenience is our priority; reach out for technical issues, feature requests, or onboarding help.</p>
+        <span class="tag">Email: rocktech2023@gmail.com</span>
+        <span class="tag">Phone: +91‑7869731689</span>
+      </div>
+    </section>
+
+    <!-- LOGIN PAGE VIEW -->
+    <section id="view-login" class="view" role="region" aria-labelledby="h-login">
+      <div class="login-page-wrap">
+        <div class="login-card" style="background:#BA6F58">
+          <div class="login-title">Welcome!</div>
+          <div id="h-login" class="login-sub">Continue to your workspace:</div>
+          <div class="login-note">Standardized Forms, Smart Math, Clean Exports.</div>
+          <label class="field"><input id="uid2" type="text" placeholder="enter user name here" autocomplete="off"></label>
+          <label class="field"><input id="pwd2" type="password" placeholder="enter password here" autocomplete="off"><span id="togglePass2" class="showpass" title="Show/Hide">👁</span></label>
+          <button id="btnLogin2" class="login-btn">Log in</button>
+          <div class="login-version">Version 1.0.0</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<!-- TOOL MODALS -->
+<div class="tool-modal" id="modal-app" hidden>
+  <div class="tool-dialog" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+    <div class="tool-head">
+      <span id="appModalTitle">Application & Reports</span>
+      <button type="button" class="tool-close" data-close aria-label="Close">Close</button>
     </div>
+    <div class="tool-body" id="appForm">
 
-    <div class="container">
-      <!-- Left: Form -->
-      <div class="form-container">
-        <div class="row" id="row1">
+      <!-- Row 1 -->
+      <div class="row">
+        <div class="col">
+          <label for="application_court">Application Type</label>
+          <select id="application_court">
+            <option value="">Select Application Type</option>
+          </select>          
+        </div>
+      </div> 
+      
+      <!-- Row 2 -->
+      <div class="row">
+        <div class="col">
+          <label for="app_docid">Document No (if available)</label>
+          <input type="text" id="app_docid" autocomplete="off">
+        </div>
+        <div class="col">
+          <label for="app_docdt">Document Dt. (if available)</label>
+          <input type="date" id="app_docdt" autocomplete="off">
+        </div>
+        <div class="col">
+          <label for="app_court">Court</label>
+          <select id="app_court">
+            <option value="">Select Court</option>
+          </select>
+        </div>    
+      </div>
+      
+      <!-- Row 3 -->
+      <div class="row">
+        <div class="col" style="flex: 1.5;">
+          <label for="app_apptype">Applicant Type</label>
+          <select id="app_apptype">
+            <option value="">Select Type</option>
+          </select>
+        </div>
+        <div class="col" style="flex: 5.5;">
+          <label for="app_appshort">Applicant Name</label>
+          <input type="text" id="app_appshort" rows="2" autocomplete="off">
+        </div>
+        <div class="col" style="flex: 3;">
+          <label for="app_appjoin">Applicant Join</label>
+          <input type="text" id="app_appjoin" readonly>
+        </div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="row">
+        <div class="col" style="flex:7;">
+          <label for="app_appfull">Applicant Name (full)</label>
+          <textarea id="app_appfull" rows="6" style="width:100%;"></textarea>
+        </div>
+        <div class="col" style="flex:3;">
+          <label for="app_appaddr">Applicant Address</label>
+          <textarea id="app_appaddr" rows="6" style="width:100%;">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
+        </div>
+      </div>
+
+      <!-- Row 5 -->
+      <div class="row">
+        <div class="col" style="flex: 1.5;">
+          <label for="app_depotype">Deponent Type</label>
+          <select id="app_depotype">
+            <option value="">Select Type</option>
+          </select>
+        </div>
+        <div class="col" style="flex: 5.5;">
+          <label for="app_deposhort">Deponent Name</label>
+          <input type="text" id="app_deposhort" autocomplete="off">
+        </div>
+        <div class="col" style="flex: 3;">
+          <label for="app_depojoin">Deponent Join</label>
+          <input type="text" id="app_depojoin" readonly>
+        </div>
+      </div>
+
+      <!-- Row 6 -->
+      <div class="row">
+        <div class="col" style="flex: 7;">
+          <label for="app_depofull">Deponent Name (full)</label>
+          <textarea id="app_depofull" rows="6" style="width: 100%;"></textarea>
+        </div>
+        <div class="col" style="flex: 3;">
+          <label for="app_depoaddr">Deponent Address</label>
+          <textarea id="app_depoaddr" rows="6" style="width: 100%;">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
+        </div>
+      </div>
+
+      <!-- Row 7 -->
+      <div class="row">
+        <div class="col" style="flex: 2;">
+          <label for="app_vill">Village</label>
+          <select id="app_vill">
+            <option value="">Select Village</option>
+          </select>
+        </div>
+        <div class="col" style="flex: 3;">
+          <label for="app_khasara">Khasara & Rakava Details</label>
+          <textarea id="app_khasara" rows="6"></textarea>
+          <span class="app-field-comment" id="comment-app_khasara"></span>
+        </div>
+        <div class="col" style="flex: 5;">
+          <label for="app_lowner">Land Owner Details</label>
+          <textarea id="app_lowner" rows="6"></textarea>
+          <span class="app-field-comment" id="comment-app_lowner"></span>
+        </div>
+      </div>    
+
+      <!-- Row 8 -->
+      <div class="row">
+        <div class="col">
+          <label for="app_boundary">Boundary (if available)</label>
+          <textarea id="app_boundary" rows="4">उत्‍तर-
+दक्षिण-
+पूर्व-
+पश्चिम-</textarea>
+          <span class="app-field-comment" id="comment-app_boundary"></span>
+        </div>
+        <div class="col">
+          <label for="app_boundaryjoin">Boundary Join</label>
+          <input type="text" id="app_boundaryjoin">
+        </div>
+        <div class="col">
+          <label for="app_lheirsjoin">Legal heirs Join</label>
+          <input type="text" id="app_lheirsjoin" readonly>
+          <span class="app-field-comment" id="comment-app_lheirsjoin"></span>
+        </div>
+      </div>
+
+      <!-- Row 9 -->
+      <div class="row">
+        <div class="col">
+          <label for="app_dodate">Deceased Date (if available)</label>
+          <input type="date" id="app_dodate" autocomplete="off">
+        </div>
+        <div class="col">
+          <label for="app_dlowner">Deceased Owner (if available)</label>
+          <textarea id="app_dlowner" rows="6"></textarea>
+          <span class="app-field-comment" id="comment-app_dlowner"></span>
+        </div>
+        <div class="col">
+          <label for="app_lheirs">Legal heirs (full)</label>
+          <textarea id="app_lheirs" rows="6"></textarea>
+        </div>
+      </div>
+
+      <!-- Row 10 -->
+      <div class="row">
+        <div class="col" style="flex: 3.5;">
+          <label for="app_template">Template Name (.docx from Web)</label>
           <div>
-            <label for="docid">Document No (if available)</label>
-            <input type="text" id="docid">
-          </div>
-          <div>
-            <label for="docdt">Document Dt. (if available)</label>
-            <input type="date" id="docdt">
-          </div>
-          <div>
-            <label for="court">Court</label>
-            <select id="court"><option value="">Select Court</option></select>
+            <select id="app_template" >
+              <option value="">Loading templates...</option>
+            </select>
+            <button type="button" class="btn ghost" id="app_refreshTpl">Reload</button>
           </div>
         </div>
+        <div class="col" style="flex: 4;">
+          <label for="app_outputname">Output file name (without extension)</label>
+          <input type="text" id="app_outputname" placeholder="output" autocomplete="off">
+        </div>
+        <div class="col" style="flex: 2.5;">
+          <label>&nbsp;</label>
+          <button type="button" class="btn" id="app_downloadBtn">Download .docx</button>
+          <button type="button" class="btn" id="app_resetFields">Reset</button>
+        </div>
+      </div>
 
-        <div class="row" id="row2">
-          <div>
-            <label for="apptype">Applicant Type</label>
-            <select id="apptype"><option value="">Select Type</option></select>
+      <!-- Row 11 -->
+       <div class="row">
+        <div class="col">
+          <label for="app_template_panel">Select Templates (.docx from Web)</label>
+          <div id="app_template_panel" style="max-height:260px;overflow:auto;border:1px solid #eee;border-radius:8px;padding:11px 8px;">
+            <div>loading templates…</div>
           </div>
-          <div>
-            <label for="appshort">Applicant Name (in short)</label>
-            <input type="text" id="appshort">
-          </div>
-          <div>
-            <label for="appfull">Applicant Name (full)</label>
-            <textarea id="appfull"></textarea>
-          </div>
-          <div>
-            <label for="appaddr">Applicant Address</label>
-            <textarea id="appaddr">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
-          </div>
-          <div>
-            <label for="appjoin">Applicant Join (full)</label>
-            <input type="text" id="appjoin" readonly>
-          </div>
+          <button type="button" class="btn" id="app_downloadZipBtn">Download Selected as Zip</button>
+        </div>
+      </div>
+
+      <!-- Row 12 -->
+      <div class="row">
+        <div class="col" style="min-height:200px">
+          <label>Live Preview</label>
+          <div id="app_previewStatus" class="small">Select a template to preview…</div>
+          <div id="app_preview" style="background:#fff;border:1px dashed #dacfbf;border-radius:8px;padding:10px;max-height:320px;overflow:auto"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+  <!-- Batwara Fraction Calculator — improved logic -->
+  <div class="tool-modal" id="modal-batwara" hidden>
+    <div class="tool-dialog">
+      <div class="tool-head"><span>Batwara Fraction Calculator</span><button class="tool-close" data-close>Close</button></div>
+      <div class="tool-body">
+        <div class="row">
+          <div class="col"><label>सर्वेक्षण संख्या</label><input id="bt_survey" type="text" placeholder="उदा. 1024"></div>
+          <div class="col"><label>कुल रकवा (Decimal)</label><input id="bt_total" type="text" placeholder="उदा. 0.2000"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <button id="bt_paste" class="btn">Paste to Table</button>
+          <button id="bt_compute" class="btn">Compute</button>
+          <button id="bt_sample" class="btn ghost">Load Sample</button>
+          <button id="bt_export" class="btn ghost">Export CSV</button>
+        </div>
+        <label>Excel/Notepad से पेस्ट करें (हर लाइन: नाम[TAB]1/2 या नाम,1/3 या ...)</label>
+        <textarea id="bt_pastebox" rows="5" placeholder="राम	1/2
+श्याम	1/4
+मोहन 1/4"></textarea>
+
+        <div style="margin-top:10px;overflow:auto">
+          <table id="bt_table">
+            <thead><tr><th>#</th><th>चयन</th><th>भूस्वामी</th><th>हिस्सा</th><th>रकवा (कुल×हिस्सा)</th><th>विभाजित रकवा</th><th>शेष हिस्सा (Recalc)</th><th>शेष रकवा</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4" style="text-align:right"><strong>योग-</strong></td><td id="bt_sumOrig">-</td><td id="bt_sumDiv">-</td><td id="bt_sumReShare">-</td><td id="bt_sumRemain">-</td></tr></tfoot>
+          </table>
         </div>
 
-        <div class="row" id="row3">
-          <div>
-            <label for="depotype">Deponent Type</label>
-            <select id="depotype"><option value="">Select Type</option></select>
-          </div>
-          <div>
-            <label for="deposhort">Deponent Name (in short)</label>
-            <input type="text" id="deposhort">
-          </div>
-          <div>
-            <label for="depofull">Deponent Name (full)</label>
-            <textarea id="depofull"></textarea>
-          </div>
-          <div>
-            <label for="depoaddr">Deponent Address</label>
-            <textarea id="depoaddr">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
-          </div>
-          <div>
-            <label for="depojoin">Deponent Join (full)</label>
-            <input type="text" id="depojoin" readonly>
-          </div>
+        <div class="row" style="margin-top:10px">
+          <div class="col"><label>योग विभाजित रकवा</label><input id="bt_out_sum" readonly></div>
+          <div class="col"><label>शेष रकवा</label><input id="bt_out_remain" readonly></div>
         </div>
 
-        <div class="row" id="row4">
-          <div>
-            <label for="vill">Village</label>
-            <select id="vill"><option value="">Select Village</option></select>
+        <div class="row">
+          <div class="col">
+            <label>मौजूदा अभिलेखीय स्थिति</label>
+            <textarea id="bt_before" rows="4" readonly></textarea>
+            <button id="bt_copy_before" class="btn ghost" style="margin-top:6px">Copy</button>
           </div>
-          <div>
-            <label for="khasara">Khasara & Rakava Details</label>
-            <textarea id="khasara"></textarea>
-          </div>
-          <div>
-            <label for="lowner">Land Owner Details</label>
-            <textarea id="lowner"></textarea>
-          </div>
-          <div>
-            <label for="boundary">Boundary (if available)</label>
-            <textarea id="boundary"></textarea>
-          </div>
-          <div>
-            <label for="boundaryjoin">Boundary Join</label>
-            <input type="text" id="boundaryjoin" readonly>
+          <div class="col">
+            <label>बटवारा पश्चात स्थिति</label>
+            <textarea id="bt_after" rows="4" readonly></textarea>
+            <button id="bt_copy_after" class="btn ghost" style="margin-top:6px">Copy</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="row" id="row5">
-          <div>
-            <label for="dodate">Deceased Date (if available)</label>
-            <input type="date" id="dodate">
+  <!-- Fraction Calculator -->
+  <div class="tool-modal" id="modal-fractions" hidden>
+    <div class="tool-dialog">
+      <div class="tool-head"><span>Fraction Calculator</span><button class="tool-close" data-close>Close</button></div>
+      <div class="tool-body">
+        <div class="card" style="margin-bottom:14px">
+          <h4 style="margin:0 0 8px">भिन्‍न जोड़ें</h4>
+          <p class="small">हर लाइन/कॉमा पर एक fraction जैसे 1/4, 2/5</p>
+          <textarea id="fr_add_in" rows="6" placeholder="1/4
+1/8
+2/5"></textarea>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" id="fr_add_btn">Sum Fraction</button>
+            <button class="btn ghost" id="fr_add_clear">Clear</button>
+            <button class="btn ghost" id="fr_add_sample">Load Sample</button>
           </div>
-          <div>
-            <label for="dlowner">Deceased Owner (if available)</label>
-            <textarea id="dlowner"></textarea>
-          </div>
-          <div>
-            <label for="lheirs">Legal heirs (full)</label>
-            <textarea id="lheirs"></textarea>
-          </div>
-          <div>
-            <label for="lheirsjoin">Legal heirs Join</label>
-            <input type="text" id="lheirsjoin" readonly>
-          </div>
+          <div id="fr_add_out" style="margin-top:10px"></div>
         </div>
 
-        <div class="row" id="row6">
-          <div>
-            <label for="template">Template Name (.docx from GitHub)</label>
-            <div style="display:flex; gap:10px; align-items:flex-end;">
-              <select id="template" style="min-width:260px;">
-                <option value="">Loading templates...</option>
-              </select>
+        <div class="card" style="margin-bottom:14px">
+          <h4 style="margin:0 0 8px">भिन्‍न घटायें</h4>
+          <div class="row">
+            <div class="col"><label>मूल हिस्सा</label><input id="fr_sub_base" type="text" placeholder="3/4"></div>
+            <div class="col"><label>घटाने वाले (comma/newline)</label><input id="fr_sub_list" type="text" placeholder="1/8, 1/5"></div>
+            <div style="width:220px;display:flex;gap:8px"><button class="btn" id="fr_sub_btn">Compute</button><button class="btn ghost" id="fr_sub_clear">Clear</button></div>
+          </div>
+          <div id="fr_sub_out" style="margin-top:10px"></div>
+        </div>
 
+        <div class="card">
+          <h4 style="margin:0 0 8px">भिन्‍न विभाजित करें</h4>
+          <div class="row">
+            <div class="col"><label>मूल हिस्सा</label><input id="fr_div_base" type="text" placeholder="3/4"></div>
+            <div class="col"><label>भागों की संख्या</label><input id="fr_div_parts" type="number" min="1" placeholder="2"></div>
+            <div style="width:220px;display:flex;gap:8px"><button class="btn" id="fr_div_btn">Divide</button><button class="btn ghost" id="fr_div_clear">Clear</button></div>
+          </div>
+          <div id="fr_div_out" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Combined Extractor -->
+  <div class="tool-modal" id="modal-extractor" hidden>
+    <div class="tool-dialog">
+      <div class="tool-head"><span>Data from .txt file (Combined Extractor)</span><button class="tool-close" data-close>Close</button></div>
+      <div class="tool-body">
+        <div class="card">
+          <label>1) .txt फ़ाइल चुनें</label>
+          <input id="cx_file" type="file" accept=".txt,text/plain" />
+
+          <button onclick="sendOwnersKhasaraToAppReports()" class="btn ghost">Use in Application & Reports</button>
+         
+          <div class="row" style="margin-top:10px">
+            <div class="col">
+              <strong>Owners & Shares</strong>
+              <div style="display:flex;gap:8px;margin:6px 0">
+                <button id="cx_copy_owners" class="btn ghost">Copy Owners</button>
+                <button id="cx_download_owners" class="btn ghost">Download Owners (.txt)</button>
+              </div>
+              <textarea id="cx_out_owners" placeholder="नाम — हिस्सा" rows="15"></textarea>
+            </div>
+            <div class="col">
+              <strong>Khasara & Area</strong>
+              <div style="display:flex;gap:8px;margin:6px 0">
+                <button id="cx_copy_khas" class="btn ghost">Copy Khasara</button>
+                <button id="cx_download_khas" class="btn ghost">Download Khasara (.txt)</button>
+              </div>
+              <textarea id="cx_out_khas" placeholder="खसरा — रकवा" rows="15"></textarea>
             </div>
           </div>
-          <div>
-            <label for="outputname">Output file name (without extension)</label>
-            <input type="text" id="outputname" placeholder="output">
-          </div>
-          <button type="button" id="downloadBtn">Download .docx</button>
-        </div>
-
-        <!-- Placeholders row after last row -->
-        <div class="row" id="rowPlaceholders">
-          <div style="grid-column:1/-1;">
-            <h3 style="margin:0 0 10px; color: var(--accent-rose);">Placeholder Reference</h3>
-            <ul class="placeholder-list">
-              <li><code>{DOCID}</code> Document No (if available)</li>
-              <li><code>{DOCDT}</code> Document Dt. (dd.mm.yyyy)</li>
-              <li><code>{COURT}</code> Court</li>
-              <li><code>{APPTYPE}</code> Applicant Type</li>
-              <li><code>{APPSHORT}</code> Applicant Name (short)</li>
-              <li><code>{APPFULL}</code> Applicant Name (full)</li>
-              <li><code>{APPADDR}</code> Applicant Address</li>
-              <li><code>{APPJOIN}</code> Applicant Join</li>
-              <li><code>{DEPOTYPE}</code> Deponent Type</li>
-              <li><code>{DEPOSHORT}</code> Deponent Name (short)</li>
-              <li><code>{DEPOFULL}</code> Deponent Name (full)</li>
-              <li><code>{DEPOADDR}</code> Deponent Address</li>
-              <li><code>{DEPOJOIN}</code> Deponent Join</li>
-              <li><code>{VILL}</code> Village</li>
-              <li><code>{KHASARA}</code> Khasara & Rakava Details</li>
-              <li><code>{L_OWNER}</code> Land Owner Details</li>
-              <li><code>{DO_DATE}</code> Deceased Date (dd.mm.yyyy)</li>
-              <li><code>{DL_OWNER}</code> Deceased Owner (if available)</li>
-              <li><code>{BOUNDARY}</code> Boundary (if available)</li>
-              <li><code>{BOUNDARYJOIN}</code> Boundary Join</li>
-              <li><code>{LHEIRS}</code> Legal heirs (full)</li>
-              <li><code>{LHEIRSJOIN}</code> Legal heirs Join</li>
-            </ul>
-          </div>
+          
         </div>
       </div>
-
-      <!-- Right: Live Preview -->
-      <div class="preview-panel">
-        <h3>Live Preview</h3>
-        <div id="previewStatus" class="preview-status">Select a template to preview…</div>
-        <div id="previewContent" class="preview-content"></div>
-      </div>
-    </div>
-
-    <div class="footer" style="text-align:center; margin-top: 10px; padding: 20px; color: var(--border-coffee); font-size: 12px; border-top: 1px solid var(--border-coffee);">
-      Support 7869731689<br>
-      © 2025 Rock Technology All rights reserved. Version 1.0.5
     </div>
   </div>
 
-  <script>
-    // Login
-    function login(e) {
-      if (e && typeof e.preventDefault === 'function') e.preventDefault();
-      const username = (document.getElementById('username').value || '').trim();
-      const password = (document.getElementById('password').value || '').trim();
-      if (username === 'RockTechnology' && password === 'Manish@31689') {
-        showMainApp();
-      } else { return; }
-    }
-    function showMainApp() {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('mainApp').classList.add('show');
-      document.getElementById('logoutBtn').style.display = 'block';
-    }
-    function logout() {
-      document.getElementById('mainApp').classList.remove('show');
-      document.getElementById('loginSection').style.display = 'flex';
-      document.getElementById('logoutBtn').style.display = 'none';
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      location.reload();
-    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      // Bind login form submit + Enter key
-      const form = document.getElementById('loginForm');
-      if (form) form.addEventListener('submit', login);
-      ['username','password'].forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('keydown', e=>{ if (e.key === 'Enter') login(e); });
+  <!-- Placeholder Reference -->
+  <div class="tool-modal" id="modal-placeholders" hidden>
+    <div class="tool-dialog">
+      <div class="tool-head"><span>Placeholders Reference</span><button class="tool-close" data-close>Close</button></div>      
+      <div class="tool-body" style="padding:18px 23px 11px;font-size:15px;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f5eddc;">
+          <th style="padding:7px 9px;border:1px solid #e2dbbb;text-align:left;width:27%;">Placeholder</th>
+          <th style="padding:7px 9px;border:1px solid #e2dbbb;text-align:left;">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>{DOCID}</td><td>Document No (if available)</td></tr>
+        <tr><td>{DOCDT}</td><td>Document Dt. (if available)</td></tr>
+        <tr><td>{COURT}</td><td>Court</td></tr>
+        <tr><td>{APPTYPE}</td><td>Applicant Type</td></tr>
+        <tr><td>{APPSHORT}</td><td>Applicant Name</td></tr>
+        <tr><td>{APPFULL}</td><td>Applicant Name (full)</td></tr>
+        <tr><td>{APPADDR}</td><td>Applicant Address</td></tr>
+        <tr><td>{APPJOIN}</td><td>Applicant Join</td></tr>
+        <tr><td>{DEPOTYPE}</td><td>Deponent Type</td></tr>
+        <tr><td>{DEPOSHORT}</td><td>Deponent Name</td></tr>
+        <tr><td>{DEPOFULL}</td><td>Deponent Name (full)</td></tr>
+        <tr><td>{DEPOADDR}</td><td>Deponent Address</td></tr>
+        <tr><td>{DEPOJOIN}</td><td>Deponent Join</td></tr>
+        <tr><td>{VILL}</td><td>Village</td></tr>
+        <tr><td>{KHASARA}</td><td>Khasara & Rakava Details</td></tr>
+        <tr><td>{L_OWNER}</td><td>Land Owner Details</td></tr>
+        <tr><td>{BOUNDARY}</td><td>Boundary (if available)</td></tr>
+        <tr><td>{BOUNDARYJOIN}</td><td>Boundary Join</td></tr>
+        <tr><td>{DO_DATE}</td><td>Deceased Date (if available)</td></tr>
+        <tr><td>{DL_OWNER}</td><td>Deceased Owner (if available)</td></tr>        
+        <tr><td>{LHEIRS}</td><td>Legal heirs (full)</td></tr>
+        <tr><td>{LHEIRSJOIN}</td><td>Legal heirs Join</td></tr>
+      </tbody>
+    </table>
+    </div>
+    </div>
+  </div>
+
+
+  <!-- GitHub Uploader Module -->
+<div class="tool-modal" id="modal-upload" hidden>
+  <div class="tool-dialog">
+    <div class="tool-head">
+      <span>Upload File to rocktech-web</span>
+      <button class="tool-close" data-close>Close</button>
+    </div>
+    <div class="tool-body" style="padding:16px 18px;">
+      <label>Choose a file to upload (.docx)</label>
+      <input id="gh_upload_file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+      <div style="margin-top:12px;">
+        <label>GitHub Personal Access Token:</label>
+        <input type="password" id="gh_token" placeholder="ghp_xxxxxxx..." style="width:100%;margin-bottom:8px;">
+      </div>
+      <button id="gh_upload_btn" class="btn">Upload</button>
+      <div id="gh_upload_status" style="margin-top:14px;color: #2b6b22; font-weight:500;"></div>
+    </div>
+  </div>
+</div>
+
+
+  
+  <script>
+    // App title
+    const SITE_TITLE='ROCKTechnology — Standardized Forms, Smart Math, Clean Exports'; document.title=SITE_TITLE;
+    const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+
+    // Demo credentials
+    const VALID_USER='RockTechnology', VALID_PASS='Manish@31689';
+
+    // SPA/nav
+    const hamb=$('#hamb'), nav=$('#nav'); hamb?.addEventListener('click',()=>{hamb.classList.toggle('active');nav.classList.toggle('open');});
+    const VIEWS=['home','tools','about','support','login'];
+    function setLoginHeaderMode(b){document.body.classList.toggle('is-login',b)}
+    function setOverlay(v){const o=$('#loginOverlay'); if(o) o.classList.toggle('hidden',!v)}
+    function isLogged(){return sessionStorage.getItem('rt_logged_in')==='1'}
+    function showView(name){
+      VIEWS.forEach(v=>{const el=$('#view-'+v); if(el) el.classList.toggle('active',v===name); $$('nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===name));});
+      if(name==='login'){setOverlay(false);setLoginHeaderMode(true);} else {setLoginHeaderMode(false);setOverlay(!isLogged());}
+      if(history.pushState){history.replaceState({},'', '#'+name);} else{location.hash='#'+name;}
+      window.scrollTo({top:0,behavior:'smooth'}); nav?.classList.remove('open'); hamb?.classList.remove('active');
+      if(name==='login'){setTimeout(()=>$('#uid2')?.focus(),0)}
+    }
+    $$('nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showView(a.dataset.view);})); window.addEventListener('hashchange',()=>{const n=location.hash.replace('#',''); if(VIEWS.includes(n)) showView(n);});
+
+    // Login
+    const overlay=$('#loginOverlay'), uid=$('#uid'), pwd=$('#pwd'), togglePass=$('#togglePass'), btnLogin=$('#btnLogin');
+    const logoutBtn=$('#logoutBtn'), navLoginItem=$('#nav-login-item'), LOGGED_KEY='rt_logged_in';
+    function setLoggedIn(state){
+      if(state){sessionStorage.setItem(LOGGED_KEY,'1'); navLoginItem&&(navLoginItem.hidden=true); logoutBtn&&(logoutBtn.hidden=false); showView('home');}
+      else{sessionStorage.removeItem(LOGGED_KEY); navLoginItem&&(navLoginItem.hidden=false); logoutBtn&&(logoutBtn.hidden=true); showView('login'); $('#uid')?.focus();}
+    }
+    if(isLogged()){setLoggedIn(true);} else { const wants=location.hash.replace('#','')==='login'; if(wants){showView('login');} else {setLoggedIn(false);} }
+    function tryLogin(){const u=uid.value.trim(), p=pwd.value; if(u===VALID_USER && p===VALID_PASS){setLoggedIn(true);} else {btnLogin.animate([{transform:'translateY(0)'},{transform:'translateY(-2px)'},{transform:'translateY(0)'}],{duration:220}); uid.setCustomValidity('Invalid User ID or Password'); uid.reportValidity(); setTimeout(()=>uid.setCustomValidity(''),1200);}}
+    btnLogin?.addEventListener('click',tryLogin); overlay?.addEventListener('keydown',e=>{if(e.key==='Enter') tryLogin();}); togglePass?.addEventListener('click',()=>{pwd.type=pwd.type==='password'?'text':'password';});
+    const uid2=$('#uid2'), pwd2=$('#pwd2'), btnLogin2=$('#btnLogin2'), togglePass2=$('#togglePass2');
+    function tryLogin2(){const u=uid2.value.trim(), p=pwd2.value; if(u===VALID_USER && p===VALID_PASS){setLoggedIn(true);} else {btnLogin2.animate([{transform:'translateY(0)'},{transform:'translateY(-2px)'},{transform:'translateY(0)'}],{duration:220}); uid2.setCustomValidity('Invalid User ID or Password'); uid2.reportValidity(); setTimeout(()=>uid2.setCustomValidity(''),1200);}}
+    btnLogin2?.addEventListener('click',tryLogin2); $('#view-login')?.addEventListener('keydown',e=>{if(e.key==='Enter') tryLogin2();}); togglePass2?.addEventListener('click',()=>{pwd2.type=pwd2.type==='password'?'text':'password';});
+    logoutBtn?.addEventListener('click',()=>{sessionStorage.removeItem('rt_logged_in'); history.replaceState({},'', '#login'); location.reload();});
+    if(location.hash){const n=location.hash.replace('#',''); if(VIEWS.includes(n)) showView(n);}
+
+    // Modal open/close
+    function openModal(id){const m=document.getElementById(id); if(!m) return; m.hidden=false; document.body.style.overflow='hidden';}
+    function closeModal(el){const m=el.closest('.tool-modal'); if(!m) return; m.hidden=true; document.body.style.overflow='';}
+    document.addEventListener('click',e=>{const o=e.target.closest('[data-open]'); if(o){openModal(o.getAttribute('data-open'));} if(e.target.matches('[data-close]')){closeModal(e.target);} if(e.target.classList.contains('tool-modal')){e.target.hidden=true; document.body.style.overflow='';}});
+
+    // ===== Fraction helpers (per attached tool) =====
+    function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}
+    function lcm(a,b){return Math.abs(a*b)/gcd(a,b)}
+    function simp(n,d){if(d===0)return[0,1]; if(d<0){n=-n;d=-d} const g=gcd(n,d); return [n/g,d/g]}
+    function parseFrac(s){
+      if(s==null) return null; s=String(s).trim(); if(!s) return null;
+      const mixed=s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/); if(mixed){let w=+mixed[1], n=+mixed[2], d=+mixed[3]; let num=Math.abs(w)*d+n; if(w<0) num=-num; return simp(num,d);}
+      if(/^-?\d+$/.test(s)) return [parseInt(s,10),1];
+      const f=s.match(/^(-?\d+)\s*\/\s*(\d+)$/); if(f) return simp(parseInt(f[1],10), parseInt(f[2],10));
+      if(/^[-+]?\d*\.\d+$/.test(s)){ const prec=1_000_000; return simp(Math.round(parseFloat(s)*prec), prec); }
+      return null;
+    }
+    function fromDecStr(s,places=6){ if(!/^-?\d+(\.\d+)?$/.test(String(s||'').trim())) return null; const prec=10**places; return simp(Math.round(parseFloat(s)*prec), prec) }
+    const add=(a,b)=>simp(a[0]*b[1]+b[0]*a[1], a[1]*b[1]);
+    const sub=(a,b)=>simp(a[0]*b[1]-b[0]*a[1], a[1]*b[1]);
+    const mul=(a,b)=>simp(a[0]*b[0], a[1]*b[1]);
+    const divF=(a,b)=>simp(a[0]*b[1], a[1]*b[0]);
+    const f2d=(f,p=4)=> (f[0]/f[1]).toFixed(p);
+    const f2s=(f)=>`${f[0]}/${f[1]}`;
+
+    // ===== Batwara logic (reliable normalization and editable divided area) =====
+    const bt_total=$('#bt_total'), bt_pastebox=$('#bt_pastebox'), bt_tbody=$('#bt_table tbody');
+    function bt_parseLines(txt){
+      return txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map((line,i)=>{
+        let name='', f=null;
+        if(line.includes('\t')){ const [a,b]=line.split('\t'); name=(a||'').trim(); f=parseFrac((b||'').trim()); }
+        else if(line.includes(',')){ const [a,b]=line.split(','); const fTry=parseFrac((b||'').trim()); if(fTry){ name=(a||'').trim(); f=fTry; } else { f=parseFrac((a||'').trim()); name=(b||'').trim(); } }
+        else { const m=line.match(/(.+?)\s+(-?\d+\s*\/\s*\d+)$/); if(m){ name=m[1].trim(); f=parseFrac(m[2]); } else { f=parseFrac(line.trim()); name=f?`Owner ${i+1}`:line.trim(); } }
+        if(!f){ const tail=line.match(/(-?\d+\s*\/\s*\d+)\s*$/); if(tail){ f=parseFrac(tail[1]); name=line.replace(tail[1],'').trim()||`Owner ${i+1}`; }
+        }
+        return {name, frac:f||[0,1]};
+      });
+    }
+    function bt_row(i,o){
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="idx">${i}</td>
+        <td><input type="checkbox" class="bt_sel"></td>
+        <td class="bt_name" style="text-align:left;padding-left:8px">${o.name}</td>
+        <td class="bt_frac">${o.frac[0]}/${o.frac[1]}</td>
+        <td class="bt_orig">-</td>
+        <td class="bt_div"><input class="bt_div_inp" type="text"></td>
+        <td class="bt_reshare">-</td>
+        <td class="bt_remain">-</td>`;
+      tr.dataset.origNum='0'; tr.dataset.origDen='1';
+      tr.dataset.divNum='0'; tr.dataset.divDen='1';
+      tr.dataset.remNum='0'; tr.dataset.remDen='1';
+      return tr;
+    }
+    function bt_render(owners){
+      bt_tbody.innerHTML=''; let i=1; owners.forEach(o=>bt_tbody.appendChild(bt_row(i++,o)));
+    }
+    function bt_compute(){
+      const totalFrac=fromDecStr((bt_total.value||'').trim(),6); if(!totalFrac){ alert('कृपया सही कुल रकवा (Decimal) दें'); return; }
+      const rows=[...bt_tbody.querySelectorAll('tr')];
+      // original area per row
+      rows.forEach(r=>{
+        const of=parseFrac(r.querySelector('.bt_frac').textContent.trim())||[0,1];
+        const area=mul(totalFrac,of);
+        r.dataset.origNum=area[0]; r.dataset.origDen=area[1];
+        r.querySelector('.bt_orig').textContent=f2d(area,4);
+      });
+      // divided area defaults for selected rows
+      rows.forEach(r=>{
+        const sel=r.querySelector('.bt_sel').checked;
+        const inp=r.querySelector('.bt_div_inp');
+        if(sel){
+          if(!(inp.value||'').trim()){ // default = original
+            const on=+r.dataset.origNum, od=+r.dataset.origDen;
+            inp.value=(on/od).toFixed(6); r.dataset.divNum=on; r.dataset.divDen=od;
+          }else{
+            // parse user divided: allow decimal or fraction of TOTAL
+            const v=(inp.value||'').trim();
+            let abs=[0,1];
+            if(v.includes('/')){ const f=parseFrac(v); abs= f? mul(totalFrac,f):[0,1]; }
+            else { const dec=fromDecStr(v,6); abs= dec? dec:[0,1]; }
+            r.dataset.divNum=abs[0]; r.dataset.divDen=abs[1];
+          }
+          inp.disabled=false;
+        }else{
+          r.dataset.divNum=0; r.dataset.divDen=1;
+          const inp=r.querySelector('.bt_div_inp'); inp.value=''; inp.disabled=true;
+        }
+      });
+      bt_recalc(totalFrac);
+    }
+    function bt_recalc(totalFrac){
+      const rows=[...bt_tbody.querySelectorAll('tr')];
+      // sum divided
+      let sumDiv=[0,1]; rows.forEach(r=>{sumDiv=add(sumDiv,[+r.dataset.divNum||0,+r.dataset.divDen||1]);});
+      const remainTotal=sub(totalFrac,sumDiv);
+      $('#bt_out_sum').value=f2d(sumDiv,4);
+      $('#bt_out_remain').value=f2d(remainTotal,4);
+
+      // per-row remain = orig - divided
+      let remSum=[0,1];
+      rows.forEach(r=>{
+        const rem=sub([+r.dataset.origNum||0,+r.dataset.origDen||1],[+r.dataset.divNum||0,+r.dataset.divDen||1]);
+        r.dataset.remNum=rem[0]; r.dataset.remDen=rem[1];
+        r.querySelector('.bt_remain').textContent= rem[0]===0?'-':f2d(rem,4);
+        remSum=add(remSum,rem);
       });
 
-      // Options
-      const courtOptions = ["तहसील-सिंगरौली नगर", "वृत्‍त-पंजरेह, तहसील-सिंगरौली नगर", "वृत्‍त-कचनी, तहसील-सिंगरौली नगर"];
-      const apptypeOptions = ["आवेदक", "आवेदिका", "आवेदकगण", "आवेदिकागण"];
-      const depotypeOptions = ["अनावेदक", "अनावेदिका", "अनावेदकगण", "अनावेदिकागण"];
-      const villageOptions = ["गनियारी", "बैढ़न", "देवरा"];
+      // normalized remaining share only among those with positive remain
+      rows.forEach(r=>{
+        const rn=+r.dataset.remNum, rd=+r.dataset.remDen;
+        const cell=r.querySelector('.bt_reshare');
+        if(remSum[0]===0 || rn===0){ cell.textContent='-'; }
+        else{ const rs=divF([rn,rd],remSum); cell.textContent=f2s(rs); }
+      });
 
-      function populateDropdown(id, options) {
-        const select = document.getElementById(id);
-        options.forEach(opt => {
-          const option = document.createElement('option');
-          option.value = opt; option.textContent = opt;
-          select.appendChild(option);
-        });
+      // footers
+      $('#bt_sumOrig').textContent=f2d(totalFrac,4);
+      $('#bt_sumDiv').textContent=f2d(sumDiv,4);
+      // sum reshared (for display); compute only on positive remains
+      let sumRe=[0,1]; rows.forEach(r=>{ const t=r.querySelector('.bt_reshare').textContent.trim(); if(t && t!=='-'){ const f=parseFrac(t); if(f) sumRe=add(sumRe,f);} });
+      $('#bt_sumReShare').textContent=f2s(sumRe);
+      let sumRemain=[0,1]; rows.forEach(r=>{ sumRemain=add(sumRemain,[+r.dataset.remNum||0,+r.dataset.remDen||1]); });
+      $('#bt_sumRemain').textContent=f2d(sumRemain,4);
+
+      // combined texts
+      const before=rows.map(r=>`${r.querySelector('.bt_name').textContent.trim()} ${r.querySelector('.bt_frac').textContent.trim()}`).join(', ');
+      const after=rows.map(r=>{
+        const rs=r.querySelector('.bt_reshare').textContent.trim();
+        return rs && rs!=='-' ? `${r.querySelector('.bt_name').textContent.trim()} ${rs}` : '';
+      }).filter(Boolean).join(', ');
+      $('#bt_before').value=before; $('#bt_after').value=after;
+    }
+    // events
+    $('#bt_paste')?.addEventListener('click',()=>{
+  const arr=bt_parseLines(bt_pastebox.value||'');
+  bt_render(arr);
+  // ensure all rows start as unselected
+  document.querySelectorAll('#bt_table .bt_sel').forEach(chk=> chk.checked = false);
+  bt_compute();
+});
+
+    $('#bt_sample')?.addEventListener('click',()=>{$('#bt_pastebox').value=`राम\t1/2
+श्याम\t1/4
+गीता\t1/4`;});
+    $('#bt_compute')?.addEventListener('click',bt_compute);
+    bt_tbody.addEventListener('change',e=>{
+      if(e.target.classList.contains('bt_sel')) bt_compute();
+    });
+    bt_tbody.addEventListener('input',e=>{
+      if(e.target.classList.contains('bt_div_inp')){
+        const totalFrac=fromDecStr((bt_total.value||'').trim(),6)||[0,1];
+        const tr=e.target.closest('tr'); const v=(e.target.value||'').trim();
+        let abs=[0,1];
+        if(v===''){ abs=[0,1];}
+        else if(v.includes('/')){ const f=parseFrac(v); abs=f? mul(totalFrac,f):[0,1]; }
+        else { const dec=fromDecStr(v,6); abs=dec?dec:[0,1]; }
+        tr.dataset.divNum=abs[0]; tr.dataset.divDen=abs[1];
+        bt_recalc(totalFrac);
       }
+    });
+    $('#bt_copy_before')?.addEventListener('click',()=>navigator.clipboard.writeText($('#bt_before').value||''));
+    $('#bt_copy_after')?.addEventListener('click',()=>navigator.clipboard.writeText($('#bt_after').value||''));
+    $('#bt_export')?.addEventListener('click',()=>{
+      const rows=[...bt_tbody.querySelectorAll('tr')];
+      if(!rows.length){alert('कोई डेटा नहीं');return;}
+      let csv='No,Selected,Name,OrigFraction,OrigArea,DividedArea,RecalcFraction,RemainArea\n';
+      rows.forEach((r,i)=>{
+        const sel=r.querySelector('.bt_sel')?.checked?'1':'0';
+        const name=r.querySelector('.bt_name')?.textContent.replace(/"/g,'""')||'';
+        const of=r.querySelector('.bt_frac')?.textContent||'';
+        const oa=r.querySelector('.bt_orig')?.textContent||'';
+        const da=r.querySelector('.bt_div_inp')?.value||'';
+        const rf=r.querySelector('.bt_reshare')?.textContent||'';
+        const ra=r.querySelector('.bt_remain')?.textContent||'';
+        csv+=`="${i+1}","=${sel}","${name}","${of}","${oa}","${da}","${rf}","${ra}"\n`;
+      });
+      const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'})); a.download='batwara.csv'; a.click();
+    });
 
-      function updateJoinField(fullId, joinId) {
-        const fullTextarea = document.getElementById(fullId);
-        const joinInput = document.getElementById(joinId);
-        const update = () => {
-          const lines = fullTextarea.value.split('\n').map(l => l.trim()).filter(l => l);
-          joinInput.value = lines.join(', ');
-        };
-        fullTextarea.addEventListener('input', update);
-        update();
+    // ===== Fraction tools simple wiring =====
+    const splitItems=txt=>txt.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);
+    $('#fr_add_sample')?.addEventListener('click',()=>{$('#fr_add_in').value='1/4\n1/8\n2/5';});
+    $('#fr_add_clear')?.addEventListener('click',()=>{$('#fr_add_in').value=''; $('#fr_add_out').textContent='';});
+    $('#fr_add_btn')?.addEventListener('click',()=>{
+      const items=splitItems($('#fr_add_in').value||'');
+      let sum=[0,1], invalid=[];
+      items.forEach(x=>{const f=parseFrac(x); if(f) sum=add(sum,f); else invalid.push(x);});
+      $('#fr_add_out').innerHTML = items.length? `<strong>Sum:</strong> ${f2s(sum)} (≈ ${f2d(sum,6)})` : 'No input';
+    });
+    $('#fr_sub_clear')?.addEventListener('click',()=>{$('#fr_sub_base').value=''; $('#fr_sub_list').value=''; $('#fr_sub_out').textContent='';});
+    $('#fr_sub_btn')?.addEventListener('click',()=>{
+      const base=parseFrac($('#fr_sub_base').value||''); if(!base){$('#fr_sub_out').textContent='Invalid base'; return;}
+      const subs=splitItems($('#fr_sub_list').value||''); let cur=base;
+      subs.forEach(x=>{const f=parseFrac(x); if(f) cur=sub(cur,f);});
+      $('#fr_sub_out').innerHTML=`<strong>Result:</strong> ${f2s(cur)} (≈ ${f2d(cur,6)})`;
+    });
+    $('#fr_div_clear')?.addEventListener('click',()=>{$('#fr_div_base').value=''; $('#fr_div_parts').value=''; $('#fr_div_out').textContent='';});
+    $('#fr_div_btn')?.addEventListener('click',()=>{
+      const f=parseFrac($('#fr_div_base').value||''); const n=parseInt($('#fr_div_parts').value||'0',10);
+      if(!f||!n||n<1){$('#fr_div_out').textContent='Invalid'; return;}
+      const each=divF(f,[n,1]); $('#fr_div_out').innerHTML=`प्रत्येक भाग: ${f2s(each)} (≈ ${f2d(each,6)})`;
+    });
+
+    // ===== Combined Extractor (attached tool’s detection flow) =====
+    function textFromFile(file){ return new Promise(res=>{const r=new FileReader(); r.onload=e=>res(String(e.target.result||'')); r.readAsText(file,'utf-8');}); }
+    const cx_file=$('#cx_file');
+    cx_file?.addEventListener('change',async e=>{
+      const f=e.target.files?.[0]; if(!f) return;
+      const txt=await textFromFile(f);
+      const lines=txt.replace(/\r/g,'').split('\n').map(x=>x.trim());
+      // Heuristic sectioning: accumulate blocks; (S) marks khasara blocks in many exports (from attached logic)
+      const ownersBlocks=[], khasLines=[];
+      let block=[];
+      function flush(){
+        if(!block.length) return;
+        const hasFrac=block.some(l=>/\d+\s*\/\s*\d+/.test(l) || /भाग/.test(l));
+        const hasS=block.some(l=>/\(S\)/.test(l));
+        if(hasS) khasLines.push(...block);
+        else if(hasFrac) ownersBlocks.push([...block]);
+        block=[];
       }
+      lines.forEach(l=>{ if(l===''){ flush(); } else block.push(l);}); flush();
 
-      function formatDateToDDMMYYYY(dateString) {
-        if (!dateString) return '';
-        const [year, month, day] = dateString.split('-');
-        return `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}`;
-      }
+      // Owners
+      const owners=[];
+      ownersBlocks.forEach(b=>{
+        const name=(b.find(x=>x) || '').replace(/\(.*?\)/g,'').trim();
+        let share='';
+        for(const ln of b){ const m=ln.match(/(\d+\s*\/\s*\d+)/); if(m){ share=m[1].replace(/\s+/g,''); break; } }
+        if(!share && b.length>=3){ const m=b[2].match(/(\d+(?:\.\d+)?)/); if(m) share=m[1]; }
+        if(name && share) owners.push(`${name} ${share}`);
+      });
+      $('#cx_out_owners').value= owners.join(', ') || 'No owners found';
 
-      // Robust template loader (supports reload)
-      async function loadTemplates(force = false) {
-        const baseUrl = 'https://api.github.com/repos/rocktech-web/AIOFormat/contents/';
-        const url = force ? `${baseUrl}?_ts=${Date.now()}` : baseUrl;
-        const select = document.getElementById('template');
-        if (!select) return;
-
-        const prev = select.value;
-        select.innerHTML = '<option value="">Loading templates...</option>';
-
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: { 'Accept': 'application/vnd.github+json' },
-          cache: 'no-store'
-        });
-
-        if (!res.ok) {
-          const remain = res.headers.get('x-ratelimit-remaining');
-          const msg = (res.status === 403 && remain === '0')
-            ? 'Rate limit exceeded. Try later or authenticate.'
-            : `Error ${res.status}.`;
-          select.innerHTML = `<option value="">${msg}</option>`;
-          return;
-        }
-
-        const data = await res.json();
-        const docx = (Array.isArray(data) ? data : [])
-          .filter(item => item && item.type === 'file' && item.name && item.name.endsWith('.docx'))
-          .map(item => item.name)
-          .sort((a,b) => a.localeCompare(b));
-
-        select.innerHTML = '<option value="">Select Template</option>';
-        docx.forEach(name => {
-          const opt = document.createElement('option');
-          opt.value = name; opt.textContent = name; select.appendChild(opt);
-        });
-
-        if (prev && docx.includes(prev)) select.value = prev;
-      }
-
-      // Build context shared by download and preview
-      function buildContext(){
-        const split = v => (v || '').split('\n').map(l=>l.trim()).filter(Boolean);
-        const appfull = split(document.getElementById('appfull').value);
-        const depofull = split(document.getElementById('depofull').value);
-        const boundary = split(document.getElementById('boundary').value);
-        const lheirs = split(document.getElementById('lheirs').value);
-
-        return {
-          DOCID: document.getElementById('docid').value || '',
-          DOCDT: formatDateToDDMMYYYY(document.getElementById('docdt').value || ''),
-          COURT: document.getElementById('court').value || '',
-          APPTYPE: document.getElementById('apptype').value || '',
-          APPSHORT: document.getElementById('appshort').value || '',
-          APPFULL: appfull.join('\n'),
-          APPJOIN: appfull.join(', '),
-          APPADDR: document.getElementById('appaddr').value || '',
-          DEPOTYPE: document.getElementById('depotype').value || '',
-          DEPOSHORT: document.getElementById('deposhort').value || '',
-          DEPOFULL: depofull.join('\n'),
-          DEPOJOIN: depofull.join(', '),
-          DEPOADDR: document.getElementById('depoaddr').value || '',
-          VILL: document.getElementById('vill').value || '',
-          KHASARA: document.getElementById('khasara').value || '',
-          L_OWNER: document.getElementById('lowner').value || '',
-          DO_DATE: formatDateToDDMMYYYY(document.getElementById('dodate').value || ''),
-          DL_OWNER: document.getElementById('dlowner').value || '',
-          BOUNDARY: boundary.join('\n'),
-          BOUNDARYJOIN: boundary.join(', '),
-          LHEIRS: lheirs.join('\n'),
-          LHEIRSJOIN: lheirs.join(', ')
-        };
-      }
-
-      // Download
-      async function generateAndDownload() {
-        const templateName = document.getElementById('template').value;
-        if (!templateName) return;
-
-        const context = buildContext();
-        const outputName = document.getElementById('outputname').value || 'output';
-        const rawUrl = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${templateName}`;
-
-        try {
-          const response = await fetch(rawUrl, { cache: 'no-store' });
-          const buffer = await response.arrayBuffer();
-          const zip = new PizZip(buffer);
-          const doc = new docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-          doc.setData(context);
-          doc.render();
-
-          const blob = doc.getZip().generate({
-            type: 'blob',
-            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          });
-
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url; a.download = `${outputName}.docx`;
-          a.click(); URL.revokeObjectURL(url);
-        } catch (e) { console.error('Error:', e); }
-      }
-
-      // Live Preview using mammoth
-      let previewTimer = null;
-      async function generatePreview(){
-        const templateName = document.getElementById('template').value;
-        const statusEl = document.getElementById('previewStatus');
-        const previewEl = document.getElementById('previewContent');
-
-        if (!templateName){
-          if (statusEl) statusEl.textContent = 'Select a template to preview…';
-          if (previewEl) previewEl.innerHTML = '';
-          return;
-        }
-        if (statusEl) statusEl.textContent = 'Rendering preview…';
-
-        try {
-          const rawUrl = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${templateName}`;
-          const response = await fetch(rawUrl, { cache: 'no-store' });
-          const buffer = await response.arrayBuffer();
-
-          const zip = new PizZip(buffer);
-          const doc = new docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-          doc.setData(buildContext());
-          doc.render();
-
-          const blob = doc.getZip().generate({
-            type: 'blob',
-            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          });
-
-          const arr = await blob.arrayBuffer();
-          const result = await window.mammoth.convertToHtml({ arrayBuffer: arr });
-          if (previewEl) previewEl.innerHTML = result.value || '<em>No content</em>';
-          if (statusEl) statusEl.textContent = 'Preview ready';
-        } catch (e) {
-          console.error(e);
-          if (statusEl) statusEl.textContent = 'Preview failed';
-        }
-      }
-      function schedulePreviewUpdate(){
-        clearTimeout(previewTimer);
-        previewTimer = setTimeout(generatePreview, 400);
-      }
-
-      // Voice typing (global icon)
-      (function setupGlobalVoiceTyping(){
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const voiceToggle = document.getElementById('voiceToggle');
-        const voiceLang = document.getElementById('voiceLang');
-        if (!voiceToggle || !voiceLang) return;
-
-        if (!SR) {
-          voiceToggle.disabled = true;
-          voiceToggle.classList.add('na');
-          voiceToggle.title = 'Voice not supported in this browser';
-          voiceToggle.setAttribute('aria-label','Voice not supported');
-          return;
-        }
-
-        let recognition = null;
-        let listening = false;
-        let lastEditable = null;
-
-        function isEditable(el){
-          if (!el) return false;
-          const tag = el.tagName;
-          const editable = (tag === 'TEXTAREA') || (tag === 'INPUT' && el.type !== 'button' && el.type !== 'submit');
-          return editable && !el.readOnly && !el.disabled;
-        }
-        document.addEventListener('focusin', (e) => { if (isEditable(e.target)) lastEditable = e.target; });
-
-        function getTargetField(){
-          const active = document.activeElement;
-          if (isEditable(active)) return active;
-          if (isEditable(lastEditable)) return lastEditable;
-          return null;
-        }
-        function insertAtCursor(el, text){
-          const start = el.selectionStart ?? el.value.length;
-          const end = el.selectionEnd ?? start;
-          const before = el.value.slice(0, start);
-          const after = el.value.slice(end);
-          el.value = before + text + after;
-          const pos = start + text.length;
-          if (typeof el.setSelectionRange === 'function') el.setSelectionRange(pos, pos);
-        }
-        function setListeningUI(on){
-          listening = on;
-          voiceToggle.classList.toggle('listening', on);
-          voiceToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-          voiceToggle.title = on ? 'Stop voice typing' : 'Start voice typing';
-          voiceToggle.setAttribute('aria-label', on ? 'Stop voice typing' : 'Start voice typing');
-        }
-        function startRec(){
-          recognition = new SR();
-          recognition.lang = voiceLang.value || document.documentElement.lang || 'en-IN';
-          recognition.continuous = true;
-          recognition.interimResults = true;
-
-          recognition.onresult = (e) => {
-            let finalText = '';
-            for (let i = e.resultIndex; i < e.results.length; i++){
-              const r = e.results[i];
-              if (r.isFinal) finalText += r[0].transcript + ' ';
+      // Khasara
+      const khas=[];
+      for(let i=0;i<khasLines.length;i++){
+        if(/\(S\)/.test(khasLines[i])){
+          const kid=khasLines[i].replace(/\(S\)/g,'').trim();
+          let area='';
+          for(let j=i+1;j<i+6 && j<khasLines.length;j++){
+            if(/हेक्टेयर|hectare|हे\./i.test(khasLines[j])){
+              const m=khasLines[j].match(/([0-9]+(?:\.[0-9]+)?)/); if(m){ area=m[1]; break; }
             }
-            if (!finalText.trim()) return;
-            const target = getTargetField();
-            if (!target) return;
-
-            const atEnd = target.selectionStart === target.selectionEnd && target.selectionStart === target.value.length;
-            const needsSep = atEnd && target.value && !/\s$/.test(target.value);
-            const sep = target.tagName === 'TEXTAREA' ? '\n' : ' ';
-            const textToInsert = (needsSep ? sep : '') + finalText.trim();
-
-            insertAtCursor(target, textToInsert);
-            target.dispatchEvent(new Event('input', { bubbles: true }));
-          };
-
-          recognition.onstart = () => setListeningUI(true);
-          recognition.onend = () => setListeningUI(false);
-          recognition.onerror = () => setListeningUI(false);
-
-          recognition.start();
+          }
+          if(kid){ khas.push({kid, area:area||'0'}); }
         }
-        function stopRec(){ if (recognition) recognition.stop(); }
+      }
+      let total=0; const out=khas.map(x=>{ const v=parseFloat((x.area||'0').replace(',','.'))||0; total+=v; return `${x.kid} रकवा ${v.toFixed(4)}हे.`; }).join(', ');
+      $('#cx_out_khas').value = (out ? `${out}\n\nकिता ${khas.length} कुल रकवा ${total.toFixed(4)}हे.` : 'No khasara found');
+    });
+    function dl(name,txt){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download=name; a.click(); }
+    $('#cx_copy_owners')?.addEventListener('click',()=>navigator.clipboard.writeText($('#cx_out_owners').value||''));
+    $('#cx_download_owners')?.addEventListener('click',()=>dl('owners_extracted.txt',$('#cx_out_owners').value||'' ));
+    $('#cx_copy_khas')?.addEventListener('click',()=>navigator.clipboard.writeText($('#cx_out_khas').value||''));
+    $('#cx_download_khas')?.addEventListener('click',()=>dl('khasara_extracted.txt',$('#cx_out_khas').value||'' ));
+    
+    // मान लें cx_out_owners textarea में owners data है, cx_out_khas में khasara data है
 
-        voiceToggle.addEventListener('click', () => { if (listening) stopRec(); else startRec(); });
-        voiceLang.addEventListener('change', () => { if (listening) { stopRec(); setTimeout(startRec, 100); } });
-      })();
+function sendOwnersKhasaraToAppReports() {
+  // Extract values
+  const ownersData = document.getElementById('cx_out_owners')?.value || "";
+  const khasaraData = document.getElementById('cx_out_khas')?.value || "";
 
-      // Init dropdowns
-      populateDropdown('court', courtOptions);
-      populateDropdown('apptype', apptypeOptions);
-      populateDropdown('depotype', depotypeOptions);
-      populateDropdown('vill', villageOptions);
+  // Now send to Application & Reports module (must be in DOM)
+  document.getElementById('app_lowner') && (document.getElementById('app_lowner').value = ownersData);
+  document.getElementById('app_khasara') && (document.getElementById('app_khasara').value = khasaraData);
 
-      // Auto-joiners
-      updateJoinField('appfull', 'appjoin');
-      updateJoinField('depofull', 'depojoin');
-      updateJoinField('boundary', 'boundaryjoin');
-      updateJoinField('lheirs', 'lheirsjoin');
+  // Auto scroll/focus for user feedback
+  document.getElementById('app_lowner')?.scrollIntoView({behavior:'smooth'});
+  document.getElementById('app_khasara')?.scrollIntoView({behavior:'smooth'});
+}
 
-      // Template load
+    
+    
+    
+    
+    // ===== Application & Reports (modal-app) =====
+(function(){
+  const modal = document.getElementById('modal-app');
+  if(!modal) return;
+
+  const qs = s => modal.querySelector(s);
+  let inited = false, previewTimer = null;
+
+  // Dropdown options (adjust as needed)
+  const courtOptions = ["तहसील-सिंगरौली नगर", "वृत्‍त-पंजरेह, तहसील-सिंगरौली नगर", "वृत्‍त-कचनी, तहसील-सिंगरौली नगर"];
+  const applicationOptions = ["तरमीम", "सीमांकन", "वारिसाना"];
+  const apptypeOptions = ["आवेदक", "आवेदिका", "आवेदकगण", "आवेदिकागण"];
+  const depotypeOptions = ["अनावेदक", "अनावेदिका", "अनावेदकगण", "अनावेदिकागण"];
+  const villageOptions = ["गनियारी", "बैढ़न", "देवरा"];
+
+  function populate(sel, arr){
+    const el = qs(sel); if(!el) return;
+    arr.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
+  }
+  function joiner(srcId, destId){
+    const src = qs('#'+srcId), dst = qs('#'+destId);
+    if(!src || !dst) return;
+    const upd = ()=>{
+      const lines = (src.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+      dst.value = lines.join(', ');
+    };
+    src.addEventListener('input', upd); upd();
+  }
+  function ddmmyyyy(iso){
+    if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${d?.padStart(2,'0')}.${m?.padStart(2,'0')}.${y||''}`;
+  }
+  function buildContext(){
+    const split = v => (v||'').split('\n').map(l=>l.trim()).filter(Boolean);
+    const appfull = split(qs('#app_appfull')?.value);
+    const depofull = split(qs('#app_depofull')?.value);
+    const boundary = split(qs('#app_boundary')?.value);
+    const lheirs = split(qs('#app_lheirs')?.value);
+    return {
+      DOCID: qs('#app_docid')?.value||'',
+      DOCDT: ddmmyyyy(qs('#app_docdt')?.value||''),
+      COURT: qs('#app_court')?.value||'',
+      APPLICATION: qs('#application_court')?.value||'',
+      APPTYPE: qs('#app_apptype')?.value||'',
+      APPSHORT: qs('#app_appshort')?.value||'',
+      APPFULL: appfull.join('\n'),
+      APPJOIN: appfull.join(', '),
+      APPADDR: qs('#app_appaddr')?.value||'',
+      DEPOTYPE: qs('#app_depotype')?.value||'',
+      DEPOSHORT: qs('#app_deposhort')?.value||'',
+      DEPOFULL: depofull.join('\n'),
+      DEPOJOIN: depofull.join(', '),
+      DEPOADDR: qs('#app_depoaddr')?.value||'',
+      VILL: qs('#app_vill')?.value||'',
+      KHASARA: qs('#app_khasara')?.value||'',
+      L_OWNER: qs('#app_lowner')?.value||'',
+      DO_DATE: ddmmyyyy(qs('#app_dodate')?.value||''),
+      DL_OWNER: qs('#app_dlowner')?.value||'',
+      BOUNDARY: boundary.join('\n'),
+      BOUNDARYJOIN: boundary.join(', '),
+      LHEIRS: lheirs.join('\n'),
+      LHEIRSJOIN: lheirs.join(', ')
+    };
+  }
+
+  async function loadTemplates(force=false){
+    const base = 'https://api.github.com/repos/rocktech-web/AIOFormat/contents/';
+    const url = force ? `${base}?_ts=${Date.now()}` : base;
+    const sel = qs('#app_template'); if(!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">Loading templates...</option>';
+    const res = await fetch(url, { headers:{'Accept':'application/vnd.github+json'}, cache:'no-store' });
+    if(!res.ok){ sel.innerHTML='<option value="">Failed to load</option>'; return; }
+    const data = await res.json();
+    const list = (Array.isArray(data)?data:[]).filter(x=>x?.type==='file' && x.name?.endsWith('.docx')).map(x=>x.name).sort((a,b)=>a.localeCompare(b));
+    sel.innerHTML = '<option value="">Select Template</option>';
+    list.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+    if(prev && list.includes(prev)) sel.value=prev;
+  }
+
+/* New JS for Checkboxes*/
+async function loadTemplatesPanel(force=false) {
+  const base = 'https://api.github.com/repos/rocktech-web/AIOFormat/contents/';
+  const url = force ? `${base}?_ts=${Date.now()}` : base;
+  const panel = document.getElementById('app_template_panel');
+  panel.innerHTML = '<div>loading templates…</div>';
+  const res = await fetch(url, { headers:{'Accept':'application/vnd.github+json'}, cache:'no-store' });
+  if(!res.ok){ panel.innerHTML='<div>template fetch failed</div>'; return; }
+  const data = await res.json();
+  const list = (Array.isArray(data)?data:[]).filter(x=>x?.type==='file' && x.name?.endsWith('.docx')).map(x=>x.name).sort();
+
+  panel.innerHTML = list.length ? '' : '<div>No templates found!</div>';
+
+  list.forEach((n, idx) => {
+    const id = 'tpl_' + n.replace(/[^a-zA-Z0-9]/g,'_');
+    const div = document.createElement('div');
+    div.className = 'tplitem';
+    div.innerHTML = `<input type="checkbox" id="${id}" value="${n}" class="tplcheck">
+      <label for="${id}" style="margin-left:6px;">${n}</label>`;
+    panel.appendChild(div);
+  });
+}
+loadTemplatesPanel();
+
+
+/* For Zip Download*/
+// JSZip, docxtemplater, mammoth, pizzip CDN पहले पेज में लोड होना चाहिए
+
+document.getElementById('app_downloadZipBtn').addEventListener('click', async function() {
+  const checks = Array.from(document.querySelectorAll('#app_template_panel .tplcheck:checked'));
+  const prefix = (document.getElementById('app_outputname').value || 'output').trim();
+  if(checks.length === 0){ alert('कम से कम एक टेम्प्लेट चुनें'); return; }
+
+  const zip = new JSZip();
+  const ctx = buildContext(); // आपका context-data function
+
+  for(const chk of checks) {
+    const name = chk.value;
+    try {
+      const raw = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${name}`;
+      const resp = await fetch(raw, {cache:'no-store'});
+      if(!resp.ok) throw `GitHub file fetch failed for ${name}`;
+      const buf = await resp.arrayBuffer();
+      const zipPiz = new PizZip(buf);
+      const doc = new docxtemplater(zipPiz, {paragraphLoop:true, linebreaks:true});
+      doc.setData(ctx);
+      doc.render();
+      const blob = doc.getZip().generate({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+      zip.file((prefix ? prefix+'_' : '') + name, blob);
+    } catch(e) {
+      alert('Error processing template: ' + name);
+    }
+  }
+  zip.generateAsync({type:"blob"}).then(blob => {
+    saveAs(blob, (prefix ? prefix+"_templates.zip" : "templates.zip"));
+  });
+});
+
+
+
+  async function downloadDocx(){
+    const name = qs('#app_template')?.value; if(!name) return;
+    const ctx = buildContext();
+    const out = (qs('#app_outputname')?.value||'output').trim()||'output';
+    const raw = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${name}`;
+    const resp = await fetch(raw, {cache:'no-store'}); const buf = await resp.arrayBuffer();
+    const zip = new PizZip(buf); const doc = new docxtemplater(zip, { paragraphLoop:true, linebreaks:true });
+    doc.setData(ctx); doc.render();
+    const blob = doc.getZip().generate({ type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download = `${out}.docx`; a.click(); URL.revokeObjectURL(url);
+  }
+
+  async function renderPreview(){
+    const name = qs('#app_template')?.value;
+    const status = qs('#app_previewStatus'); const box=qs('#app_preview');
+    if(!name){ if(status) status.textContent='Select a template to preview…'; if(box) box.innerHTML=''; return; }
+    if(status) status.textContent='Rendering preview…';
+    try{
+      const raw = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${name}`;
+      const resp = await fetch(raw, {cache:'no-store'}); const buf = await resp.arrayBuffer();
+      const zip = new PizZip(buf); const doc = new docxtemplater(zip, { paragraphLoop:true, linebreaks:true });
+      doc.setData(buildContext()); doc.render();
+      const blob = doc.getZip().generate({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+      const arr = await blob.arrayBuffer();
+      const html = await window.mammoth.convertToHtml({ arrayBuffer: arr });
+      if(box) box.innerHTML = html.value || '<em>No content</em>';
+      if(status) status.textContent='Preview ready';
+    }catch(e){ if(status) status.textContent='Preview failed'; }
+  }
+  function schedulePreview(){ clearTimeout(previewTimer); previewTimer=setTimeout(renderPreview, 350); }
+
+  function resetFields(){
+    const defaults={ app_appaddr:'निवासी-, जिला-सिंगरौली (म.प्र.)', app_depoaddr:'निवासी-, जिला-सिंगरौली (म.प्र.)' };
+    modal.querySelectorAll('#appForm input, #appForm textarea, #appForm select').forEach(el=>{
+      if(el.id==='app_appaddr'){ el.value=defaults.app_appaddr; return; }
+      if(el.id==='app_depoaddr'){ el.value=defaults.app_depoaddr; return; }
+      if(el.tagName==='SELECT'){ el.selectedIndex=0; return; }
+      if(el.type==='date'||el.tagName==='TEXTAREA'||el.type==='text'){ el.value=''; }
+    });
+    ['app_appfull','app_depofull','app_boundary','app_lheirs'].forEach(id=>{ const el=qs('#'+id); if(el) el.dispatchEvent(new Event('input',{bubbles:true})); });
+    renderPreview();
+  }
+
+  // Lazy init when modal opens
+  const observer = new MutationObserver(()=>{
+    const visible = !modal.hasAttribute('hidden');
+    if(visible && !inited){
+      inited = true;
+      populate('#app_court', courtOptions);
+      populate('#application_court', applicationOptions);
+      populate('#app_apptype', apptypeOptions);
+      populate('#app_depotype', depotypeOptions);
+      populate('#app_vill', villageOptions);
+      joiner('app_appfull','app_appjoin');
+      joiner('app_depofull','app_depojoin');
+      joiner('app_boundary','app_boundaryjoin');
+      joiner('app_lheirs','app_lheirsjoin');
       loadTemplates();
 
-      // Download
-      document.getElementById('downloadBtn').addEventListener('click', generateAndDownload);
+      qs('#app_downloadBtn')?.addEventListener('click', downloadDocx);
+      qs('#app_refreshTpl')?.addEventListener('click', ()=>loadTemplates(true));
+      qs('#app_resetFields')?.addEventListener('click', resetFields);
 
-      // Live preview triggers
-      const formScope = document.querySelector('#mainApp .form-container');
-      ['input','change'].forEach(evt=>{
-        formScope.addEventListener(evt, e => {
-          if (e.target && e.target.matches('input, textarea, select')) schedulePreviewUpdate();
-        });
+      // live preview triggers
+      modal.querySelectorAll('#appForm input, #appForm textarea, #appForm select').forEach(el=>{
+        el.addEventListener('input', schedulePreview);
+        el.addEventListener('change', schedulePreview);
       });
-      document.getElementById('template').addEventListener('change', generatePreview);
+      qs('#app_template')?.addEventListener('change', renderPreview);
+    }
+    if(visible){ schedulePreview(); }
+  });
+  observer.observe(modal, { attributes:true, attributeFilter:['hidden'] });
+})();
 
-      // Theme toggle
-      document.getElementById('themeToggle').addEventListener('click', () => {
-        document.body.style.filter = document.body.style.filter === 'brightness(1.1)' ? 'none' : 'brightness(1.1)';
-      });
 
-      // Reload templates button
-      const refreshBtn = document.getElementById('refreshTplBtn');
-      refreshBtn.addEventListener('click', async () => {
-        refreshBtn.disabled = true; refreshBtn.classList.add('spin');
-        const tplSelect = document.getElementById('template');
-        const prevHTML = tplSelect.innerHTML;
-        tplSelect.innerHTML = '<option value="">Loading templates...</option>';
-        try { await loadTemplates(true); }
-        catch(e){ console.error(e); tplSelect.innerHTML = prevHTML || '<option value="">Reload failed</option>'; }
-        finally { refreshBtn.classList.remove('spin'); refreshBtn.disabled = false; }
-      });
+/* onchange इवेंट पर highlighting और comment जोड़ना*/
+// Field Configurations and comments per Type (Sample)
+// Hindi comments for User Guidance
+const fieldSettings = {
+    तरमीम:{
+        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_lowner']
+    },
+    
+    सीमांकन: {
+        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_lowner', 'app_boundary'],
+    },
 
-      // Reset fields button
-      function resetAllFields(){
-        const defaults = {
-          appaddr: 'निवासी-, जिला-सिंगरौली (म.प्र.)',
-          depoaddr: 'निवासी-, जिला-सिंगरौली (म.प्र.)'
-        };
-        const scope = document.querySelector('#mainApp .form-container');
-        const nodes = scope.querySelectorAll('input, textarea, select');
+    वारिसाना: {
+        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_dodate', 'app_dlowner', 'app_lheirs'],
+    }
+};
 
-        nodes.forEach(el => {
-          if (el.tagName === 'SELECT'){ el.selectedIndex = 0; return; }
-          if (el.tagName === 'TEXTAREA'){
-            if (el.id === 'appaddr') { el.value = defaults.appaddr; return; }
-            if (el.id === 'depoaddr') { el.value = defaults.depoaddr; return; }
-            el.value = ''; return;
-          }
-          if (el.type === 'date'){ el.value = ''; return; }
-          if (el.type === 'text'){ el.value = ''; return; }
-        });
+// Reset highlights/comments on all provided fields
+function resetHighlightsAndComments() {
+  document.querySelectorAll('.highlight-field').forEach(el => el.classList.remove('highlight-field'));
+  document.querySelectorAll('.app-field-comment').forEach(el => el.textContent = '');
+}
 
-        ['appfull','depofull','boundary','lheirs'].forEach(id=>{
-          const el = document.getElementById(id);
-          if (el) el.dispatchEvent(new Event('input', { bubbles:true }));
-        });
+// APPLICATION TYPE select बदलने पर
+document.getElementById('application_court').addEventListener('change', function () {
+  resetHighlightsAndComments();
+  const selectedText = this.options[this.selectedIndex].text.trim();
+  if (!fieldSettings[selectedText]) return;
 
-        const first = document.getElementById('docid');
-        if (first) first.focus();
-        schedulePreviewUpdate();
-      }
-      document.getElementById('resetFieldsBtn').addEventListener('click', resetAllFields);
+  // नया कोड: highlight और comments दोनों को setTimeout से थोड़ा-थोड़ा delay के साथ apply करें
+  fieldSettings[selectedText].fields.forEach((fid, idx) => {
+    setTimeout(() => {
+      const field = document.getElementById(fid);
+      if (field) field.classList.add('highlight-field');
+      const cmnt = document.getElementById('comment-' + fid);
+      if (cmnt) cmnt.textContent = fieldSettings[selectedText].comments[fid] || '';
+    }, idx * 0); // हर फील्ड पर 15ms से बढ़ाते जाएँ
+  });
+});
+
+
+/* यहां पर GitHub पर upload हेतु js code है*/
+
+document.getElementById('gh_upload_btn').addEventListener('click', async function() {
+  const fileInput = document.getElementById('gh_upload_file');
+  const token = document.getElementById('gh_token').value.trim();
+  const statusDiv = document.getElementById('gh_upload_status');
+  if (!fileInput.files[0] || !token) {
+    statusDiv.textContent = "Please select a .docx file and enter your token!";
+    statusDiv.style.color = "#d73a49";
+    return;
+  }
+  const file = fileInput.files[0];
+  // File extension check
+  if (!file.name.toLowerCase().endsWith('.docx')) {
+    statusDiv.textContent = "Only .docx files are allowed!";
+    statusDiv.style.color = "#d73a49";
+    return;
+  }
+  
+  const filename = file.name;
+  const owner  = "rocktech-web";
+  const repo   = "AIOFormat";
+  const branch = "main";
+  const repoPath = filename;
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${repoPath}`;
+
+  // 1. Check if file already exists
+  let shaValue = null;
+  let fileExists = false;
+  const check = await fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      "Authorization": "token " + token,
+      "Accept": "application/vnd.github.v3+json"
+    }
+  });
+  if (check.ok) {
+    fileExists = true;
+    const resJson = await check.json();
+    shaValue = resJson.sha;
+  }
+
+  // 2. If file exists, confirm replacement
+  if (fileExists) {
+    const confirmation = window.confirm("File already exists. Do you want to replace (overwrite) it?");
+    if (!confirmation) {
+      statusDiv.textContent = "Upload cancelled by user!";
+      statusDiv.style.color = "#d73a49";
+      return;
+    }
+  }
+
+  // 3. Proceed with upload (if replacing, add sha)
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const content = btoa(e.target.result);
+    let bodyObj = {
+      message: fileExists ? "File replaced via web tool" : "File uploaded via web tool",
+      content: content,
+      branch: branch
+    };
+    if (fileExists) bodyObj.sha = shaValue;
+
+    const response = await fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        "Authorization": "token " + token,
+        "Accept": "application/vnd.github.v3+json"
+      },
+      body: JSON.stringify(bodyObj)
     });
+    const result = await response.json();
+    if (response.ok) {
+      statusDiv.textContent = (fileExists ? "File replaced successfully!" : "Upload successful! File: " + repoPath);
+      statusDiv.style.color = "#2b6b22";
+    } else {
+      statusDiv.textContent = "Upload failed: " + (result.message || "UNKNOWN ERROR");
+      statusDiv.style.color = "#d73a49";
+    }
+  };
+  reader.readAsBinaryString(file);
+});
+
+
   </script>
 </body>
 </html>
-
