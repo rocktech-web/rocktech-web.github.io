@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ROCKTechnology — Standardized Forms, Smart Math, Clean Exports</title>
 
+  <link rel="icon" href="https://cdn.s3waas.gov.in/s37bcdf75ad237b8e02e301f4091fb6bc8/uploads/2020/06/2020062461.jpg" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -57,7 +58,7 @@
     .oval:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 20px 36px rgba(0,0,0,.28)}
     .oval > a, .oval > img{display:block;width:100%;height:100%} .oval > img{object-fit:cover;border-radius:inherit}
 
-    .tools-grid{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+    .tools-grid{display:grid;gap:70px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
     .tool{background:var(--cream);color:var(--ink-dark);border-radius:26px;padding:22px 22px 18px;box-shadow:var(--shadow);transition:transform .25s, box-shadow .25s}
     .tool:hover{transform:translateY(-6px);box-shadow:0 24px 42px rgba(0,0,0,.28)}
     .tool h3{margin:6px 0 10px} .tool p{margin:0 0 14px;opacity:.92}
@@ -221,7 +222,7 @@
         <label class="field"><input id="uid" type="text" placeholder="enter user name here" autocomplete="off"></label>
         <label class="field"><input id="pwd" type="password" placeholder="enter password here" autocomplete="off"><span id="togglePass" class="showpass" title="Show/Hide">👁</span></label>
         <button id="btnLogin" class="login-btn">Log in</button>
-        <div class="login-version">Version 1.0.0</div>
+        <div class="login-version">Version 1.0.4</div>
       </div>
     </div>
   </div>
@@ -332,7 +333,7 @@
           <label class="field"><input id="uid2" type="text" placeholder="enter user name here" autocomplete="off"></label>
           <label class="field"><input id="pwd2" type="password" placeholder="enter password here" autocomplete="off"><span id="togglePass2" class="showpass" title="Show/Hide">👁</span></label>
           <button id="btnLogin2" class="login-btn">Log in</button>
-          <div class="login-version">Version 1.0.0</div>
+          <div class="login-version">Version 1.0.4</div>
         </div>
       </div>
     </section>
@@ -1180,7 +1181,7 @@ document.getElementById('app_downloadZipBtn').addEventListener('click', async fu
     }
   }
   zip.generateAsync({type:"blob"}).then(blob => {
-    saveAs(blob, (prefix ? prefix+"_templates.zip" : "templates.zip"));
+    saveAs(blob, (prefix ? prefix+".zip" : "templates.zip"));
   });
 });
 
