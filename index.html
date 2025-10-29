@@ -117,6 +117,7 @@
 #modal-app #app_appjoin,
 #modal-app #app_depojoin,
 #modal-app #app_lheirsjoin,
+#modal-app #app_ndjoin,
 #modal-app #app_boundaryjoin{
   background: #fff6ef;                 /* soft highlight */
   border: 2px solid var(--accent);     /* uses your --accent (#C67B65) */
@@ -129,6 +130,7 @@
 #modal-app #app_appjoin:focus,
 #modal-app #app_depojoin:focus,
 #modal-app #app_lheirsjoin:focus,
+#modal-app #app_ndjoin:focus,
 #modal-app #app_boundaryjoin:focus{
   outline: 0;
   box-shadow: 0 0 0 3px rgba(198,123,101,.25);
@@ -138,6 +140,7 @@
 #modal-app label[for="app_appjoin"],
 #modal-app label[for="app_depojoin"],
 #modal-app label[for="app_lheirsjoin"],
+#modal-app label[for="app_ndjoin"],
 #modal-app label[for="app_boundaryjoin"]{
   color: var(--accent);
 }
@@ -439,20 +442,24 @@
       <!-- Row 7 -->
       <div class="row">
         <div class="col" style="flex: 2;">
-          <label for="app_vill">Village</label>
-          <select id="app_vill">
-            <option value="">Select Village</option>
-          </select>
+          <div>
+            <label for="app_vill">Village</label>
+            <select id="app_vill">
+              <option value="">Select Village</option>
+            </select>
+          </div>
+          <div>
+            <label for="app_amount">Amount</label>           
+            <input type="text" id="app_amount" autocomplete="off" value=".00">
+          </div>
         </div>
         <div class="col" style="flex: 3;">
           <label for="app_khasara">Khasara & Rakava Details</label>
           <textarea id="app_khasara" rows="6"></textarea>
-          <span class="app-field-comment" id="comment-app_khasara"></span>
         </div>
         <div class="col" style="flex: 5;">
           <label for="app_lowner">Land Owner Details</label>
           <textarea id="app_lowner" rows="6"></textarea>
-          <span class="app-field-comment" id="comment-app_lowner"></span>
         </div>
       </div>    
 
@@ -473,28 +480,57 @@
         <div class="col">
           <label for="app_lheirsjoin">Legal heirs Join</label>
           <input type="text" id="app_lheirsjoin" readonly>
-          <span class="app-field-comment" id="comment-app_lheirsjoin"></span>
         </div>
       </div>
 
-      <!-- Row 9 -->
+            <!-- Row 9 -->
       <div class="row">
         <div class="col">
-          <label for="app_dodate">Deceased Date (if available)</label>
-          <input type="date" id="app_dodate" autocomplete="off">
+          <div>
+            <label for="app_dodate">Deceased Date (if available)</label>
+            <input type="date" id="app_dodate" autocomplete="off">
+          </div>
+          <div>
+            <label for="app_rwa">Relation (पिता/पति/पुत्र...)</label>
+            <input type="text" id="app_rwa" autocomplete="off">
+          </div>
+          <div>
+            <label for="app_rbad">Relationship (पुत्र-पिता, ..)</label>
+            <input type="text" id="app_rbad" autocomplete="off">
+          </div>
         </div>
         <div class="col">
           <label for="app_dlowner">Deceased Owner (if available)</label>
           <textarea id="app_dlowner" rows="6"></textarea>
-          <span class="app-field-comment" id="comment-app_dlowner"></span>
         </div>
         <div class="col">
           <label for="app_lheirs">Legal heirs (full)</label>
           <textarea id="app_lheirs" rows="6"></textarea>
         </div>
+        <div class="col">
+          <label for="app_lhorder">Legal heirs for order</label>
+          <textarea id="app_lhorder" rows="6"></textarea>
+        </div>
       </div>
 
       <!-- Row 10 -->
+      <div class="row">
+        <div class="col">
+          <label for="app_bd">Bhinnata Document</label>
+          <textarea id="app_bd" rows="6"></textarea>
+        </div>
+        <div class="col">
+          <label for="app_ndocument">Name as document</label>
+          <textarea id="app_ndocument" rows="6"></textarea>
+        </div>
+        <div class="col">
+          <label for="app_ndjoin">All names</label>
+          <input type="text" id="app_ndjoin" readonly>
+        </div>
+      </div>
+
+
+      <!-- Row 11 -->
       <div class="row">
         <div class="col" style="flex: 3.5;">
           <label for="app_template">Template Name (.docx from Web)</label>
@@ -516,7 +552,7 @@
         </div>
       </div>
 
-      <!-- Row 11 -->
+      <!-- Row 12 -->
        <div class="row">
         <div class="col">
           <label for="app_template_panel">Select Templates (.docx from Web)</label>
@@ -527,7 +563,7 @@
         </div>
       </div>
 
-      <!-- Row 12 -->
+      <!-- Row 13 -->
       <div class="row">
         <div class="col" style="min-height:200px">
           <label>Live Preview</label>
@@ -681,7 +717,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>{DOCID}</td><td>Document No (if available)</td></tr>
+                <tr><td>{DOCID}</td><td>Document No (if available)</td></tr>
         <tr><td>{DOCDT}</td><td>Document Dt. (if available)</td></tr>
         <tr><td>{COURT}</td><td>Court</td></tr>
         <tr><td>{APPTYPE}</td><td>Applicant Type</td></tr>
@@ -703,6 +739,13 @@
         <tr><td>{DL_OWNER}</td><td>Deceased Owner (if available)</td></tr>        
         <tr><td>{LHEIRS}</td><td>Legal heirs (full)</td></tr>
         <tr><td>{LHEIRSJOIN}</td><td>Legal heirs Join</td></tr>
+        <tr><td>{LHORDER}</td><td>Legal heirs for order</td></tr>
+        <tr><td>{AMOUNT}</td><td>Amount</td></tr>
+        <tr><td>{RWA}</td><td>Relation (पिता/पति/पुत्र...)</td></tr>
+        <tr><td>{RBAD}</td><td>Relationship (पुत्र-पिता, ..)</td></tr>
+        <tr><td>{BD}</td><td>Bhinnata Document</td></tr>
+        <tr><td>{NDOCUMENT}</td><td>Name as document</td></tr>
+        <tr><td>{NDJOIN}</td><td>All names</td></tr>
       </tbody>
     </table>
     </div>
@@ -1085,6 +1128,7 @@ function sendOwnersKhasaraToAppReports() {
     const depofull = split(qs('#app_depofull')?.value);
     const boundary = split(qs('#app_boundary')?.value);
     const lheirs = split(qs('#app_lheirs')?.value);
+    const ndocument = split(qs('#app_ndocument')?.value);
     return {
       DOCID: qs('#app_docid')?.value||'',
       DOCDT: ddmmyyyy(qs('#app_docdt')?.value||''),
@@ -1108,7 +1152,14 @@ function sendOwnersKhasaraToAppReports() {
       BOUNDARY: boundary.join('\n'),
       BOUNDARYJOIN: boundary.join(', '),
       LHEIRS: lheirs.join('\n'),
-      LHEIRSJOIN: lheirs.join(', ')
+      LHEIRSJOIN: lheirs.join(', '),
+      LHORDER: qs('#app_lhorder')?.value||'',
+      AMOUNT: qs('#app_amount')?.value||'',
+      RWA: qs('#app_rwa')?.value||'',
+      RBAD: qs('#app_rbad')?.value||'',
+      BD: qs('#app_bd')?.value||'',
+      NDOCUMENT: qs('#app_ndocument')?.value||'',
+      NDJOIN: ndocument.join(', '),
     };
   }
 
@@ -1244,6 +1295,7 @@ document.getElementById('app_downloadZipBtn').addEventListener('click', async fu
       joiner('app_depofull','app_depojoin');
       joiner('app_boundary','app_boundaryjoin');
       joiner('app_lheirs','app_lheirsjoin');
+      joiner('app_ndocument','app_ndjoin');
       loadTemplates();
 
       qs('#app_downloadBtn')?.addEventListener('click', downloadDocx);
@@ -1391,4 +1443,3 @@ document.getElementById('gh_upload_btn').addEventListener('click', async functio
   </script>
 </body>
 </html>
-
