@@ -1,1445 +1,650 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ROCKTechnology — Standardized Forms, Smart Math, Clean Exports</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Technology | Land Management Suite</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg-body: #f4f6f9;
+            --glass: rgba(255, 255, 255, 0.98);
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
 
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cpath%20fill%3D%22%23D32F2F%22%20d%3D%22M176%2024c0-13.3-10.7-24-24-24s-24%2010.7-24%2024l0%2040c-35.3%200-64%2028.7-64%2064l-40%200c-13.3%200-24%2010.7-24%2024s10.7%2024%2024%2024l40%200%200%2056-40%200c-13.3%200-24%2010.7-24%2024s10.7%2024%2024%2024l40%200%200%2056-40%200c-13.3%200-24%2010.7-24%2024s10.7%2024%2024%2024l40%200c0%2035.3%2028.7%2064%2064%2064l0%2040c0%2013.3%2010.7%2024%2024%2024s24-10.7%2024-24l0-40%2056%200%200%2040c0%2013.3%2010.7%2024%2024%2024s24-10.7%2024-24l0-40%2056%200%200%2040c0%2013.3%2010.7%2024%2024%2024s24-10.7%2024-24l0-40c35.3%200%2064-28.7%2064-64l40%200c13.3%200%2024-10.7%2024-24s-10.7-24-24-24l-40%200%200-56%2040%200c13.3%200%2024-10.7%2024-24s-10.7-24-24-24l-40%200%200-56%2040%200c13.3%200%2024-10.7%2024-24s-10.7-24-24-24l-40%200c0-35.3-28.7-64-64-64l0-40c0-13.3-10.7-24-24-24s-24%2010.7-24%2024l0%2040-56%200%200-40c0-13.3-10.7-24-24-24s-24%2010.7-24%2024l0%2040-56%200%200-40zM160%20128l192%200c17.7%200%2032%2014.3%2032%2032l0%20192c0%2017.7-14.3%2032-32%2032l-192%200c-17.7%200-32-14.3-32-32l0-192c0-17.7%2014.3-32%2032-32zm16%2048l0%20160%20160%200%200-160-160%200z%22/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            padding-top: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
 
-  <!-- Add for DOCX generation and preview -->
-  <script src="https://unpkg.com/pizzip@3.1.0/dist/pizzip.js"></script>
-  <script src="https://unpkg.com/docxtemplater@3.28.0/build/docxtemplater.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+        /* LOGIN CSS */
+        #loginOverlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: linear-gradient(135deg, #2c3e50 0%, #000 100%);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 15px;
+            width: 320px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .login-card input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd;
+            border-radius: 6px; box-sizing: border-box; font-size: 16px;
+        }
 
-  <style>
-    :root{
-      --bg:#595551; --panel:#3f3f3d; --cream:#E0DACE; --ink:#e9e6df; --ink-dark:#3c3a37;
-      --accent:#C67B65; --accent-2:#B96953; --muted:#bdb6ad; --shadow:0 14px 32px rgba(0,0,0,.22);
-      --w: min(100%, 92vw);
-    }
-    *,*::before,*::after{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{margin:0;font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-    a{color:inherit;text-decoration:none}
+        /* NAVIGATION BAR (UPDATED) */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: var(--primary); height: 60px;
+            display: flex; justify-content: space-between; /* Space out items */
+            align-items: center;
+            padding: 0 20px; /* Add side padding */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;
+        }
+        
+        .nav-brand {
+            color: #fff; font-weight: bold; font-size: 1.1rem; letter-spacing: 0.5px;
+        }
+        .nav-contact {
+            color: var(--accent); font-weight: bold; font-family: monospace; font-size: 1.1rem;
+        }
+        .nav-center {
+            display: flex; height: 100%;
+        }
 
-    header.site{position:sticky;top:0;z-index:30;background:linear-gradient(180deg, rgba(63,63,61,.96), rgba(63,63,61,.86));border-top:8px solid #4a4844;backdrop-filter:blur(6px) saturate(1.1)}
-    .bar{width:var(--w);margin:auto;padding:18px 10px;display:flex;align-items:center;justify-content:space-between}
-    .brand{font-weight:700;letter-spacing:.5px;user-select:none;font-size:clamp(20px,2.2vw,30px)}
-    .brand .rock{color:var(--accent)} .brand .tech{font-weight:400;color:#f1eee7}
-    nav ul{list-style:none;display:flex;gap:28px;margin:0;padding:0;align-items:center}
-    nav a{font-weight:700;letter-spacing:.6px;padding:6px 2px;position:relative}
-    nav a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:.25s}
-    nav a:hover{color:var(--accent)} nav a:hover::after{transform:scaleX(1)} nav a.active{color:var(--accent)}
-    .hamb{display:none;width:36px;aspect-ratio:1;border:0;background:transparent;cursor:pointer}
-    .hamb span,.hamb::before,.hamb::after{display:block;height:2px;margin:7px 4px;background:#eee;content:"";transition:.3s}
-    .hamb.active::before{transform:translateY(9px) rotate(45deg)} .hamb.active::after{transform:translateY(-9px) rotate(-45deg)} .hamb.active span{opacity:0}
+        .tab-btn {
+            background: transparent; border: none; color: #b0bec5;
+            padding: 0 20px; height: 100%; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: var(--transition); border-bottom: 4px solid transparent;
+        }
+        .tab-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+        .tab-btn.active { color: white; border-bottom-color: var(--accent); background: rgba(255,255,255,0.1); }
 
-    body.is-login header.site nav{display:none}
-    #logoutBtn{margin-left:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer;font-weight:700}
-    #logoutBtn[hidden]{display:none}
+        /* CONTENT LAYOUT */
+        #mainApp { display: none; width: 95%; max-width: 1200px; margin-bottom: 50px; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        
+        .card {
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: var(--shadow); margin-bottom: 25px; border: 1px solid #eee;
+        }
+        .section-title {
+            font-size: 1.4rem; color: var(--primary); margin: 0 0 20px 0;
+            border-left: 5px solid var(--accent); padding-left: 15px; display: flex; justify-content: space-between;
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+            font-family: inherit; font-size: 14px; box-sizing: border-box;
+        }
+        textarea:focus, input:focus { border-color: var(--accent); outline: none; }
+        button.btn {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 6px; cursor: pointer; font-weight: 600; transition: var(--transition);
+        }
+        button.btn:hover { background: var(--accent); transform: translateY(-1px); }
+        button.btn-outline { background: transparent; border: 1px solid #999; color: #555; }
+        button.btn-outline:hover { background: #eee; }
 
-    main{min-height:60vh}
-    .wrap{width:var(--w);margin:auto;padding:40px 10px}
-    .view{display:none;animation:fadeIn .45s ease both}
-    .view.active{display:block}
+        /* TABLE STYLES */
+        .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
+        th { background: #f8f9fa; color: #555; padding: 12px; text-align: left; border-bottom: 2px solid #eee; }
+        td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+        
+        .fraction-input { width: 80px; text-align: center; border: 1px solid #ddd; }
+        .res-text { font-family: monospace; font-weight: bold; }
 
-    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:44px;align-items:center}
-    .hero .left{background:var(--cream);color:var(--ink-dark);padding:min(6vw,70px);border-radius:30px 220px 30px 30px;box-shadow:var(--shadow)}
-    .hero h1{margin:0 0 16px;font-weight:700;line-height:1.18;font-size:clamp(26px,3.6vw,46px)}
-    .hero p{margin:0;color:#3f3e3b}
-    .hero .right{display:grid;gap:24px}
-    .oval{height:220px;border-radius:110px;background:var(--cream);color:var(--ink-dark);display:grid;place-items:center;font-weight:700;letter-spacing:1px;box-shadow:0 6px 16px rgba(0,0,0,.18);transition:transform .25s, box-shadow .25s;position:relative;overflow:hidden}
-    .oval:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 20px 36px rgba(0,0,0,.28)}
-    .oval > a, .oval > img{display:block;width:100%;height:100%} .oval > img{object-fit:cover;border-radius:inherit}
-
-    .tools-grid{display:grid;gap:70px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-    .tool{background:var(--cream);color:var(--ink-dark);border-radius:26px;padding:22px 22px 18px;box-shadow:var(--shadow);transition:transform .25s, box-shadow .25s}
-    .tool:hover{transform:translateY(-6px);box-shadow:0 24px 42px rgba(0,0,0,.28)}
-    .tool h3{margin:6px 0 10px} .tool p{margin:0 0 14px;opacity:.92}
-    .btn{display:inline-grid;place-items:center;padding:10px 14px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;border:0;cursor:pointer;transition:background .25s, transform .08s}
-    .btn:hover{background:var(--accent-2)} .btn:active{transform:translateY(1px)}
-
-    .about-card{background:var(--cream);color:var(--ink-dark);border-radius:30px 220px 30px 30px;padding:min(6vw,70px);box-shadow:var(--shadow)}
-    .support-card{background:var(--cream);color:var(--ink-dark);border-radius:30px 220px 30px 30px;padding:min(5vw,64px);box-shadow:var(--shadow)}
-    .tag{display:inline-block;margin:6px 8px 0 0;background:#f2ece0;color:#403f3b;border:1px dashed #c8bda9;padding:8px 12px;border-radius:999px;font-weight:700}
-
-    #loginOverlay{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:auto 1fr;background:linear-gradient(180deg, rgba(89,85,81,.88), rgba(89,85,81,.96));transition:opacity .3s, visibility .3s}
-    #loginOverlay.hidden{opacity:0;visibility:hidden}
-    .login-topbar{background:#DFD0B8;color:#3e3d39;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-weight:700}
-    .login-topbar .brand{font-size:20px} .login-topbar .brand .rock{color:#C07A5B} .login-topbar .support{font-size:14px}
-    .login-stage{display:grid;place-items:center;padding:26px}
-    .login-card{width:min(520px,92vw);background:#C07A5B;color:#fff;border-radius:20px;padding:26px 22px 16px;text-align:center;position:relative;box-shadow:0 22px 46px rgba(0,0,0,.38)}
-    .login-title{font-size:clamp(24px,2.6vw,32px);font-weight:800;margin:4px 0 6px}
-    .login-sub{opacity:.95;text-decoration:underline;text-underline-offset:6px}
-    .login-note{font-weight: 800; opacity:.95;margin:.35rem 0 .9rem}
-    .field{background:#F0E6DA;border-radius:999px;display:flex;align-items:center;gap:10px;margin:14px auto;padding:12px 16px;color:#3f3e3b;border:2px solid rgba(0,0,0,.08)}
-    .field input{border:0;outline:0;background:transparent;width:100%;font-size:15px}
-    .showpass{cursor:pointer;color:#3f3e3b;opacity:.75}
-    .login-btn{width:160px;margin:8px auto 0;padding:12px 18px;border-radius:16px;border:0;cursor:pointer;background:#3e3d39;color:#fff;font-weight:800;letter-spacing:.4px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.2), 0 10px 24px rgba(0,0,0,.28)}
-    .login-version{position:absolute;right:12px;bottom:8px;font-size:12px;opacity:.9}
-
-    .login-page-wrap{min-height:70vh;display:grid;place-items:center}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none}}
-
-    @media (max-width:900px){
-      .hero{grid-template-columns:1fr;gap:26px}
-      .oval{height:180px;border-radius:90px}
-      nav{position:fixed;inset:58px 0 auto 0;background:rgba(63,63,61,.98);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:.25s}
-      nav.open{opacity:1;visibility:visible}
-      nav ul{flex-direction:column;align-items:center;padding:18px 0}
-      .hamb{display:block}
-    }
-    @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
-
-    /* Tool Modals */
-    .tool-modal[hidden]{display:none}
-    .tool-modal{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:20px}
-    .tool-dialog{width:min(1100px,96vw);max-height:90vh;overflow:auto;background:#F6F1E7;color:#2d2b28;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.45)}
-    .tool-head{position:sticky;top:0;background:#EADFCC;padding:12px 16px;border-bottom:1px solid #d8cfbf;display:flex;align-items:center;justify-content:space-between;font-weight:800;letter-spacing:.3px}
-    .tool-close{border:0;background:#C67B65;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:800}
-    .tool-body{padding:16px}
-    .tool-body input[type=text],.tool-body input[type=number],.tool-body textarea,.tool-body select{width:100%;padding:10px;border-radius:8px;border:1px solid #d6d0c6;font-family:inherit}
-    .tool-body table{width:100%;border-collapse:collapse;background:#fff}
-    .tool-body th,.tool-body td{border:1px solid #e6e0d6;padding:8px;text-align:left}
-    .tool-body .btn{background:#C67B65;color:#fff}
-    .tool-body .btn.ghost{background:#efe8dc;color:#6b5e50;border:1px solid #dacfbf}
-    .small{font-size:13px;color:#6b5e50}
-    .row{display:flex;gap: 9px;align-items:top;margin-bottom:9px}
-    .col{flex:1}
-
-/* Application & Reports: highlight “Join” fields */
-#modal-app #app_appjoin,
-#modal-app #app_depojoin,
-#modal-app #app_lheirsjoin,
-#modal-app #app_ndjoin,
-#modal-app #app_boundaryjoin{
-  background: #fff6ef;                 /* soft highlight */
-  border: 2px solid var(--accent);     /* uses your --accent (#C67B65) */
-  color: #2d2b28;
-  font-weight: 700;
-  box-shadow: inset 0 0 0 2px rgba(198,123,101,.12);
-}
-
-/* Focus ring for keyboard users */
-#modal-app #app_appjoin:focus,
-#modal-app #app_depojoin:focus,
-#modal-app #app_lheirsjoin:focus,
-#modal-app #app_ndjoin:focus,
-#modal-app #app_boundaryjoin:focus{
-  outline: 0;
-  box-shadow: 0 0 0 3px rgba(198,123,101,.25);
-}
-
-/* Optional: label tint to match highlight */
-#modal-app label[for="app_appjoin"],
-#modal-app label[for="app_depojoin"],
-#modal-app label[for="app_lheirsjoin"],
-#modal-app label[for="app_ndjoin"],
-#modal-app label[for="app_boundaryjoin"]{
-  color: var(--accent);
-}
-
-/*template css selection of docx files*/
-#app_template_panel {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: start;
-}
-#app_template_panel label {
-  display: inline-block;
-  cursor: pointer;
-  
-}
-#app_template_panel .tplitem {
-  padding: 3px 0 3px 1px;
-  border: none;
-  background: #a9fff8;
-}
-
-
-#modal-placeholders table th,
-#modal-placeholders table td {
-  font-family: 'Montserrat', Arial, sans-serif;
-  border: 1px solid #e2dbbb;
-  padding: 7px 9px;
-  font-size: 15px;
-}
-#modal-placeholders table th {
-  background: #faefd0;
-  color: #7d532c;
-  font-weight: 600;
-}
-#modal-placeholders table td:first-child {
-  font-weight: 600;
-  color: #ba6f58;
-}
-#modal-placeholders .tool-head {
-  background: #f5ecd7;
-  font-size: 16.5px;
-  padding: 9px 17px 7px 17px;
-  border-bottom: 1px solid #e2dbbb;
-}
-
-
-
-/* (highlighting और outline color के लिए) */
-
-.highlight-field {
-  outline: 2.5px solid #C67B65 !important;      /* हाइलाइट कलर */
-  
-}
-.app-field-comment {
-  font-size: 13px;
-  color: #ba6f58;
-  margin-top: 2px;
-  margin-bottom: 7px;
-  background: #fdeedb;
-  border-radius: 7px;
-  padding: 5px 11px;
-  display: inline-block;
-  max-width: 96%;
-}
-
-
-
-  </style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile Adjustments */
+        @media (max-width: 768px) { 
+            .grid { grid-template-columns: 1fr; } 
+            .navbar { flex-wrap: wrap; height: auto; padding: 10px; justify-content: center; gap: 10px; }
+            .nav-brand, .nav-contact { width: 100%; text-align: center; }
+            .nav-center { width: 100%; justify-content: center; }
+            .tab-btn { padding: 10px; flex: 1; text-align: center; }
+            body { padding-top: 140px; } 
+        }
+    </style>
 </head>
 <body>
-  <!-- Login Overlay -->
-  <div id="loginOverlay" aria-hidden="false">
-    <div class="login-topbar">
-      <div class="brand"><span class="rock">ROCK</span><span class="tech">Technology</span></div>
-      <div class="support">Support: 7869731689</div>
-    </div>
-    <div class="login-stage">
-      <div class="login-card" role="dialog" aria-modal="true">
-        <div class="login-title">Welcome!</div>
-        <div class="login-sub">Continue to your workspace:</div>
-        <div class="login-note">Standardized Forms, Smart Math, Clean Exports.</div>
-        <label class="field"><input id="uid" type="text" placeholder="enter user name here" autocomplete="off"></label>
-        <label class="field"><input id="pwd" type="password" placeholder="enter password here" autocomplete="off"><span id="togglePass" class="showpass" title="Show/Hide">👁</span></label>
-        <button id="btnLogin" class="login-btn">Log in</button>
-        <div class="login-version">Version 1.0.4</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- App Shell -->
-  <header class="site">
-    <div class="bar">
-      <div class="brand"><span class="rock">ROCK</span><span class="tech">Technology</span></div>
-      <button id="hamb" class="hamb" aria-label="Menu"><span></span></button>
-      <nav id="nav" aria-label="Primary">
-        <ul>
-          <li><a href="#home" data-view="home" class="active">HOME</a></li>
-          <li><a href="#tools" data-view="tools">TOOLS</a></li>
-          <li><a href="#about" data-view="about">ABOUT</a></li>
-          <li><a href="#support" data-view="support">SUPPORT</a></li>
-          <li id="nav-login-item"><a href="#login" data-view="login">LOGIN</a></li>
-          <li><button id="logoutBtn" hidden>Logout</button></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <!-- HOME -->
-    <section id="view-home" class="view active" role="region" aria-labelledby="h-home">
-      <div class="hero">
-        <div class="left">
-          <h1 id="h-home">Welcome to<br>MP Land Revenue Document<br>Processing System</h1>
-          <p>Streamline your Madhya Pradesh Land Revenue Department workflows with our comprehensive web application. Effortlessly create applications, patwari reports, orders, and official documents using pre-loaded templates from GitHub repository. Perform complex calculations including fraction operations, upload B-1 text files to extract landowner details, khasra numbers, and area measurements. Our intelligent partition calculator automatically computes remaining landowners' shares during property division (batwara). Access professional document templates anytime, anywhere without technical stress. Generate ready-to-use Word documents instantly for all your land revenue documentation needs. Designed specifically for government officials to enhance productivity and accuracy in land administration processes.</p>
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2 style="margin-top:0; color:var(--primary);">Rock Technology</h2>
+            <p>Secure Access</p>
+            <input type="text" id="userId" placeholder="User ID">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn" style="width:100%; margin-top:15px;" onclick="checkLogin()">LOGIN</button>
+            <p id="loginError" style="color:red; display:none; margin-top:10px; font-size:14px;">Invalid Credentials!</p>
         </div>
-        <div class="right">
-          <div class="oval -img" style="background-image:url('https://img.freepik.com/free-photo/beautiful-women-walk-happily-meadow_1150-19404.jpg?w=740');background-size:cover;background-position:center;background-repeat:no-repeat"></div>
-          <div class="oval -img" style="background-image:url('https://img.freepik.com/free-photo/woman-picking-strawberries-farm_1150-36966.jpg?w=1480');background-size:cover;background-position:center;background-repeat:no-repeat"></div>
-          <div class="oval -img" style="background-image:url('https://img.freepik.com/free-photo/tribal-girls-are-collecting-strawberries_1150-7383.jpg?w=1480');background-size:cover;background-position:center;background-repeat:no-repeat"></div>
-        </div>
-      </div>
-    </section>
+    </div>
 
-    <!-- TOOLS -->
-    <section id="view-tools" class="view" role="region" aria-labelledby="h-tools">
-      <!---- <h3 id="h-tools" style="margin:0 0 10px">Tools</h3> -->
-      <div class="tools-grid">
+    <nav class="navbar" id="navBar" style="display:none;">
+        <div class="nav-brand">RockTechnology</div>
+        <div class="nav-center">
+            <button class="tab-btn active" onclick="openTab(event, 'extTab')">B1 Extractor</button>
+            <button class="tab-btn" onclick="openTab(event, 'batTab')">Batwara Calc</button>
+            <button class="tab-btn" onclick="openTab(event, 'fracTab')">Fraction Calc</button>
+            <button class="tab-btn" onclick="openTab(event, 'fmtTab')">Data Formatter</button>
+            <button class="tab-btn" onclick="openTab(event, 'downTab')">Download Formats</button>
+        </div>
+        <div class="nav-contact">7869731689</div>
+    </nav>
+
+    <div id="mainApp">
+        <div id="extTab" class="tab-content active">
+            <div class="card">
+                <div class="section-title">MP Land Records Extractor (Smart Logic)</div>
+                <div style="background:#f8f9fa; padding:15px; border-radius:8px; display:flex; gap:10px; align-items:center;">
+                    <input type="file" id="fileInput" accept=".txt" style="border:none;">
+                    <button class="btn" onclick="processLandData()">Extract Data</button>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <div class="section-title">Owners & Shares <button class="btn btn-outline" style="font-size:12px; padding:5px 10px;" onclick="copyData('ownersOutput')">Copy</button></div>
+                    <textarea id="ownersOutput" rows="12" placeholder="Owner Names and Shares will appear here..."></textarea>
+                </div>
+                <div class="card">
+                    <div class="section-title">Khasara & Area <button class="btn btn-outline" style="font-size:12px; padding:5px 10px;" onclick="copyData('khasaraOutput')">Copy</button></div>
+                    <textarea id="khasaraOutput" rows="12" placeholder="Village, Khata and Khasara details..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div id="batTab" class="tab-content">
+            <div class="card">
+                <div class="section-title">
+                    <span>बटवारा गणना (Proportional Renormalization)</span>
+                </div>
+                <div class="grid" style="grid-template-columns: 1fr 3fr;">
+                    <div style="background:#fff8e1; padding:15px; border-radius:8px; border:1px solid #ffe0b2;">
+                        <label style="font-weight:bold; color:#f57c00;">कुल रकबा (Total Area)</label>
+                        <input type="text" id="totalArea" value="0.6000" style="margin-top:5px; font-weight:bold;">
+                        <button class="btn" style="width:100%; margin-top:15px;" onclick="parseAndLoad()">डाटा लोड करें</button>
+                    </div>
+                    <div>
+                        <textarea id="rawInput" rows="5" placeholder="नाम और हिस्सा..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="padding:0; overflow:hidden;">
+                <div class="table-wrap">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th width="5%">क्र.</th>
+                                <th width="20%">नाम</th>
+                                <th width="10%">मूल हिस्सा</th>
+                                <th width="25%">हटाना (रकबा या FULL)</th>
+                                <th width="10%">घटाया भिन्न</th>
+                                <th width="10%">शेष हिस्सा</th>
+                                <th width="20%">पुनर्निधारित हिस्सा</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div style="padding:15px; background:#f1f1f1; text-align:right;">
+                    <button class="btn" onclick="calculate()">गणना करें (Calculate)</button>
+                </div>
+            </div>
+            <div id="outputPanel" class="card" style="display:none; background:#e8f5e9; border:1px solid #c8e6c9;">
+                <div class="section-title" style="border-left-color:#2e7d32; margin-bottom:10px;">
+                    <span style="color:#2e7d32;">परिणाम</span>
+                    <button class="btn" style="background:#2e7d32;" onclick="copyBatwaraResult()">Copy Text</button>
+                </div>
+                <div id="resultText" style="background:white; padding:15px; border-radius:6px; font-family:monospace; margin-bottom:10px; border:1px solid #ccc;"></div>
+            </div>
+        </div>
+
+        <div id="fracTab" class="tab-content">
+            <div class="card">
+                <div class="section-title">Fraction Tools</div>
+                <div class="grid">
+                    <div>
+                        <label><b>Add Fractions</b></label>
+                        <textarea id="sumInput" rows="3"></textarea>
+                        <button class="btn" style="margin-top:5px;" onclick="calculateSum()">Sum</button>
+                        <div id="sumResult" class="res-text" style="margin-top:10px; color:var(--accent);"></div>
+                    </div>
+                    <div>
+                        <label><b>Subtract / Divide</b></label>
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <input type="text" id="subMain" placeholder="Main">
+                            <input type="text" id="subValues" placeholder="Sub">
+                        </div>
+                        <button class="btn" style="margin-top:5px;" onclick="calculateSub()">Subtract</button>
+                        <div id="subResult" class="res-text" style="margin-top:5px; color:var(--accent);"></div>
+                        
+                        <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="divMain" placeholder="Frac">
+                                <input type="number" id="divCount" placeholder="Parts">
+                            </div>
+                            <button class="btn" style="margin-top:5px;" onclick="calculateDiv()">Divide</button>
+                            <div id="divResult" class="res-text" style="margin-top:5px; color:var(--accent);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        <article class="tool">
-          <h3>Application & Reports</h3>
-          <p>Generate applications and patwari reports with accurate data and instant Word exports.</p>
-          <button class="btn" data-open="modal-app">Open</button>
-        </article>
-
-        <article class="tool">
-          <h3>Data from .txt file</h3>
-          <p>Upload Khatauni (B1) .txt and instantly parse land records into clean, usable fields.</p>
-          <button class="btn" data-open="modal-extractor">Open</button>
-        </article>
-
-        <article class="tool">
-          <h3>Batwara Fraction Calculator</h3>
-          <p>Enter ownership fractions to compute proportional area and revised shares for co‑sharers.</p>
-          <button class="btn" data-open="modal-batwara">Open</button>
-        </article>
-
-        <article class="tool">
-          <h3>Fraction Calculator</h3>
-          <p>Add, subtract, and divide fractions with automatic denominator alignment.</p>
-          <button class="btn" data-open="modal-fractions">Open</button>
-        </article>
-
-        <article class="tool">
-          <h3>Placeholders Reference</h3>
-          <p>Find all placeholders for your doc here.</p>
-          <button class="btn" data-open="modal-placeholders">Open</button>
-        </article>
-
-        <article class="tool">
-          <h3>Upload your own files</h3>
-          <p>You can upload your own docx files with placeholders and use with Application & Reports Module.</p>
-          <button class="btn" data-open="modal-upload">Open</button>
-        </article>
-
-      </div>
-    </section>
-
-    <!-- ABOUT -->
-    <section id="view-about" class="view" role="region" aria-labelledby="h-about">
-      <div class="about-card">
-        <h2 id="h-about">About us</h2>
-        <p>This web application is specifically designed for Madhya Pradesh Land Revenue Department employees and related officials. Our mission is to digitize and automate traditional document preparation processes. This platform provides instant creation of patwari reports, application forms, orders, and other land revenue documents. Professional templates linked from GitHub repository, smart calculation tools, and B-1 data processing features streamline your daily operations. Advanced fraction calculation capabilities and automated partition (batwara) calculations eliminate manual errors while saving valuable time. Our goal is to reduce paper-based processes and enhance operational efficiency. Developed by government employees, for government employees, ensuring practical functionality and user-friendly experience for all skill levels.</p>
-      </div>
-    </section>
-
-    <!-- SUPPORT -->
-    <section id="view-support" class="view" role="region" aria-labelledby="h-support">
-      <div class="support-card">
-        <h2 id="h-support">Support</h2>
-        <p>Your convenience is our priority; reach out for technical issues, feature requests, or onboarding help.</p>
-        <span class="tag">Email: rocktech2023@gmail.com</span>
-        <span class="tag">Phone: +91‑7869731689</span>
-      </div>
-    </section>
-
-    <!-- LOGIN PAGE VIEW -->
-    <section id="view-login" class="view" role="region" aria-labelledby="h-login">
-      <div class="login-page-wrap">
-        <div class="login-card" style="background:#BA6F58">
-          <div class="login-title">Welcome!</div>
-          <div id="h-login" class="login-sub">Continue to your workspace:</div>
-          <div class="login-note">Standardized Forms, Smart Math, Clean Exports.</div>
-          <label class="field"><input id="uid2" type="text" placeholder="enter user name here" autocomplete="off"></label>
-          <label class="field"><input id="pwd2" type="password" placeholder="enter password here" autocomplete="off"><span id="togglePass2" class="showpass" title="Show/Hide">👁</span></label>
-          <button id="btnLogin2" class="login-btn">Log in</button>
-          <div class="login-version">Version 1.0.4</div>
+<div id="fmtTab" class="tab-content">
+    <div class="card">
+        <div class="section-title">Data Formatter (Table Generator)</div>
+        <div class="grid" style="grid-template-columns: 1fr;">
+            <div>
+                <label><b>डाटा पेस्ट करें (Comma Separated):</b></label>
+                <textarea id="fmtInput" rows="5" placeholder="उदाहरण: राम 1/4, श्याम 1/4..."></textarea>
+                <button class="btn" style="margin-top:15px;" onclick="processFmt()">Format Data</button>
+            </div>
         </div>
-      </div>
-    </section>
-  </main>
-
-<!-- TOOL MODALS -->
-<div class="tool-modal" id="modal-app" hidden>
-  <div class="tool-dialog" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
-    <div class="tool-head">
-      <span id="appModalTitle">Application & Reports</span>
-      <button type="button" class="tool-close" data-close aria-label="Close">Close</button>
     </div>
-    <div class="tool-body" id="appForm">
 
-      <!-- Row 1 -->
-      <div class="row">
-        <div class="col">
-          <label for="application_court">Application Type</label>
-          <select id="application_court">
-            <option value="">Select Application Type</option>
-          </select>          
-        </div>
-      </div> 
-      
-      <!-- Row 2 -->
-      <div class="row">
-        <div class="col">
-          <label for="app_docid">Document No (if available)</label>
-          <input type="text" id="app_docid" autocomplete="off">
-        </div>
-        <div class="col">
-          <label for="app_docdt">Document Dt. (if available)</label>
-          <input type="date" id="app_docdt" autocomplete="off">
-        </div>
-        <div class="col">
-          <label for="app_court">Court</label>
-          <select id="app_court">
-            <option value="">Select Court</option>
-          </select>
-        </div>    
-      </div>
-      
-      <!-- Row 3 -->
-      <div class="row">
-        <div class="col" style="flex: 1.5;">
-          <label for="app_apptype">Applicant Type</label>
-          <select id="app_apptype">
-            <option value="">Select Type</option>
-          </select>
-        </div>
-        <div class="col" style="flex: 5.5;">
-          <label for="app_appshort">Applicant Name</label>
-          <input type="text" id="app_appshort" rows="2" autocomplete="off">
-        </div>
-        <div class="col" style="flex: 3;">
-          <label for="app_appjoin">Applicant Join</label>
-          <input type="text" id="app_appjoin" readonly>
-        </div>
-      </div>
-
-      <!-- Row 4 -->
-      <div class="row">
-        <div class="col" style="flex:7;">
-          <label for="app_appfull">Applicant Name (full)</label>
-          <textarea id="app_appfull" rows="6" style="width:100%;"></textarea>
-        </div>
-        <div class="col" style="flex:3;">
-          <label for="app_appaddr">Applicant Address</label>
-          <textarea id="app_appaddr" rows="6" style="width:100%;">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
-        </div>
-      </div>
-
-      <!-- Row 5 -->
-      <div class="row">
-        <div class="col" style="flex: 1.5;">
-          <label for="app_depotype">Deponent Type</label>
-          <select id="app_depotype">
-            <option value="">Select Type</option>
-          </select>
-        </div>
-        <div class="col" style="flex: 5.5;">
-          <label for="app_deposhort">Deponent Name</label>
-          <input type="text" id="app_deposhort" autocomplete="off">
-        </div>
-        <div class="col" style="flex: 3;">
-          <label for="app_depojoin">Deponent Join</label>
-          <input type="text" id="app_depojoin" readonly>
-        </div>
-      </div>
-
-      <!-- Row 6 -->
-      <div class="row">
-        <div class="col" style="flex: 7;">
-          <label for="app_depofull">Deponent Name (full)</label>
-          <textarea id="app_depofull" rows="6" style="width: 100%;"></textarea>
-        </div>
-        <div class="col" style="flex: 3;">
-          <label for="app_depoaddr">Deponent Address</label>
-          <textarea id="app_depoaddr" rows="6" style="width: 100%;">निवासी-, जिला-सिंगरौली (म.प्र.)</textarea>
-        </div>
-      </div>
-
-      <!-- Row 7 -->
-      <div class="row">
-        <div class="col" style="flex: 2;">
-          <div>
-            <label for="app_vill">Village</label>
-            <select id="app_vill">
-              <option value="">Select Village</option>
-            </select>
-          </div>
-          <div>
-            <label for="app_amount">Amount</label>           
-            <input type="text" id="app_amount" autocomplete="off" value=".00">
-          </div>
-        </div>
-        <div class="col" style="flex: 3;">
-          <label for="app_khasara">Khasara & Rakava Details</label>
-          <textarea id="app_khasara" rows="6"></textarea>
-        </div>
-        <div class="col" style="flex: 5;">
-          <label for="app_lowner">Land Owner Details</label>
-          <textarea id="app_lowner" rows="6"></textarea>
-        </div>
-      </div>    
-
-      <!-- Row 8 -->
-      <div class="row">
-        <div class="col">
-          <label for="app_boundary">Boundary (if available)</label>
-          <textarea id="app_boundary" rows="4">उत्‍तर-
-दक्षिण-
-पूर्व-
-पश्चिम-</textarea>
-          <span class="app-field-comment" id="comment-app_boundary"></span>
-        </div>
-        <div class="col">
-          <label for="app_boundaryjoin">Boundary Join</label>
-          <input type="text" id="app_boundaryjoin">
-        </div>
-        <div class="col">
-          <label for="app_lheirsjoin">Legal heirs Join</label>
-          <input type="text" id="app_lheirsjoin" readonly>
-        </div>
-      </div>
-
-            <!-- Row 9 -->
-      <div class="row">
-        <div class="col">
-          <div>
-            <label for="app_dodate">Deceased Date (if available)</label>
-            <input type="date" id="app_dodate" autocomplete="off">
-          </div>
-          <div>
-            <label for="app_rwa">Relation (पिता/पति/पुत्र...)</label>
-            <input type="text" id="app_rwa" autocomplete="off">
-          </div>
-          <div>
-            <label for="app_rbad">Relationship (पुत्र-पिता, ..)</label>
-            <input type="text" id="app_rbad" autocomplete="off">
-          </div>
-        </div>
-        <div class="col">
-          <label for="app_dlowner">Deceased Owner (if available)</label>
-          <textarea id="app_dlowner" rows="6"></textarea>
-        </div>
-        <div class="col">
-          <label for="app_lheirs">Legal heirs (full)</label>
-          <textarea id="app_lheirs" rows="6"></textarea>
-        </div>
-        <div class="col">
-          <label for="app_lhorder">Legal heirs for order</label>
-          <textarea id="app_lhorder" rows="6"></textarea>
-        </div>
-      </div>
-
-      <!-- Row 10 -->
-      <div class="row">
-        <div class="col">
-          <label for="app_bd">Bhinnata Document</label>
-          <textarea id="app_bd" rows="6"></textarea>
-        </div>
-        <div class="col">
-          <label for="app_ndocument">Name as document</label>
-          <textarea id="app_ndocument" rows="6"></textarea>
-        </div>
-        <div class="col">
-          <label for="app_ndjoin">All names</label>
-          <input type="text" id="app_ndjoin" readonly>
-        </div>
-      </div>
-
-
-      <!-- Row 11 -->
-      <div class="row">
-        <div class="col" style="flex: 3.5;">
-          <label for="app_template">Template Name (.docx from Web)</label>
-          <div>
-            <select id="app_template" >
-              <option value="">Loading templates...</option>
-            </select>
-            <button type="button" class="btn ghost" id="app_refreshTpl">Reload</button>
-          </div>
-        </div>
-        <div class="col" style="flex: 4;">
-          <label for="app_outputname">Output file name (without extension)</label>
-          <input type="text" id="app_outputname" placeholder="output" autocomplete="off">
-        </div>
-        <div class="col" style="flex: 2.5;">
-          <label>&nbsp;</label>
-          <button type="button" class="btn" id="app_downloadBtn">Download .docx</button>
-          <button type="button" class="btn" id="app_resetFields">Reset</button>
-        </div>
-      </div>
-
-      <!-- Row 12 -->
-       <div class="row">
-        <div class="col">
-          <label for="app_template_panel">Select Templates (.docx from Web)</label>
-          <div id="app_template_panel" style="max-height:260px;overflow:auto;border:1px solid #eee;border-radius:8px;padding:11px 8px;">
-            <div>loading templates…</div>
-          </div>
-          <button type="button" class="btn" id="app_downloadZipBtn">Download Selected as Zip</button>
-        </div>
-      </div>
-
-      <!-- Row 13 -->
-      <div class="row">
-        <div class="col" style="min-height:200px">
-          <label>Live Preview</label>
-          <div id="app_previewStatus" class="small">Select a template to preview…</div>
-          <div id="app_preview" style="background:#fff;border:1px dashed #dacfbf;border-radius:8px;padding:10px;max-height:320px;overflow:auto"></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-  <!-- Batwara Fraction Calculator — improved logic -->
-  <div class="tool-modal" id="modal-batwara" hidden>
-    <div class="tool-dialog">
-      <div class="tool-head"><span>Batwara Fraction Calculator</span><button class="tool-close" data-close>Close</button></div>
-      <div class="tool-body">
-        <div class="row">
-          <div class="col"><label>सर्वेक्षण संख्या</label><input id="bt_survey" type="text" placeholder="उदा. 1024"></div>
-          <div class="col"><label>कुल रकवा (Decimal)</label><input id="bt_total" type="text" placeholder="उदा. 0.2000"></div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button id="bt_paste" class="btn">Paste to Table</button>
-          <button id="bt_compute" class="btn">Compute</button>
-          <button id="bt_sample" class="btn ghost">Load Sample</button>
-          <button id="bt_export" class="btn ghost">Export CSV</button>
-        </div>
-        <label>Excel/Notepad से पेस्ट करें (हर लाइन: नाम[TAB]1/2 या नाम,1/3 या ...)</label>
-        <textarea id="bt_pastebox" rows="5" placeholder="राम	1/2
-श्याम	1/4
-मोहन 1/4"></textarea>
-
-        <div style="margin-top:10px;overflow:auto">
-          <table id="bt_table">
-            <thead><tr><th>#</th><th>चयन</th><th>भूस्वामी</th><th>हिस्सा</th><th>रकवा (कुल×हिस्सा)</th><th>विभाजित रकवा</th><th>शेष हिस्सा (Recalc)</th><th>शेष रकवा</th></tr></thead>
-            <tbody></tbody>
-            <tfoot><tr><td colspan="4" style="text-align:right"><strong>योग-</strong></td><td id="bt_sumOrig">-</td><td id="bt_sumDiv">-</td><td id="bt_sumReShare">-</td><td id="bt_sumRemain">-</td></tr></tfoot>
-          </table>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <div class="col"><label>योग विभाजित रकवा</label><input id="bt_out_sum" readonly></div>
-          <div class="col"><label>शेष रकवा</label><input id="bt_out_remain" readonly></div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label>मौजूदा अभिलेखीय स्थिति</label>
-            <textarea id="bt_before" rows="4" readonly></textarea>
-            <button id="bt_copy_before" class="btn ghost" style="margin-top:6px">Copy</button>
-          </div>
-          <div class="col">
-            <label>बटवारा पश्चात स्थिति</label>
-            <textarea id="bt_after" rows="4" readonly></textarea>
-            <button id="bt_copy_after" class="btn ghost" style="margin-top:6px">Copy</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Fraction Calculator -->
-  <div class="tool-modal" id="modal-fractions" hidden>
-    <div class="tool-dialog">
-      <div class="tool-head"><span>Fraction Calculator</span><button class="tool-close" data-close>Close</button></div>
-      <div class="tool-body">
-        <div class="card" style="margin-bottom:14px">
-          <h4 style="margin:0 0 8px">भिन्‍न जोड़ें</h4>
-          <p class="small">हर लाइन/कॉमा पर एक fraction जैसे 1/4, 2/5</p>
-          <textarea id="fr_add_in" rows="6" placeholder="1/4
-1/8
-2/5"></textarea>
-          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn" id="fr_add_btn">Sum Fraction</button>
-            <button class="btn ghost" id="fr_add_clear">Clear</button>
-            <button class="btn ghost" id="fr_add_sample">Load Sample</button>
-          </div>
-          <div id="fr_add_out" style="margin-top:10px"></div>
-        </div>
-
-        <div class="card" style="margin-bottom:14px">
-          <h4 style="margin:0 0 8px">भिन्‍न घटायें</h4>
-          <div class="row">
-            <div class="col"><label>मूल हिस्सा</label><input id="fr_sub_base" type="text" placeholder="3/4"></div>
-            <div class="col"><label>घटाने वाले (comma/newline)</label><input id="fr_sub_list" type="text" placeholder="1/8, 1/5"></div>
-            <div style="width:220px;display:flex;gap:8px"><button class="btn" id="fr_sub_btn">Compute</button><button class="btn ghost" id="fr_sub_clear">Clear</button></div>
-          </div>
-          <div id="fr_sub_out" style="margin-top:10px"></div>
+    <div id="fmtResult" class="grid" style="display:none; grid-template-columns: 1fr 2fr;">
+        
+        <div class="card">
+            <div class="section-title">
+                <span>Table 1: संयुक्त विवरण</span>
+                <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblRaw')">Copy</button>
+            </div>
+            <div class="table-wrap">
+                <table id="tblRaw">
+                    <thead>
+                        <tr><th>भूमि स्‍वामी का नाम + हिस्‍सा</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
 
         <div class="card">
-          <h4 style="margin:0 0 8px">भिन्‍न विभाजित करें</h4>
-          <div class="row">
-            <div class="col"><label>मूल हिस्सा</label><input id="fr_div_base" type="text" placeholder="3/4"></div>
-            <div class="col"><label>भागों की संख्या</label><input id="fr_div_parts" type="number" min="1" placeholder="2"></div>
-            <div style="width:220px;display:flex;gap:8px"><button class="btn" id="fr_div_btn">Divide</button><button class="btn ghost" id="fr_div_clear">Clear</button></div>
-          </div>
-          <div id="fr_div_out" style="margin-top:10px"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Combined Extractor -->
-  <div class="tool-modal" id="modal-extractor" hidden>
-    <div class="tool-dialog">
-      <div class="tool-head"><span>Data from .txt file (Combined Extractor)</span><button class="tool-close" data-close>Close</button></div>
-      <div class="tool-body">
-        <div class="card">
-          <label>1) .txt फ़ाइल चुनें</label>
-          <input id="cx_file" type="file" accept=".txt,text/plain" />
-
-          <button onclick="sendOwnersKhasaraToAppReports()" class="btn ghost">Use in Application & Reports</button>
-         
-          <div class="row" style="margin-top:10px">
-            <div class="col">
-              <strong>Owners & Shares</strong>
-              <div style="display:flex;gap:8px;margin:6px 0">
-                <button id="cx_copy_owners" class="btn ghost">Copy Owners</button>
-                <button id="cx_download_owners" class="btn ghost">Download Owners (.txt)</button>
-              </div>
-              <textarea id="cx_out_owners" placeholder="नाम — हिस्सा" rows="15"></textarea>
+            <div class="section-title">
+                <span>Table 2: विस्तृत विवरण</span>
+                <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblDetail')">Copy</button>
             </div>
-            <div class="col">
-              <strong>Khasara & Area</strong>
-              <div style="display:flex;gap:8px;margin:6px 0">
-                <button id="cx_copy_khas" class="btn ghost">Copy Khasara</button>
-                <button id="cx_download_khas" class="btn ghost">Download Khasara (.txt)</button>
-              </div>
-              <textarea id="cx_out_khas" placeholder="खसरा — रकवा" rows="15"></textarea>
+            <div class="table-wrap">
+                <table id="tblDetail">
+                    <thead>
+                        <tr>
+                            <th>भूमि स्‍वामी का नाम</th>
+                            <th>हिस्‍सा</th>
+                            <th>अंश</th>
+                            <th>हर</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-          </div>
-          
         </div>
-      </div>
-    </div>
-  </div>
 
-
-  <!-- Placeholder Reference -->
-  <div class="tool-modal" id="modal-placeholders" hidden>
-    <div class="tool-dialog">
-      <div class="tool-head"><span>Placeholders Reference</span><button class="tool-close" data-close>Close</button></div>      
-      <div class="tool-body" style="padding:18px 23px 11px;font-size:15px;">
-    <table style="width:100%;border-collapse:collapse;">
-      <thead>
-        <tr style="background:#f5eddc;">
-          <th style="padding:7px 9px;border:1px solid #e2dbbb;text-align:left;width:27%;">Placeholder</th>
-          <th style="padding:7px 9px;border:1px solid #e2dbbb;text-align:left;">Description</th>
-        </tr>
-      </thead>
-      <tbody>
-                <tr><td>{DOCID}</td><td>Document No (if available)</td></tr>
-        <tr><td>{DOCDT}</td><td>Document Dt. (if available)</td></tr>
-        <tr><td>{COURT}</td><td>Court</td></tr>
-        <tr><td>{APPTYPE}</td><td>Applicant Type</td></tr>
-        <tr><td>{APPSHORT}</td><td>Applicant Name</td></tr>
-        <tr><td>{APPFULL}</td><td>Applicant Name (full)</td></tr>
-        <tr><td>{APPADDR}</td><td>Applicant Address</td></tr>
-        <tr><td>{APPJOIN}</td><td>Applicant Join</td></tr>
-        <tr><td>{DEPOTYPE}</td><td>Deponent Type</td></tr>
-        <tr><td>{DEPOSHORT}</td><td>Deponent Name</td></tr>
-        <tr><td>{DEPOFULL}</td><td>Deponent Name (full)</td></tr>
-        <tr><td>{DEPOADDR}</td><td>Deponent Address</td></tr>
-        <tr><td>{DEPOJOIN}</td><td>Deponent Join</td></tr>
-        <tr><td>{VILL}</td><td>Village</td></tr>
-        <tr><td>{KHASARA}</td><td>Khasara & Rakava Details</td></tr>
-        <tr><td>{L_OWNER}</td><td>Land Owner Details</td></tr>
-        <tr><td>{BOUNDARY}</td><td>Boundary (if available)</td></tr>
-        <tr><td>{BOUNDARYJOIN}</td><td>Boundary Join</td></tr>
-        <tr><td>{DO_DATE}</td><td>Deceased Date (if available)</td></tr>
-        <tr><td>{DL_OWNER}</td><td>Deceased Owner (if available)</td></tr>        
-        <tr><td>{LHEIRS}</td><td>Legal heirs (full)</td></tr>
-        <tr><td>{LHEIRSJOIN}</td><td>Legal heirs Join</td></tr>
-        <tr><td>{LHORDER}</td><td>Legal heirs for order</td></tr>
-        <tr><td>{AMOUNT}</td><td>Amount</td></tr>
-        <tr><td>{RWA}</td><td>Relation (पिता/पति/पुत्र...)</td></tr>
-        <tr><td>{RBAD}</td><td>Relationship (पुत्र-पिता, ..)</td></tr>
-        <tr><td>{BD}</td><td>Bhinnata Document</td></tr>
-        <tr><td>{NDOCUMENT}</td><td>Name as document</td></tr>
-        <tr><td>{NDJOIN}</td><td>All names</td></tr>
-      </tbody>
-    </table>
     </div>
-    </div>
-  </div>
-
-
-  <!-- GitHub Uploader Module -->
-<div class="tool-modal" id="modal-upload" hidden>
-  <div class="tool-dialog">
-    <div class="tool-head">
-      <span>Upload File to rocktech-web</span>
-      <button class="tool-close" data-close>Close</button>
-    </div>
-    <div class="tool-body" style="padding:16px 18px;">
-      <label>Choose a file to upload (.docx)</label>
-      <input id="gh_upload_file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
-      <div style="margin-top:12px;">
-        <label>GitHub Personal Access Token:</label>
-        <input type="password" id="gh_token" placeholder="ghp_xxxxxxx..." style="width:100%;margin-bottom:8px;">
-      </div>
-      <button id="gh_upload_btn" class="btn">Upload</button>
-      <div id="gh_upload_status" style="margin-top:14px;color: #2b6b22; font-weight:500;"></div>
-    </div>
-  </div>
 </div>
 
+<div id="downTab" class="tab-content">
+    <div class="card">
+        <div class="section-title">
+            <span>File Repository (Github)</span>
+            <button class="btn" style="background:#2c3e50;" onclick="loadGithubFiles()">
+                ↻ Refresh List
+            </button>
+        </div>
+        
+        <div id="fileLoader" style="display:none; text-align:center; padding:20px;">
+            Loading files from server...
+        </div>
+        <div id="filesContainer">
+            </div>
+    </div>
+</div>
+    </div>
 
-  
-  <script>
-    // App title
-    const SITE_TITLE='ROCKTechnology — Standardized Forms, Smart Math, Clean Exports'; document.title=SITE_TITLE;
-    const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-
-    // Demo credentials
-    const VALID_USER='RockTechnology', VALID_PASS='Manish@31689';
-
-    // SPA/nav
-    const hamb=$('#hamb'), nav=$('#nav'); hamb?.addEventListener('click',()=>{hamb.classList.toggle('active');nav.classList.toggle('open');});
-    const VIEWS=['home','tools','about','support','login'];
-    function setLoginHeaderMode(b){document.body.classList.toggle('is-login',b)}
-    function setOverlay(v){const o=$('#loginOverlay'); if(o) o.classList.toggle('hidden',!v)}
-    function isLogged(){return sessionStorage.getItem('rt_logged_in')==='1'}
-    function showView(name){
-      VIEWS.forEach(v=>{const el=$('#view-'+v); if(el) el.classList.toggle('active',v===name); $$('nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===name));});
-      if(name==='login'){setOverlay(false);setLoginHeaderMode(true);} else {setLoginHeaderMode(false);setOverlay(!isLogged());}
-      if(history.pushState){history.replaceState({},'', '#'+name);} else{location.hash='#'+name;}
-      window.scrollTo({top:0,behavior:'smooth'}); nav?.classList.remove('open'); hamb?.classList.remove('active');
-      if(name==='login'){setTimeout(()=>$('#uid2')?.focus(),0)}
-    }
-    $$('nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showView(a.dataset.view);})); window.addEventListener('hashchange',()=>{const n=location.hash.replace('#',''); if(VIEWS.includes(n)) showView(n);});
-
-    // Login
-    const overlay=$('#loginOverlay'), uid=$('#uid'), pwd=$('#pwd'), togglePass=$('#togglePass'), btnLogin=$('#btnLogin');
-    const logoutBtn=$('#logoutBtn'), navLoginItem=$('#nav-login-item'), LOGGED_KEY='rt_logged_in';
-    function setLoggedIn(state){
-      if(state){sessionStorage.setItem(LOGGED_KEY,'1'); navLoginItem&&(navLoginItem.hidden=true); logoutBtn&&(logoutBtn.hidden=false); showView('home');}
-      else{sessionStorage.removeItem(LOGGED_KEY); navLoginItem&&(navLoginItem.hidden=false); logoutBtn&&(logoutBtn.hidden=true); showView('login'); $('#uid')?.focus();}
-    }
-    if(isLogged()){setLoggedIn(true);} else { const wants=location.hash.replace('#','')==='login'; if(wants){showView('login');} else {setLoggedIn(false);} }
-    function tryLogin(){const u=uid.value.trim(), p=pwd.value; if(u===VALID_USER && p===VALID_PASS){setLoggedIn(true);} else {btnLogin.animate([{transform:'translateY(0)'},{transform:'translateY(-2px)'},{transform:'translateY(0)'}],{duration:220}); uid.setCustomValidity('Invalid User ID or Password'); uid.reportValidity(); setTimeout(()=>uid.setCustomValidity(''),1200);}}
-    btnLogin?.addEventListener('click',tryLogin); overlay?.addEventListener('keydown',e=>{if(e.key==='Enter') tryLogin();}); togglePass?.addEventListener('click',()=>{pwd.type=pwd.type==='password'?'text':'password';});
-    const uid2=$('#uid2'), pwd2=$('#pwd2'), btnLogin2=$('#btnLogin2'), togglePass2=$('#togglePass2');
-    function tryLogin2(){const u=uid2.value.trim(), p=pwd2.value; if(u===VALID_USER && p===VALID_PASS){setLoggedIn(true);} else {btnLogin2.animate([{transform:'translateY(0)'},{transform:'translateY(-2px)'},{transform:'translateY(0)'}],{duration:220}); uid2.setCustomValidity('Invalid User ID or Password'); uid2.reportValidity(); setTimeout(()=>uid2.setCustomValidity(''),1200);}}
-    btnLogin2?.addEventListener('click',tryLogin2); $('#view-login')?.addEventListener('keydown',e=>{if(e.key==='Enter') tryLogin2();}); togglePass2?.addEventListener('click',()=>{pwd2.type=pwd2.type==='password'?'text':'password';});
-    logoutBtn?.addEventListener('click',()=>{sessionStorage.removeItem('rt_logged_in'); history.replaceState({},'', '#login'); location.reload();});
-    if(location.hash){const n=location.hash.replace('#',''); if(VIEWS.includes(n)) showView(n);}
-
-    // Modal open/close
-    function openModal(id){const m=document.getElementById(id); if(!m) return; m.hidden=false; document.body.style.overflow='hidden';}
-    function closeModal(el){const m=el.closest('.tool-modal'); if(!m) return; m.hidden=true; document.body.style.overflow='';}
-    document.addEventListener('click',e=>{const o=e.target.closest('[data-open]'); if(o){openModal(o.getAttribute('data-open'));} if(e.target.matches('[data-close]')){closeModal(e.target);} if(e.target.classList.contains('tool-modal')){e.target.hidden=true; document.body.style.overflow='';}});
-
-    // ===== Fraction helpers (per attached tool) =====
-    function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}
-    function lcm(a,b){return Math.abs(a*b)/gcd(a,b)}
-    function simp(n,d){if(d===0)return[0,1]; if(d<0){n=-n;d=-d} const g=gcd(n,d); return [n/g,d/g]}
-    function parseFrac(s){
-      if(s==null) return null; s=String(s).trim(); if(!s) return null;
-      const mixed=s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/); if(mixed){let w=+mixed[1], n=+mixed[2], d=+mixed[3]; let num=Math.abs(w)*d+n; if(w<0) num=-num; return simp(num,d);}
-      if(/^-?\d+$/.test(s)) return [parseInt(s,10),1];
-      const f=s.match(/^(-?\d+)\s*\/\s*(\d+)$/); if(f) return simp(parseInt(f[1],10), parseInt(f[2],10));
-      if(/^[-+]?\d*\.\d+$/.test(s)){ const prec=1_000_000; return simp(Math.round(parseFloat(s)*prec), prec); }
-      return null;
-    }
-    function fromDecStr(s,places=6){ if(!/^-?\d+(\.\d+)?$/.test(String(s||'').trim())) return null; const prec=10**places; return simp(Math.round(parseFloat(s)*prec), prec) }
-    const add=(a,b)=>simp(a[0]*b[1]+b[0]*a[1], a[1]*b[1]);
-    const sub=(a,b)=>simp(a[0]*b[1]-b[0]*a[1], a[1]*b[1]);
-    const mul=(a,b)=>simp(a[0]*b[0], a[1]*b[1]);
-    const divF=(a,b)=>simp(a[0]*b[1], a[1]*b[0]);
-    const f2d=(f,p=4)=> (f[0]/f[1]).toFixed(p);
-    const f2s=(f)=>`${f[0]}/${f[1]}`;
-
-    // ===== Batwara logic (reliable normalization and editable divided area) =====
-    const bt_total=$('#bt_total'), bt_pastebox=$('#bt_pastebox'), bt_tbody=$('#bt_table tbody');
-    function bt_parseLines(txt){
-      return txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map((line,i)=>{
-        let name='', f=null;
-        if(line.includes('\t')){ const [a,b]=line.split('\t'); name=(a||'').trim(); f=parseFrac((b||'').trim()); }
-        else if(line.includes(',')){ const [a,b]=line.split(','); const fTry=parseFrac((b||'').trim()); if(fTry){ name=(a||'').trim(); f=fTry; } else { f=parseFrac((a||'').trim()); name=(b||'').trim(); } }
-        else { const m=line.match(/(.+?)\s+(-?\d+\s*\/\s*\d+)$/); if(m){ name=m[1].trim(); f=parseFrac(m[2]); } else { f=parseFrac(line.trim()); name=f?`Owner ${i+1}`:line.trim(); } }
-        if(!f){ const tail=line.match(/(-?\d+\s*\/\s*\d+)\s*$/); if(tail){ f=parseFrac(tail[1]); name=line.replace(tail[1],'').trim()||`Owner ${i+1}`; }
+    <script>
+        // --- AUTH & UI ---
+        function checkLogin() {
+            if(document.getElementById('userId').value === "RockTechnology" && document.getElementById('password').value === "Manish@31689") {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('navBar').style.display = 'flex'; // Changed to flex to support justify-between
+                document.getElementById('mainApp').style.display = 'block';
+            } else { document.getElementById('loginError').style.display = 'block'; }
         }
-        return {name, frac:f||[0,1]};
-      });
-    }
-    function bt_row(i,o){
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td class="idx">${i}</td>
-        <td><input type="checkbox" class="bt_sel"></td>
-        <td class="bt_name" style="text-align:left;padding-left:8px">${o.name}</td>
-        <td class="bt_frac">${o.frac[0]}/${o.frac[1]}</td>
-        <td class="bt_orig">-</td>
-        <td class="bt_div"><input class="bt_div_inp" type="text"></td>
-        <td class="bt_reshare">-</td>
-        <td class="bt_remain">-</td>`;
-      tr.dataset.origNum='0'; tr.dataset.origDen='1';
-      tr.dataset.divNum='0'; tr.dataset.divDen='1';
-      tr.dataset.remNum='0'; tr.dataset.remDen='1';
-      return tr;
-    }
-    function bt_render(owners){
-      bt_tbody.innerHTML=''; let i=1; owners.forEach(o=>bt_tbody.appendChild(bt_row(i++,o)));
-    }
-    function bt_compute(){
-      const totalFrac=fromDecStr((bt_total.value||'').trim(),6); if(!totalFrac){ alert('कृपया सही कुल रकवा (Decimal) दें'); return; }
-      const rows=[...bt_tbody.querySelectorAll('tr')];
-      // original area per row
-      rows.forEach(r=>{
-        const of=parseFrac(r.querySelector('.bt_frac').textContent.trim())||[0,1];
-        const area=mul(totalFrac,of);
-        r.dataset.origNum=area[0]; r.dataset.origDen=area[1];
-        r.querySelector('.bt_orig').textContent=f2d(area,4);
-      });
-      // divided area defaults for selected rows
-      rows.forEach(r=>{
-        const sel=r.querySelector('.bt_sel').checked;
-        const inp=r.querySelector('.bt_div_inp');
-        if(sel){
-          if(!(inp.value||'').trim()){ // default = original
-            const on=+r.dataset.origNum, od=+r.dataset.origDen;
-            inp.value=(on/od).toFixed(6); r.dataset.divNum=on; r.dataset.divDen=od;
-          }else{
-            // parse user divided: allow decimal or fraction of TOTAL
-            const v=(inp.value||'').trim();
-            let abs=[0,1];
-            if(v.includes('/')){ const f=parseFrac(v); abs= f? mul(totalFrac,f):[0,1]; }
-            else { const dec=fromDecStr(v,6); abs= dec? dec:[0,1]; }
-            r.dataset.divNum=abs[0]; r.dataset.divDen=abs[1];
-          }
-          inp.disabled=false;
-        }else{
-          r.dataset.divNum=0; r.dataset.divDen=1;
-          const inp=r.querySelector('.bt_div_inp'); inp.value=''; inp.disabled=true;
+        function openTab(evt, name) {
+            Array.from(document.getElementsByClassName('tab-content')).forEach(x => x.classList.remove('active'));
+            Array.from(document.getElementsByClassName('tab-btn')).forEach(x => x.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+            evt.currentTarget.classList.add('active');
         }
-      });
-      bt_recalc(totalFrac);
-    }
-    function bt_recalc(totalFrac){
-      const rows=[...bt_tbody.querySelectorAll('tr')];
-      // sum divided
-      let sumDiv=[0,1]; rows.forEach(r=>{sumDiv=add(sumDiv,[+r.dataset.divNum||0,+r.dataset.divDen||1]);});
-      const remainTotal=sub(totalFrac,sumDiv);
-      $('#bt_out_sum').value=f2d(sumDiv,4);
-      $('#bt_out_remain').value=f2d(remainTotal,4);
-
-      // per-row remain = orig - divided
-      let remSum=[0,1];
-      rows.forEach(r=>{
-        const rem=sub([+r.dataset.origNum||0,+r.dataset.origDen||1],[+r.dataset.divNum||0,+r.dataset.divDen||1]);
-        r.dataset.remNum=rem[0]; r.dataset.remDen=rem[1];
-        r.querySelector('.bt_remain').textContent= rem[0]===0?'-':f2d(rem,4);
-        remSum=add(remSum,rem);
-      });
-
-      // normalized remaining share only among those with positive remain
-      rows.forEach(r=>{
-        const rn=+r.dataset.remNum, rd=+r.dataset.remDen;
-        const cell=r.querySelector('.bt_reshare');
-        if(remSum[0]===0 || rn===0){ cell.textContent='-'; }
-        else{ const rs=divF([rn,rd],remSum); cell.textContent=f2s(rs); }
-      });
-
-      // footers
-      $('#bt_sumOrig').textContent=f2d(totalFrac,4);
-      $('#bt_sumDiv').textContent=f2d(sumDiv,4);
-      // sum reshared (for display); compute only on positive remains
-      let sumRe=[0,1]; rows.forEach(r=>{ const t=r.querySelector('.bt_reshare').textContent.trim(); if(t && t!=='-'){ const f=parseFrac(t); if(f) sumRe=add(sumRe,f);} });
-      $('#bt_sumReShare').textContent=f2s(sumRe);
-      let sumRemain=[0,1]; rows.forEach(r=>{ sumRemain=add(sumRemain,[+r.dataset.remNum||0,+r.dataset.remDen||1]); });
-      $('#bt_sumRemain').textContent=f2d(sumRemain,4);
-
-      // combined texts
-      const before=rows.map(r=>`${r.querySelector('.bt_name').textContent.trim()} ${r.querySelector('.bt_frac').textContent.trim()}`).join(', ');
-      const after=rows.map(r=>{
-        const rs=r.querySelector('.bt_reshare').textContent.trim();
-        return rs && rs!=='-' ? `${r.querySelector('.bt_name').textContent.trim()} ${rs}` : '';
-      }).filter(Boolean).join(', ');
-      $('#bt_before').value=before; $('#bt_after').value=after;
-    }
-    // events
-    $('#bt_paste')?.addEventListener('click',()=>{
-  const arr=bt_parseLines(bt_pastebox.value||'');
-  bt_render(arr);
-  // ensure all rows start as unselected
-  document.querySelectorAll('#bt_table .bt_sel').forEach(chk=> chk.checked = false);
-  bt_compute();
-});
-
-    $('#bt_sample')?.addEventListener('click',()=>{$('#bt_pastebox').value=`राम\t1/2
-श्याम\t1/4
-गीता\t1/4`;});
-    $('#bt_compute')?.addEventListener('click',bt_compute);
-    bt_tbody.addEventListener('change',e=>{
-      if(e.target.classList.contains('bt_sel')) bt_compute();
-    });
-    bt_tbody.addEventListener('input',e=>{
-      if(e.target.classList.contains('bt_div_inp')){
-        const totalFrac=fromDecStr((bt_total.value||'').trim(),6)||[0,1];
-        const tr=e.target.closest('tr'); const v=(e.target.value||'').trim();
-        let abs=[0,1];
-        if(v===''){ abs=[0,1];}
-        else if(v.includes('/')){ const f=parseFrac(v); abs=f? mul(totalFrac,f):[0,1]; }
-        else { const dec=fromDecStr(v,6); abs=dec?dec:[0,1]; }
-        tr.dataset.divNum=abs[0]; tr.dataset.divDen=abs[1];
-        bt_recalc(totalFrac);
-      }
-    });
-    $('#bt_copy_before')?.addEventListener('click',()=>navigator.clipboard.writeText($('#bt_before').value||''));
-    $('#bt_copy_after')?.addEventListener('click',()=>navigator.clipboard.writeText($('#bt_after').value||''));
-    $('#bt_export')?.addEventListener('click',()=>{
-      const rows=[...bt_tbody.querySelectorAll('tr')];
-      if(!rows.length){alert('कोई डेटा नहीं');return;}
-      let csv='No,Selected,Name,OrigFraction,OrigArea,DividedArea,RecalcFraction,RemainArea\n';
-      rows.forEach((r,i)=>{
-        const sel=r.querySelector('.bt_sel')?.checked?'1':'0';
-        const name=r.querySelector('.bt_name')?.textContent.replace(/"/g,'""')||'';
-        const of=r.querySelector('.bt_frac')?.textContent||'';
-        const oa=r.querySelector('.bt_orig')?.textContent||'';
-        const da=r.querySelector('.bt_div_inp')?.value||'';
-        const rf=r.querySelector('.bt_reshare')?.textContent||'';
-        const ra=r.querySelector('.bt_remain')?.textContent||'';
-        csv+=`="${i+1}","=${sel}","${name}","${of}","${oa}","${da}","${rf}","${ra}"\n`;
-      });
-      const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'})); a.download='batwara.csv'; a.click();
-    });
-
-    // ===== Fraction tools simple wiring =====
-    const splitItems=txt=>txt.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);
-    $('#fr_add_sample')?.addEventListener('click',()=>{$('#fr_add_in').value='1/4\n1/8\n2/5';});
-    $('#fr_add_clear')?.addEventListener('click',()=>{$('#fr_add_in').value=''; $('#fr_add_out').textContent='';});
-    $('#fr_add_btn')?.addEventListener('click',()=>{
-      const items=splitItems($('#fr_add_in').value||'');
-      let sum=[0,1], invalid=[];
-      items.forEach(x=>{const f=parseFrac(x); if(f) sum=add(sum,f); else invalid.push(x);});
-      $('#fr_add_out').innerHTML = items.length? `<strong>Sum:</strong> ${f2s(sum)} (≈ ${f2d(sum,6)})` : 'No input';
-    });
-    $('#fr_sub_clear')?.addEventListener('click',()=>{$('#fr_sub_base').value=''; $('#fr_sub_list').value=''; $('#fr_sub_out').textContent='';});
-    $('#fr_sub_btn')?.addEventListener('click',()=>{
-      const base=parseFrac($('#fr_sub_base').value||''); if(!base){$('#fr_sub_out').textContent='Invalid base'; return;}
-      const subs=splitItems($('#fr_sub_list').value||''); let cur=base;
-      subs.forEach(x=>{const f=parseFrac(x); if(f) cur=sub(cur,f);});
-      $('#fr_sub_out').innerHTML=`<strong>Result:</strong> ${f2s(cur)} (≈ ${f2d(cur,6)})`;
-    });
-    $('#fr_div_clear')?.addEventListener('click',()=>{$('#fr_div_base').value=''; $('#fr_div_parts').value=''; $('#fr_div_out').textContent='';});
-    $('#fr_div_btn')?.addEventListener('click',()=>{
-      const f=parseFrac($('#fr_div_base').value||''); const n=parseInt($('#fr_div_parts').value||'0',10);
-      if(!f||!n||n<1){$('#fr_div_out').textContent='Invalid'; return;}
-      const each=divF(f,[n,1]); $('#fr_div_out').innerHTML=`प्रत्येक भाग: ${f2s(each)} (≈ ${f2d(each,6)})`;
-    });
-
-    // ===== Combined Extractor (attached tool’s detection flow) =====
-    function textFromFile(file){ return new Promise(res=>{const r=new FileReader(); r.onload=e=>res(String(e.target.result||'')); r.readAsText(file,'utf-8');}); }
-    const cx_file=$('#cx_file');
-    cx_file?.addEventListener('change',async e=>{
-      const f=e.target.files?.[0]; if(!f) return;
-      const txt=await textFromFile(f);
-      const lines=txt.replace(/\r/g,'').split('\n').map(x=>x.trim());
-      // Heuristic sectioning: accumulate blocks; (S) marks khasara blocks in many exports (from attached logic)
-      const ownersBlocks=[], khasLines=[];
-      let block=[];
-      function flush(){
-        if(!block.length) return;
-        const hasFrac=block.some(l=>/\d+\s*\/\s*\d+/.test(l) || /भाग/.test(l));
-        const hasS=block.some(l=>/\(S\)/.test(l));
-        if(hasS) khasLines.push(...block);
-        else if(hasFrac) ownersBlocks.push([...block]);
-        block=[];
-      }
-      lines.forEach(l=>{ if(l===''){ flush(); } else block.push(l);}); flush();
-
-      // Owners
-      const owners=[];
-      ownersBlocks.forEach(b=>{
-        const name=(b.find(x=>x) || '').replace(/\(.*?\)/g,'').trim();
-        let share='';
-        for(const ln of b){ const m=ln.match(/(\d+\s*\/\s*\d+)/); if(m){ share=m[1].replace(/\s+/g,''); break; } }
-        if(!share && b.length>=3){ const m=b[2].match(/(\d+(?:\.\d+)?)/); if(m) share=m[1]; }
-        if(name && share) owners.push(`${name} ${share}`);
-      });
-      $('#cx_out_owners').value= owners.join(', ') || 'No owners found';
-
-      // Khasara
-      const khas=[];
-      for(let i=0;i<khasLines.length;i++){
-        if(/\(S\)/.test(khasLines[i])){
-          const kid=khasLines[i].replace(/\(S\)/g,'').trim();
-          let area='';
-          for(let j=i+1;j<i+6 && j<khasLines.length;j++){
-            if(/हेक्टेयर|hectare|हे\./i.test(khasLines[j])){
-              const m=khasLines[j].match(/([0-9]+(?:\.[0-9]+)?)/); if(m){ area=m[1]; break; }
-            }
-          }
-          if(kid){ khas.push({kid, area:area||'0'}); }
+        
+        // GENERIC COPY FOR INPUTS
+        function copyData(id) { document.getElementById(id).select(); document.execCommand('copy'); }
+        
+        // SPECIFIC COPY FOR BATWARA RESULT (DIV CONTENT)
+        function copyBatwaraResult() { 
+            const text = document.getElementById('resultText').innerText;
+            if(!text) return alert("कोई परिणाम उपलब्ध नहीं है।");
+            navigator.clipboard.writeText(text).then(() => {
+                alert("टेक्स्ट कॉपी कर लिया गया है!");
+            }).catch(err => {
+                alert("कॉपी करने में त्रुटि: " + err);
+            });
         }
-      }
-      let total=0; const out=khas.map(x=>{ const v=parseFloat((x.area||'0').replace(',','.'))||0; total+=v; return `${x.kid} रकवा ${v.toFixed(4)}हे.`; }).join(', ');
-      $('#cx_out_khas').value = (out ? `${out}\n\nकिता ${khas.length} कुल रकवा ${total.toFixed(4)}हे.` : 'No khasara found');
-    });
-    function dl(name,txt){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download=name; a.click(); }
-    $('#cx_copy_owners')?.addEventListener('click',()=>navigator.clipboard.writeText($('#cx_out_owners').value||''));
-    $('#cx_download_owners')?.addEventListener('click',()=>dl('owners_extracted.txt',$('#cx_out_owners').value||'' ));
-    $('#cx_copy_khas')?.addEventListener('click',()=>navigator.clipboard.writeText($('#cx_out_khas').value||''));
-    $('#cx_download_khas')?.addEventListener('click',()=>dl('khasara_extracted.txt',$('#cx_out_khas').value||'' ));
+
+        // --- B1 EXTRACTOR (SMART LOGIC - Same as previous) ---
+        function processLandData() {
+            const f = document.getElementById('fileInput').files[0];
+            if(!f) return alert("Select File (.txt)");
+            const r = new FileReader();
+            
+            r.onload = e => {
+                const lines = e.target.result.split('\n');
+
+                // 1. Gram
+                let gram = "अज्ञात";
+                if(lines.length > 6) {
+                    let rawGram = lines[6];
+                    if(rawGram.includes("ग्राम")) {
+                        gram = rawGram.split(":")[1].trim().split(/\s+/)[0];
+                    }
+                }
+
+                // 2. Khata
+                let khata = "अज्ञात";
+                if(lines.length > 20) {
+                    let rawKhata = lines[20];
+                    let match = rawKhata.match(/\d+/);
+                    if(match) khata = match[0];
+                }
+
+                // 3. Owners
+                let owners = [];
+                let nameBuffer = ""; 
+                for(let i = 22; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    if(!line) continue;
+
+                    if(line.includes("पता")) {
+                        if(nameBuffer) {
+                            let cleanName = nameBuffer.trim();
+                            let share = "0/1";
+                            if(i + 1 < lines.length) {
+                                let shareLine = lines[i+1].trim();
+                                share = shareLine.split(" ")[0]; 
+                            }
+                            owners.push(`${cleanName} ${share}`);
+                            nameBuffer = ""; 
+                            i++; 
+                        }
+                    } 
+                    else if(line.includes("भूमि स्वामी") || line.length < 2) continue;
+                    else nameBuffer += line + " ";
+                }
+
+                // 4. Khasara
+                let khasaras = [];
+                let totalArea = 0.0;
+                for(let i=0; i<lines.length; i++) {
+                    if(lines[i].includes("(S)")) {
+                        let parts = lines[i].trim().split(/\s+/);
+                        let kno = parts[0]; 
+                        let areaLine = lines[i+1] || "";
+                        if (areaLine.includes("हेक्टेयर")) {
+                            let val = areaLine.replace("हेक्टेयर", "").trim();
+                            khasaras.push(`${kno} रकवा ${val}हे.`);
+                            let vNum = parseFloat(val);
+                            if(!isNaN(vNum)) totalArea += vNum;
+                        }
+                    }
+                }
+
+                document.getElementById('ownersOutput').value = owners.join(", ");
+                let header = `ग्राम ${gram} स्थित भूमि खाता क्रमांक ${khata}, खसरा क्रमांक `;
+                let list = khasaras.join(", ");
+                let footer = `\n\nकिता ${khasaras.length} कुल रकवा ${totalArea.toFixed(4)}हे.`;
+                document.getElementById('khasaraOutput').value = header + list + footer;
+            };
+            r.readAsText(f);
+        }
+
+        // --- MATH & BATWARA LOGIC (With S.No) ---
+        class Fraction {
+            constructor(n,d){if(d===0n)throw new Error("Div0");if(d<0n){n=-n;d=-d}this.n=BigInt(n);this.d=BigInt(d);this.simplify()}
+            static gcd(a,b){return b===0n?a:Fraction.gcd(b,a%b)}
+            simplify(){if(this.n===0n){this.d=1n;return}let a=this.n<0n?-this.n:this.n,b=this.d,c=Fraction.gcd(a,b);this.n/=c;this.d/=c}
+            add(f){return new Fraction(this.n*f.d+f.n*this.d,this.d*f.d)}
+            sub(f){return new Fraction(this.n*f.d-f.n*this.d,this.d*f.d)}
+            mul(f){return new Fraction(this.n*f.n,this.d*f.d)}
+            div(f){return new Fraction(this.n*f.d,this.d*f.n)}
+            toString(){return `${this.n}/${this.d}`}
+            static fromString(s){if(!s)return new Fraction(0,1);s=s.toString().trim();if(s.includes('/')){let p=s.split('/');return new Fraction(p[0],p[1])}if(s.includes('.')){let p=s.split('.'),d=10n**BigInt(p[1].length);return new Fraction(BigInt(p[0]+p[1]),d)}return new Fraction(s,1)}
+        }
+
+        let rowData=[];
+        function parseAndLoad(){
+            rowData=[]; document.getElementById('rawInput').value.split('\n').forEach(l=>{
+                l=l.trim();if(!l)return;let m=l.match(/(\d+\/\d+)$/);
+                rowData.push({name:m?l.replace(m[0],"").trim():l, origShare:Fraction.fromString(m?m[0]:"0"), manualRemoveStr:"", isFullRemove:false});
+            }); renderTable(); calculate();
+        }
+        function renderTable(){
+            let tb=document.querySelector("#dataTable tbody");tb.innerHTML="";
+            rowData.forEach((r,i)=>{
+                tb.innerHTML+=`<tr>
+                    <td><b>${i+1}</b></td>
+                    <td>${r.name}</td>
+                    <td class="res-text">${r.origShare.toString()}</td>
+                    <td><div style="display:flex;gap:5px;"><input type="text" class="fraction-input" value="${r.manualRemoveStr}" onchange="upd(${i},this.value)" ${r.isFullRemove?'disabled':''}>
+                    <button class="btn" style="padding:2px 8px;font-size:11px;${r.isFullRemove?'background:#c62828':''}" onclick="tog(${i})">${r.isFullRemove?'UNDO':'FULL'}</button></div></td>
+                    <td class="res-text" id="d-${i}">-</td><td class="res-text" id="r-${i}">-</td><td class="res-text" id="n-${i}" style="color:green">-</td>
+                </tr>`;
+            });
+        }
+        function upd(i,v){rowData[i].manualRemoveStr=v;calculate()}
+        function tog(i){rowData[i].isFullRemove=!rowData[i].isFullRemove;rowData[i].manualRemoveStr=rowData[i].isFullRemove?"FULL":"";renderTable();calculate()}
+        function calculate(){
+            try{
+                let totA=Fraction.fromString(document.getElementById('totalArea').value||"1");
+                let sumRem=new Fraction(0,1), states=[];
+                rowData.forEach((r,i)=>{
+                    let ded=new Fraction(0,1);
+                    if(r.isFullRemove) ded=r.origShare;
+                    else if(r.manualRemoveStr) ded=Fraction.fromString(r.manualRemoveStr).div(totA);
+                    let rem=r.origShare.sub(ded); if(rem.n<0n)rem=new Fraction(0,1);
+                    document.getElementById(`d-${i}`).innerText=ded.n===0n?"-":ded.toString();
+                    document.getElementById(`r-${i}`).innerText=rem.toString();
+                    sumRem=sumRem.add(rem); states.push(rem);
+                });
+                let out=[]; rowData.forEach((r,i)=>{
+                    let ns="0"; if(states[i].n>0n&&sumRem.n>0n) ns=states[i].div(sumRem).toString();
+                    document.getElementById(`n-${i}`).innerText=ns;
+                    if(states[i].n>0n) out.push(`${r.name} ${ns}`);
+                });
+                document.getElementById('outputPanel').style.display='block';
+                document.getElementById('resultText').innerText=out.join(", ");
+            }catch(e){console.error(e)}
+        }
+        // Fraction Tools
+        function calculateSum(){let s=new Fraction(0,1);document.getElementById('sumInput').value.split(/[\n,]+/).forEach(x=>{if(x.trim())s=s.add(Fraction.fromString(x))});document.getElementById('sumResult').innerText=s.toString()}
+        function calculateSub(){document.getElementById('subResult').innerText=Fraction.fromString(document.getElementById('subMain').value).sub(Fraction.fromString(document.getElementById('subValues').value)).toString()}
+        function calculateDiv(){document.getElementById('divResult').innerText=new Fraction(BigInt(Fraction.fromString(document.getElementById('divMain').value).n), Fraction.fromString(document.getElementById('divMain').value).d * BigInt(document.getElementById('divCount').value)).toString()}
+
+        // --- DATA FORMATTER LOGIC ---
+function processFmt() {
+    const raw = document.getElementById('fmtInput').value;
+    if(!raw.trim()) return alert("डाटा पेस्ट करें!");
+
+    // कोमा और नई लाइन दोनों को सेपरेटर मानें
+    const items = raw.replace(/\n/g, ',').split(',');
     
-    // मान लें cx_out_owners textarea में owners data है, cx_out_khas में khasara data है
+    const t1 = document.querySelector('#tblRaw tbody');
+    const t2 = document.querySelector('#tblDetail tbody');
+    t1.innerHTML = "";
+    t2.innerHTML = "";
 
-function sendOwnersKhasaraToAppReports() {
-  // Extract values
-  const ownersData = document.getElementById('cx_out_owners')?.value || "";
-  const khasaraData = document.getElementById('cx_out_khas')?.value || "";
+    let hasData = false;
 
-  // Now send to Application & Reports module (must be in DOM)
-  document.getElementById('app_lowner') && (document.getElementById('app_lowner').value = ownersData);
-  document.getElementById('app_khasara') && (document.getElementById('app_khasara').value = khasaraData);
+    items.forEach(item => {
+        let text = item.trim();
+        if(!text) return;
 
-  // Auto scroll/focus for user feedback
-  document.getElementById('app_lowner')?.scrollIntoView({behavior:'smooth'});
-  document.getElementById('app_khasara')?.scrollIntoView({behavior:'smooth'});
+        // 1. Table 1 Row (Raw Text)
+        t1.innerHTML += `<tr><td>${text}</td></tr>`;
+
+        // 2. Process for Table 2
+        // हिस्सा (Fraction) निकालने के लिए Regex
+        let match = text.match(/(\d+\/\d+)$/);
+        let name = text;
+        let share = "-";
+        let num = "";
+        let den = "";
+
+        if(match) {
+            share = match[0];
+            name = text.replace(share, "").trim();
+            let p = share.split('/');
+            num = p[0];
+            den = p[1];
+        }
+
+        // Table 2 Row
+        t2.innerHTML += `<tr>
+            <td>${name}</td>
+            <td>${share}</td>
+            <td>${num}</td>
+            <td>${den}</td>
+        </tr>`;
+
+        hasData = true;
+    });
+
+    if(hasData) {
+        document.getElementById('fmtResult').style.display = "grid";
+    }
 }
 
-    
-    
-    
-    
-    // ===== Application & Reports (modal-app) =====
-(function(){
-  const modal = document.getElementById('modal-app');
-  if(!modal) return;
-
-  const qs = s => modal.querySelector(s);
-  let inited = false, previewTimer = null;
-
-  // Dropdown options (adjust as needed)
-  const courtOptions = ["तहसील-सिंगरौली नगर", "वृत्‍त-पंजरेह, तहसील-सिंगरौली नगर", "वृत्‍त-कचनी, तहसील-सिंगरौली नगर"];
-  const applicationOptions = ["तरमीम", "सीमांकन", "वारिसाना"];
-  const apptypeOptions = ["आवेदक", "आवेदिका", "आवेदकगण", "आवेदिकागण"];
-  const depotypeOptions = ["अनावेदक", "अनावेदिका", "अनावेदकगण", "अनावेदिकागण"];
-  const villageOptions = ["गनियारी", "बैढ़न", "देवरा"];
-
-  function populate(sel, arr){
-    const el = qs(sel); if(!el) return;
-    arr.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
-  }
-  function joiner(srcId, destId){
-    const src = qs('#'+srcId), dst = qs('#'+destId);
-    if(!src || !dst) return;
-    const upd = ()=>{
-      const lines = (src.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
-      dst.value = lines.join(', ');
-    };
-    src.addEventListener('input', upd); upd();
-  }
-  function ddmmyyyy(iso){
-    if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${d?.padStart(2,'0')}.${m?.padStart(2,'0')}.${y||''}`;
-  }
-  function buildContext(){
-    const split = v => (v||'').split('\n').map(l=>l.trim()).filter(Boolean);
-    const appfull = split(qs('#app_appfull')?.value);
-    const depofull = split(qs('#app_depofull')?.value);
-    const boundary = split(qs('#app_boundary')?.value);
-    const lheirs = split(qs('#app_lheirs')?.value);
-    const ndocument = split(qs('#app_ndocument')?.value);
-    return {
-      DOCID: qs('#app_docid')?.value||'',
-      DOCDT: ddmmyyyy(qs('#app_docdt')?.value||''),
-      COURT: qs('#app_court')?.value||'',
-      APPLICATION: qs('#application_court')?.value||'',
-      APPTYPE: qs('#app_apptype')?.value||'',
-      APPSHORT: qs('#app_appshort')?.value||'',
-      APPFULL: appfull.join('\n'),
-      APPJOIN: appfull.join(', '),
-      APPADDR: qs('#app_appaddr')?.value||'',
-      DEPOTYPE: qs('#app_depotype')?.value||'',
-      DEPOSHORT: qs('#app_deposhort')?.value||'',
-      DEPOFULL: depofull.join('\n'),
-      DEPOJOIN: depofull.join(', '),
-      DEPOADDR: qs('#app_depoaddr')?.value||'',
-      VILL: qs('#app_vill')?.value||'',
-      KHASARA: qs('#app_khasara')?.value||'',
-      L_OWNER: qs('#app_lowner')?.value||'',
-      DO_DATE: ddmmyyyy(qs('#app_dodate')?.value||''),
-      DL_OWNER: qs('#app_dlowner')?.value||'',
-      BOUNDARY: boundary.join('\n'),
-      BOUNDARYJOIN: boundary.join(', '),
-      LHEIRS: lheirs.join('\n'),
-      LHEIRSJOIN: lheirs.join(', '),
-      LHORDER: qs('#app_lhorder')?.value||'',
-      AMOUNT: qs('#app_amount')?.value||'',
-      RWA: qs('#app_rwa')?.value||'',
-      RBAD: qs('#app_rbad')?.value||'',
-      BD: qs('#app_bd')?.value||'',
-      NDOCUMENT: qs('#app_ndocument')?.value||'',
-      NDJOIN: ndocument.join(', '),
-    };
-  }
-
-  async function loadTemplates(force=false){
-    const base = 'https://api.github.com/repos/rocktech-web/AIOFormat/contents/';
-    const url = force ? `${base}?_ts=${Date.now()}` : base;
-    const sel = qs('#app_template'); if(!sel) return;
-    const prev = sel.value;
-    sel.innerHTML = '<option value="">Loading templates...</option>';
-    const res = await fetch(url, { headers:{'Accept':'application/vnd.github+json'}, cache:'no-store' });
-    if(!res.ok){ sel.innerHTML='<option value="">Failed to load</option>'; return; }
-    const data = await res.json();
-    const list = (Array.isArray(data)?data:[]).filter(x=>x?.type==='file' && x.name?.endsWith('.docx')).map(x=>x.name).sort((a,b)=>a.localeCompare(b));
-    sel.innerHTML = '<option value="">Select Template</option>';
-    list.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
-    if(prev && list.includes(prev)) sel.value=prev;
-  }
-
-/* New JS for Checkboxes*/
-async function loadTemplatesPanel(force=false) {
-  const base = 'https://api.github.com/repos/rocktech-web/AIOFormat/contents/';
-  const url = force ? `${base}?_ts=${Date.now()}` : base;
-  const panel = document.getElementById('app_template_panel');
-  panel.innerHTML = '<div>loading templates…</div>';
-  const res = await fetch(url, { headers:{'Accept':'application/vnd.github+json'}, cache:'no-store' });
-  if(!res.ok){ panel.innerHTML='<div>template fetch failed</div>'; return; }
-  const data = await res.json();
-  const list = (Array.isArray(data)?data:[]).filter(x=>x?.type==='file' && x.name?.endsWith('.docx')).map(x=>x.name).sort();
-
-  panel.innerHTML = list.length ? '' : '<div>No templates found!</div>';
-
-  list.forEach((n, idx) => {
-    const id = 'tpl_' + n.replace(/[^a-zA-Z0-9]/g,'_');
-    const div = document.createElement('div');
-    div.className = 'tplitem';
-    div.innerHTML = `<input type="checkbox" id="${id}" value="${n}" class="tplcheck">
-      <label for="${id}" style="margin-left:6px;">${n}</label>`;
-    panel.appendChild(div);
-  });
+// जेनेरिक टेबल कॉपी फंक्शन
+function copyTable(id) {
+    const el = document.getElementById(id);
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    alert("टेबल कॉपी हो गई!");
 }
-loadTemplatesPanel();
 
+// --- GITHUB FILE DOWNLOADER LOGIC ---
 
-/* For Zip Download*/
-// JSZip, docxtemplater, mammoth, pizzip CDN पहले पेज में लोड होना चाहिए
+async function loadGithubFiles() {
+    const owner = 'rocktech-web';
+    const repo = 'AllFormats';
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
+    
+    const container = document.getElementById('filesContainer');
+    const loader = document.getElementById('fileLoader');
+    
+    container.innerHTML = "";
+    loader.style.display = "block";
 
-document.getElementById('app_downloadZipBtn').addEventListener('click', async function() {
-  const checks = Array.from(document.querySelectorAll('#app_template_panel .tplcheck:checked'));
-  const prefix = (document.getElementById('app_outputname').value || 'output').trim();
-  if(checks.length === 0){ alert('कम से कम एक टेम्प्लेट चुनें'); return; }
-
-  const zip = new JSZip();
-  const ctx = buildContext(); // आपका context-data function
-
-  for(const chk of checks) {
-    const name = chk.value;
     try {
-      const raw = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${name}`;
-      const resp = await fetch(raw, {cache:'no-store'});
-      if(!resp.ok) throw `GitHub file fetch failed for ${name}`;
-      const buf = await resp.arrayBuffer();
-      const zipPiz = new PizZip(buf);
-      const doc = new docxtemplater(zipPiz, {paragraphLoop:true, linebreaks:true});
-      doc.setData(ctx);
-      doc.render();
-      const blob = doc.getZip().generate({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-      zip.file((prefix ? prefix+'_' : '') + name, blob);
-    } catch(e) {
-      alert('Error processing template: ' + name);
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Repository not found or private");
+        
+        const data = await response.json();
+        
+        // 1. Group files by Extension
+        const grouped = {};
+        data.forEach(file => {
+            if (file.type === 'file') {
+                // Get extension (e.g., pdf, docx)
+                const ext = file.name.split('.').pop().toUpperCase();
+                if (!grouped[ext]) grouped[ext] = [];
+                grouped[ext].push(file);
+            }
+        });
+
+        // 2. Render Groups
+        loader.style.display = "none";
+        
+        if (Object.keys(grouped).length === 0) {
+            container.innerHTML = "<p>No files found in repository.</p>";
+            return;
+        }
+
+        for (const [ext, files] of Object.entries(grouped)) {
+            // Create Section for each File Type
+            let sectionHtml = `
+                <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                    <div style="background: #e9ecef; padding: 10px 15px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ddd;">
+                        📂 ${ext} FILES (${files.length})
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th width="70%">File Name</th>
+                                    <th width="15%">Size</th>
+                                    <th width="15%">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            files.forEach(file => {
+                // Convert size to KB
+                let sizeKB = (file.size / 1024).toFixed(1) + ' KB';
+                
+                sectionHtml += `
+                    <tr>
+                        <td>${file.name}</td>
+                        <td>${sizeKB}</td>
+                        <td>
+                            <button class="btn" style="padding: 5px 10px; font-size: 12px;" 
+                                onclick="verifyAndDownload('${file.download_url}')">
+                                ⬇ Download
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            sectionHtml += `</tbody></table></div></div>`;
+            container.innerHTML += sectionHtml;
+        }
+
+    } catch (error) {
+        loader.style.display = "none";
+        container.innerHTML = `<p style="color:red;">Error: ${error.message}. <br>Make sure the repository is Public.</p>`;
     }
-  }
-  zip.generateAsync({type:"blob"}).then(blob => {
-    saveAs(blob, (prefix ? prefix+".zip" : "templates.zip"));
-  });
-});
-
-
-
-  async function downloadDocx(){
-    const name = qs('#app_template')?.value; if(!name) return;
-    const ctx = buildContext();
-    const out = (qs('#app_outputname')?.value||'output').trim()||'output';
-    const raw = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${name}`;
-    const resp = await fetch(raw, {cache:'no-store'}); const buf = await resp.arrayBuffer();
-    const zip = new PizZip(buf); const doc = new docxtemplater(zip, { paragraphLoop:true, linebreaks:true });
-    doc.setData(ctx); doc.render();
-    const blob = doc.getZip().generate({ type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download = `${out}.docx`; a.click(); URL.revokeObjectURL(url);
-  }
-
-  async function renderPreview(){
-    const name = qs('#app_template')?.value;
-    const status = qs('#app_previewStatus'); const box=qs('#app_preview');
-    if(!name){ if(status) status.textContent='Select a template to preview…'; if(box) box.innerHTML=''; return; }
-    if(status) status.textContent='Rendering preview…';
-    try{
-      const raw = `https://raw.githubusercontent.com/rocktech-web/AIOFormat/main/${name}`;
-      const resp = await fetch(raw, {cache:'no-store'}); const buf = await resp.arrayBuffer();
-      const zip = new PizZip(buf); const doc = new docxtemplater(zip, { paragraphLoop:true, linebreaks:true });
-      doc.setData(buildContext()); doc.render();
-      const blob = doc.getZip().generate({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-      const arr = await blob.arrayBuffer();
-      const html = await window.mammoth.convertToHtml({ arrayBuffer: arr });
-      if(box) box.innerHTML = html.value || '<em>No content</em>';
-      if(status) status.textContent='Preview ready';
-    }catch(e){ if(status) status.textContent='Preview failed'; }
-  }
-  function schedulePreview(){ clearTimeout(previewTimer); previewTimer=setTimeout(renderPreview, 350); }
-
-  function resetFields(){
-    const defaults={ app_appaddr:'निवासी-, जिला-सिंगरौली (म.प्र.)', app_depoaddr:'निवासी-, जिला-सिंगरौली (म.प्र.)' };
-    modal.querySelectorAll('#appForm input, #appForm textarea, #appForm select').forEach(el=>{
-      if(el.id==='app_appaddr'){ el.value=defaults.app_appaddr; return; }
-      if(el.id==='app_depoaddr'){ el.value=defaults.app_depoaddr; return; }
-      if(el.tagName==='SELECT'){ el.selectedIndex=0; return; }
-      if(el.type==='date'||el.tagName==='TEXTAREA'||el.type==='text'){ el.value=''; }
-    });
-    ['app_appfull','app_depofull','app_boundary','app_lheirs'].forEach(id=>{ const el=qs('#'+id); if(el) el.dispatchEvent(new Event('input',{bubbles:true})); });
-    renderPreview();
-  }
-
-  // Lazy init when modal opens
-  const observer = new MutationObserver(()=>{
-    const visible = !modal.hasAttribute('hidden');
-    if(visible && !inited){
-      inited = true;
-      populate('#app_court', courtOptions);
-      populate('#application_court', applicationOptions);
-      populate('#app_apptype', apptypeOptions);
-      populate('#app_depotype', depotypeOptions);
-      populate('#app_vill', villageOptions);
-      joiner('app_appfull','app_appjoin');
-      joiner('app_depofull','app_depojoin');
-      joiner('app_boundary','app_boundaryjoin');
-      joiner('app_lheirs','app_lheirsjoin');
-      joiner('app_ndocument','app_ndjoin');
-      loadTemplates();
-
-      qs('#app_downloadBtn')?.addEventListener('click', downloadDocx);
-      qs('#app_refreshTpl')?.addEventListener('click', ()=>loadTemplates(true));
-      qs('#app_resetFields')?.addEventListener('click', resetFields);
-
-      // live preview triggers
-      modal.querySelectorAll('#appForm input, #appForm textarea, #appForm select').forEach(el=>{
-        el.addEventListener('input', schedulePreview);
-        el.addEventListener('change', schedulePreview);
-      });
-      qs('#app_template')?.addEventListener('change', renderPreview);
-    }
-    if(visible){ schedulePreview(); }
-  });
-  observer.observe(modal, { attributes:true, attributeFilter:['hidden'] });
-})();
-
-
-/* onchange इवेंट पर highlighting और comment जोड़ना*/
-// Field Configurations and comments per Type (Sample)
-// Hindi comments for User Guidance
-const fieldSettings = {
-    तरमीम:{
-        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_lowner']
-    },
-    
-    सीमांकन: {
-        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_lowner', 'app_boundary'],
-    },
-
-    वारिसाना: {
-        fields: ['app_court','app_apptype', 'app_appshort', 'app_appfull', 'app_appaddr', 'app_depotype', 'app_deposhort', 'app_depofull', 'app_depoaddr', 'app_vill', 'app_khasara', 'app_dodate', 'app_dlowner', 'app_lheirs'],
-    }
-};
-
-// Reset highlights/comments on all provided fields
-function resetHighlightsAndComments() {
-  document.querySelectorAll('.highlight-field').forEach(el => el.classList.remove('highlight-field'));
-  document.querySelectorAll('.app-field-comment').forEach(el => el.textContent = '');
 }
 
-// APPLICATION TYPE select बदलने पर
-document.getElementById('application_court').addEventListener('change', function () {
-  resetHighlightsAndComments();
-  const selectedText = this.options[this.selectedIndex].text.trim();
-  if (!fieldSettings[selectedText]) return;
-
-  // नया कोड: highlight और comments दोनों को setTimeout से थोड़ा-थोड़ा delay के साथ apply करें
-  fieldSettings[selectedText].fields.forEach((fid, idx) => {
-    setTimeout(() => {
-      const field = document.getElementById(fid);
-      if (field) field.classList.add('highlight-field');
-      const cmnt = document.getElementById('comment-' + fid);
-      if (cmnt) cmnt.textContent = fieldSettings[selectedText].comments[fid] || '';
-    }, idx * 0); // हर फील्ड पर 15ms से बढ़ाते जाएँ
-  });
-});
-
-
-/* यहां पर GitHub पर upload हेतु js code है*/
-
-document.getElementById('gh_upload_btn').addEventListener('click', async function() {
-  const fileInput = document.getElementById('gh_upload_file');
-  const token = document.getElementById('gh_token').value.trim();
-  const statusDiv = document.getElementById('gh_upload_status');
-  if (!fileInput.files[0] || !token) {
-    statusDiv.textContent = "Please select a .docx file and enter your token!";
-    statusDiv.style.color = "#d73a49";
-    return;
-  }
-  const file = fileInput.files[0];
-  // File extension check
-  if (!file.name.toLowerCase().endsWith('.docx')) {
-    statusDiv.textContent = "Only .docx files are allowed!";
-    statusDiv.style.color = "#d73a49";
-    return;
-  }
-  
-  const filename = file.name;
-  const owner  = "rocktech-web";
-  const repo   = "AIOFormat";
-  const branch = "main";
-  const repoPath = filename;
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${repoPath}`;
-
-  // 1. Check if file already exists
-  let shaValue = null;
-  let fileExists = false;
-  const check = await fetch(apiUrl, {
-    method: "GET",
-    headers: {
-      "Authorization": "token " + token,
-      "Accept": "application/vnd.github.v3+json"
+function verifyAndDownload(url) {
+    let code = prompt("सुरक्षा कोड दर्ज करें (Enter Code to Download):");
+    
+    if (code === "258") {
+        // Open download link in new tab
+        window.open(url, '_blank');
+    } else if (code !== null) {
+        alert("❌ गलत कोड! डाउनलोड अस्वीकृत।");
     }
-  });
-  if (check.ok) {
-    fileExists = true;
-    const resJson = await check.json();
-    shaValue = resJson.sha;
-  }
+}
 
-  // 2. If file exists, confirm replacement
-  if (fileExists) {
-    const confirmation = window.confirm("File already exists. Do you want to replace (overwrite) it?");
-    if (!confirmation) {
-      statusDiv.textContent = "Upload cancelled by user!";
-      statusDiv.style.color = "#d73a49";
-      return;
-    }
-  }
-
-  // 3. Proceed with upload (if replacing, add sha)
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const content = btoa(e.target.result);
-    let bodyObj = {
-      message: fileExists ? "File replaced via web tool" : "File uploaded via web tool",
-      content: content,
-      branch: branch
-    };
-    if (fileExists) bodyObj.sha = shaValue;
-
-    const response = await fetch(apiUrl, {
-      method: "PUT",
-      headers: {
-        "Authorization": "token " + token,
-        "Accept": "application/vnd.github.v3+json"
-      },
-      body: JSON.stringify(bodyObj)
-    });
-    const result = await response.json();
-    if (response.ok) {
-      statusDiv.textContent = (fileExists ? "File replaced successfully!" : "Upload successful! File: " + repoPath);
-      statusDiv.style.color = "#2b6b22";
-    } else {
-      statusDiv.textContent = "Upload failed: " + (result.message || "UNKNOWN ERROR");
-      statusDiv.style.color = "#d73a49";
-    }
-  };
-  reader.readAsBinaryString(file);
-});
-
-
-  </script>
+// Auto load on first click (Optional)
+// document.addEventListener('DOMContentLoaded', () => { if(document.getElementById('downTab').classList.contains('active')) loadGithubFiles(); });
+    </script>
 </body>
 </html>
