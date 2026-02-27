@@ -4,16 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock Technology | Land Management Suite</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <style>
+        /* =========================================
+           GLOBAL VARIABLES (FOR BOTH APPS)
+           ========================================= */
         :root {
+            /* ORIGINAL ROCKTECH CSS VARS */
             --primary: #2c3e50;
             --accent: #e67e22;
             --bg-body: #f4f6f9;
             --glass: rgba(255, 255, 255, 0.98);
             --shadow: 0 4px 20px rgba(0,0,0,0.08);
             --transition: all 0.3s ease;
+
+            /* CAD TOOL VARS (Moved to root for floating popup support) */
+            --cad-bg-panel: #ffffff;
+            --cad-text-main: #0f172a;
+            --cad-text-muted: #475569;
+            --cad-border-light: #e2e8f0;
+            --cad-border-dark: #cbd5e1;
+            --cad-primary: #2563eb; 
+            --cad-primary-hover: #1d4ed8;
+            --cad-secondary: #0f172a; 
+            --cad-secondary-hover: #1e293b;
+            --cad-success: #059669; 
+            --cad-danger: #dc2626; 
+            --print-border: #000000;
         }
 
+        /* =========================================
+           ORIGINAL ROCKTECH CSS (UNTOUCHED LOGIC)
+           ========================================= */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-body);
@@ -41,13 +69,13 @@
             border-radius: 6px; box-sizing: border-box; font-size: 16px;
         }
 
-        /* NAVIGATION BAR (UPDATED) */
+        /* NAVIGATION BAR */
         .navbar {
             position: fixed; top: 0; left: 0; right: 0;
             background: var(--primary); height: 60px;
-            display: flex; justify-content: space-between; /* Space out items */
+            display: flex; justify-content: space-between;
             align-items: center;
-            padding: 0 20px; /* Add side padding */
+            padding: 0 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;
         }
         
@@ -84,11 +112,11 @@
         }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
-        textarea, input[type="text"], input[type="number"] {
+        textarea, input[type="text"], input[type="number"], input[type="file"] {
             width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;
             font-family: inherit; font-size: 14px; box-sizing: border-box;
         }
-        textarea:focus, input:focus { border-color: var(--accent); outline: none; }
+        textarea:focus, input[type="text"]:focus, input[type="number"]:focus { border-color: var(--accent); outline: none; }
         button.btn {
             background: var(--primary); color: white; border: none; padding: 10px 20px;
             border-radius: 6px; cursor: pointer; font-weight: 600; transition: var(--transition);
@@ -97,11 +125,11 @@
         button.btn-outline { background: transparent; border: 1px solid #999; color: #555; }
         button.btn-outline:hover { background: #eee; }
 
-        /* TABLE STYLES */
-        .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0; }
-        table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
-        th { background: #f8f9fa; color: #555; padding: 12px; text-align: left; border-bottom: 2px solid #eee; }
-        td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+        /* TABLE STYLES (Scoped to #mainApp to avoid breaking CAD Print Layout) */
+        #mainApp .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0; }
+        #mainApp table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
+        #mainApp th { background: #f8f9fa; color: #555; padding: 12px; text-align: left; border-bottom: 2px solid #eee; }
+        #mainApp td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
         
         .fraction-input { width: 80px; text-align: center; border: 1px solid #ddd; }
         .res-text { font-family: monospace; font-weight: bold; }
@@ -113,9 +141,128 @@
             .grid { grid-template-columns: 1fr; } 
             .navbar { flex-wrap: wrap; height: auto; padding: 10px; justify-content: center; gap: 10px; }
             .nav-brand, .nav-contact { width: 100%; text-align: center; }
-            .nav-center { width: 100%; justify-content: center; }
-            .tab-btn { padding: 10px; flex: 1; text-align: center; }
+            .nav-center { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .tab-btn { padding: 10px; flex: 1 1 30%; text-align: center; font-size: 13px;}
             body { padding-top: 140px; } 
+        }
+
+        /* =========================================
+           NAZRI NAKSHA (CAD TOOL) SPECIFIC CSS
+           ========================================= */
+        #nakshaTab {
+            font-family: 'Poppins', sans-serif;
+            color: var(--cad-text-main);
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        #nakshaTab.active { display: flex; } 
+
+        .cad-header { text-align: center; margin-bottom: 15px; width: 100%; }
+        .cad-header h1 { color: var(--cad-secondary); margin-bottom: 2px; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;}
+        .cad-header p { color: var(--cad-text-muted); font-size: 14px; margin: 0; font-weight: 500;}
+
+        .cad-panel { 
+            background: var(--cad-bg-panel); padding: 12px 20px; border-radius: 8px; 
+            border: 1px solid var(--cad-border-light); box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            margin-bottom: 12px; width: 100%; max-width: 1100px; display: flex; gap: 10px; 
+            flex-wrap: wrap; justify-content: center; align-items: center; box-sizing: border-box;
+        }
+
+        .cad-btn { 
+            padding: 8px 14px; border: 1px solid var(--cad-border-dark); border-radius: 6px; 
+            background: #f1f5f9; color: #334155; font-weight: 600; font-family: 'Poppins', sans-serif; 
+            font-size: 13px; cursor: pointer; transition: all 0.2s ease; display: flex; 
+            align-items: center; justify-content: center; outline: none; box-shadow: none;
+        }
+        .cad-btn:hover { background: #e2e8f0; transform: none; }
+        
+        .active-tool { background: #eff6ff !important; border-color: #7dd3fc !important; color: #0284c7 !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+
+        .cad-btn-primary { background: var(--cad-primary); border-color: var(--cad-primary); color: white; }
+        .cad-btn-primary:hover { background: var(--cad-primary-hover); border-color: var(--cad-primary-hover); color: white;}
+        .cad-btn-dark { background: var(--cad-secondary); border-color: var(--cad-secondary); color: white; }
+        .cad-btn-dark:hover { background: var(--cad-secondary-hover); border-color: var(--cad-secondary-hover); color: white;}
+        .cad-btn-success { background: var(--cad-success); border-color: var(--cad-success); color: white; }
+        .cad-btn-danger { background: var(--cad-danger); border-color: var(--cad-danger); color: white; }
+        .cad-btn-danger-outline { border-color: var(--cad-danger); color: var(--cad-danger); background: transparent; }
+        .cad-btn-danger-outline:hover { background: #fee2e2; }
+
+        .cad-control-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--cad-text-muted); background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--cad-border-light);}
+        .cad-number-input { width: 45px !important; padding: 4px !important; border: 1px solid var(--cad-border-dark) !important; border-radius: 4px !important; font-family: 'Poppins', sans-serif; font-weight: 600; text-align: center; color: var(--cad-text-main);}
+        .cad-text-input { padding: 6px 10px !important; border: 1px solid var(--cad-border-dark) !important; border-radius: 4px !important; font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 13px; width: 180px !important;}
+
+        .viewport { width: 160mm; height: 174mm; border: 1px solid var(--cad-border-dark); background: #e2e8f0; overflow: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; border-radius: 4px;}
+        .canvas-wrapper { width: 160mm; height: 174mm; background: white; transform-origin: top left; transition: transform 0.1s ease; position: relative; }
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+        
+        #instruction { color: var(--cad-primary); font-weight: 600; margin-bottom: 10px; text-align: center; font-size: 14px;}
+        
+        .floating-input-container { position: absolute; background: white; border: 1px solid var(--cad-border-dark); border-radius: 6px; padding: 10px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 8px;}
+        .floating-textarea { font-family: 'Poppins', sans-serif; font-size: 14px; padding: 8px; font-weight: 500; outline: none; border: 1px solid var(--cad-border-dark); border-radius: 4px; resize: both; min-width: 200px; min-height: 60px;}
+        #cadDistanceBox { display: none; position: absolute; background: var(--cad-secondary); color: white; padding: 4px 10px; border-radius: 4px; font-weight: 600; pointer-events: none; z-index: 10; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
+
+        .cad-form-group { margin-bottom: 10px; width: 100%;}
+        .cad-form-group label { display: block; font-weight: 600; color: var(--cad-text-muted); margin-bottom: 4px; font-size: 12px;}
+        .cad-form-group input, .cad-form-group textarea { width: 100%; padding: 8px !important; border: 1px solid var(--cad-border-dark) !important; border-radius: 6px !important; font-family: inherit; font-size: 13px; box-sizing: border-box; background: #ffffff; transition: 0.2s;}
+        .cad-form-group input:focus, .cad-form-group textarea:focus { outline: none; border-color: var(--cad-primary) !important; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);}
+
+        .cad-divider { width: 1px; height: 24px; background: var(--cad-border-dark); margin: 0 5px; }
+
+        /* =========================================
+           A4 PRINT CSS (FIXED FOR PROPER ALIGNMENT)
+           ========================================= */
+        #printArea { display: none; }
+        
+        @media print {
+            @page { size: A4; margin: 10mm; }
+            body { margin: 0; padding: 0; background-color: #fff; display: block !important; }
+            
+            /* HIDE EVERYTHING EXCEPT PRINT AREA */
+            body > *:not(#printArea) { display: none !important; }
+            
+            #printArea { 
+                display: block !important; position: absolute; left: 0; top: 0; width: 100%; 
+                font-family: 'Poppins', sans-serif; color: #000; 
+            }
+            .document-container {
+                width: 190mm; height: 277mm; margin: 0 auto; background-color: #fff;
+                border: 1px solid var(--print-border); box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; 
+            }
+            .bold { font-weight: 700 !important; }
+            .regular { font-weight: 400 !important; }
+            .font-14 { font-size: 14pt !important; }
+            .font-11 { font-size: 11pt !important; }
+
+            .header-table { width: 100%; border-collapse: collapse; border-bottom: 1px solid var(--print-border); }
+            .header-table > tbody > tr > td { border-right: 1px solid var(--print-border); padding: 8px 10px; vertical-align: top; line-height: 1.5; }
+            .header-table > tbody > tr > td:last-child { border-right: none; }
+            .header-left { width: 55%; }
+            .header-mid { width: 30%; padding: 0 !important; }
+            .header-right { width: 15%; text-align: center; vertical-align: middle !important; }
+            .compass-img { width: 80px; height: auto; }
+
+            .mid-table { width: 100%; height: 100%; border-collapse: collapse; }
+            .mid-table td { border-bottom: 1px solid var(--print-border); padding: 10px; }
+            .mid-table tr:last-child td { border-bottom: none; }
+            .title-cell { text-align: center; vertical-align: middle; height: 5px; }
+            .date-cell { text-align: center; vertical-align: bottom; height: 30px; padding-bottom: 10px; }
+
+            .map-area { flex-grow: 1; min-height: 0; border-bottom: 1px solid var(--print-border); display: flex; justify-content: center; align-items: center; padding: 5px; box-sizing: border-box; overflow: hidden; }
+            .map-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+            .declaration-text { padding: 12px; text-align: center; }
+            .signature-line { padding: 6px 10px; }
+
+            .footer-layout-table { width: 100%; border-collapse: collapse; border-top: 1px solid var(--print-border); }
+            .footer-layout-table > tbody > tr > td { vertical-align: top; }
+            .footer-details-table { width: 100%; border-collapse: collapse; height: 100%; }
+            .footer-details-table td { border-right: 1px solid var(--print-border); border-bottom: 1px solid var(--print-border); padding: 10px; vertical-align: middle; }
+            .footer-details-table tr:last-child td { border-bottom: none; }
+            .label-col { width: 30%; text-align: right; padding-right: 15px; }
+            .value-col { width: 70%; }
+            .patwari-block { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center; height: 100%; min-height: 140px; padding: 15px 10px; box-sizing: border-box; }
         }
     </style>
 </head>
@@ -139,6 +286,8 @@
             <button class="tab-btn" onclick="openTab(event, 'batTab')">Batwara Calc</button>
             <button class="tab-btn" onclick="openTab(event, 'fracTab')">Fraction Calc</button>
             <button class="tab-btn" onclick="openTab(event, 'fmtTab')">Data Formatter</button>
+            <button class="tab-btn" onclick="openTab(event, 'nakshaTab')">Nazri Naksha</button>
+            <button class="tab-btn" onclick="openTab(event, 'newToolTab')">Trace Naksha</button>
             <button class="tab-btn" onclick="openTab(event, 'downTab')">Download Formats</button>
         </div>
         <div class="nav-contact">7869731689</div>
@@ -243,83 +392,268 @@
             </div>
         </div>
         
-<div id="fmtTab" class="tab-content">
-    <div class="card">
-        <div class="section-title">Data Formatter (Table Generator)</div>
-        <div class="grid" style="grid-template-columns: 1fr;">
-            <div>
-                <label><b>डाटा पेस्ट करें (Comma Separated):</b></label>
-                <textarea id="fmtInput" rows="5" placeholder="उदाहरण: राम 1/4, श्याम 1/4..."></textarea>
-                <button class="btn" style="margin-top:15px;" onclick="processFmt()">Format Data</button>
+        <div id="fmtTab" class="tab-content">
+            <div class="card">
+                <div class="section-title">Data Formatter (Table Generator)</div>
+                <div class="grid" style="grid-template-columns: 1fr;">
+                    <div>
+                        <label><b>डाटा पेस्ट करें (Comma Separated):</b></label>
+                        <textarea id="fmtInput" rows="5" placeholder="उदाहरण: राम 1/4, श्याम 1/4..."></textarea>
+                        <button class="btn" style="margin-top:15px;" onclick="processFmt()">Format Data</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fmtResult" class="grid" style="display:none; grid-template-columns: 1fr 2fr;">
+                <div class="card">
+                    <div class="section-title">
+                        <span>Table 1: संयुक्त विवरण</span>
+                        <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblRaw')">Copy</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table id="tblRaw">
+                            <thead><tr><th>भूमि स्‍वामी का नाम + हिस्‍सा</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-title">
+                        <span>Table 2: विस्तृत विवरण</span>
+                        <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblDetail')">Copy</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table id="tblDetail">
+                            <thead>
+                                <tr><th>भूमि स्‍वामी का नाम</th><th>हिस्‍सा</th><th>अंश</th><th>हर</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="fmtResult" class="grid" style="display:none; grid-template-columns: 1fr 2fr;">
+        <div id="nakshaTab" class="tab-content">
+            <div class="cad-header">
+                <h1>RockTechnology - Master CAD</h1>
+                <p>प्रोफेशनल नज़री नक्शा एवं राजस्व दस्तावेज़ जनरेटर</p>
+            </div>
+
+            <input type="file" id="projectInput" accept=".json" style="display: none;" />
+
+            <div class="cad-panel">
+                <button class="cad-btn" onclick="document.getElementById('projectInput').click()">प्रोजेक्ट खोलें</button>
+                <button class="cad-btn" onclick="saveProject()">प्रोजेक्ट सेव करें</button>
+                <div class="cad-divider"></div>
+                <button class="cad-btn" onclick="changeZoom(0.2)">ज़ूम इन (+)</button>
+                <button class="cad-btn" onclick="changeZoom(-0.2)">ज़ूम आउट (-)</button>
+                <div class="cad-divider"></div>
+                <button class="cad-btn" onclick="undo()">Undo</button>
+                <button class="cad-btn" onclick="redo()">Redo</button>
+                <div class="cad-divider"></div>
+                <button class="cad-btn" onclick="resetCanvasState()">नया नक्शा (Reset)</button>
+            </div>
+
+            <div class="cad-panel" id="drawToolbar">
+                <label class="cad-btn cad-btn-dark">इमेज अपलोड करें <input type="file" id="imageInput" accept="image/*" style="display: none;" /></label>
+                <div class="cad-divider"></div>
+                <button class="cad-btn" id="btnMain" onclick="setMode('main')">मुख्य मार्ग (Red)</button>
+                <button class="cad-btn" id="btnLink" onclick="setMode('link')">लिंक मार्ग (Yellow)</button>
+                <button class="cad-btn" id="btnKachchi" onclick="setMode('kachchi')">कच्चा रास्ता (Dash)</button>
+                <button class="cad-btn" id="btnRail" onclick="setMode('rail')">रेल लाइन</button>
+                <button class="cad-btn" id="btnPlot" onclick="setMode('plot')">प्लॉट लाइन</button>
+                <button class="cad-btn" id="btnText" onclick="setMode('text')">फ्री टेक्स्ट</button>
+                <div class="cad-divider"></div>
+                <button class="cad-btn cad-btn-primary" onclick="generateLineArt()">लाइन आर्ट तैयार करें</button>
+            </div>
+
+            <div class="cad-panel" id="docDetailsPanel" style="display: none; flex-direction: column; align-items: stretch; gap: 5px; background: #f0fdfa; border-color: #5eead4;">
+                <div style="font-weight: 700; color: var(--cad-success); border-bottom: 1px solid #ccfbf1; padding-bottom: 8px; margin-bottom: 5px; font-size: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📝 आधिकारिक दस्तावेज़ का विवरण (A4 Print)</span>
+                    <span style="font-size: 12px; color: var(--cad-text-muted); font-weight: 500;">प्रोजेक्ट सेव करने पर यह विवरण भी सेव हो जाएगा।</span>
+                </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="cad-form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
+                        <label>कार्यालय का विवरण (ऊपर बाईं ओर):</label>
+                        <textarea id="docOffice" rows="4" style="resize: vertical;">कार्यालय पटवारी हल्का बैढ़न, क्रमांक 14&#10;रा.नि. मण्डल: बैढ़न, तहसील: सिंगरौली नगर&#10;जिला: सिंगरौली, मध्य प्रदेश</textarea>
+                    </div>
+                    <div class="cad-form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
+                        <label>पटवारी हस्ताक्षर विवरण (नीचे दाईं ओर):</label>
+                        <textarea id="docPatwari" rows="4" style="resize: vertical;">हल्का बैढ़न, क्रमांक 14&#10;रा.नि. मण्डल: बैढ़न&#10;तहसील: सिंगरौली नगर</textarea>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="cad-form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                        <label>ग्राम/नगर:</label>
+                        <input type="text" id="docVillage" value="गनियारी">
+                    </div>
+                    <div class="cad-form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                        <label>दिनांक:</label>
+                        <input type="text" id="docDate" placeholder="DD/MM/YYYY">
+                    </div>
+                    <div class="cad-form-group" style="flex: 2; min-width: 250px; margin-bottom: 0;">
+                        <label>खसरा, रकवा व भू-स्वामी विवरण:</label>
+                        <textarea id="docKhasra" rows="4" style="resize: vertical;">1388/1/2/2 रकवा 0.0220 हेक्टेयर (भूमि स्वामी कुसुम कली गुप्ता पति सुरेन्द्र प्रसाद गुप्ता)</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cad-panel" id="editToolbar" style="display: none;">
+                <button class="cad-btn cad-btn-danger" id="btnTrim" onclick="setEditMode('trim')">कैंची (क्रॉसिंग हटाएं)</button>
+                <button class="cad-btn" id="btnEditLine" onclick="setEditMode('editLine')">लाइन खिसकाएं (Nodes)</button>
+                <div class="cad-divider"></div>
+                <button class="cad-btn" id="btnSmartText" onclick="setEditMode('smartText')">स्मार्ट नाम (सड़क पर)</button>
+                <button class="cad-btn" id="btnFreeTextEdit" onclick="setEditMode('freeText')">फ्री टेक्स्ट</button>
+                <button class="cad-btn cad-btn-dark" id="btnEditText" onclick="setEditMode('editText')">टेक्स्ट सेलेक्ट / एडिट करें</button>
+                
+                <div class="cad-control-group" id="textControls" style="display: none;">
+                    <input type="text" id="textContentInput" class="cad-text-input" placeholder="टेक्स्ट सुधारें..." oninput="updateTextProp('content', this.value)" onchange="saveState()">
+                    <label>साइज़:</label>
+                    <input type="range" id="textSizeSlider" min="15" max="100" value="35" style="width:70px;" oninput="updateTextProp('size', this.value)" onchange="saveState()">
+                    <label>घुमाव:</label>
+                    <input type="range" id="textAngleSlider" min="-180" max="180" value="0" style="width:70px;" oninput="updateTextProp('angle', this.value)" onchange="saveState()">
+                    <button class="cad-btn cad-btn-danger" style="padding: 4px 10px; margin-left: 10px; font-size: 12px;" onclick="deleteSelectedText()">🗑️ डिलीट</button>
+                </div>
+            </div>
+
+            <div class="cad-panel" id="sliderPanel">
+                <div class="cad-control-group">
+                    <label style="color:#c0392b;">मुख्य सड़क:</label>
+                    <input type="range" id="mainWidthRange" min="10" max="500" value="75" oninput="syncWidths('main', this.value)">
+                    <input type="number" id="mainWidthNum" class="cad-number-input" min="10" max="500" value="75" oninput="syncWidths('main', this.value)"> px
+                </div>
+                <div class="cad-control-group">
+                    <label style="color:#d35400;">लिंक सड़क:</label>
+                    <input type="range" id="linkWidthRange" min="5" max="500" value="55" oninput="syncWidths('link', this.value)">
+                    <input type="number" id="linkWidthNum" class="cad-number-input" min="5" max="500" value="55" oninput="syncWidths('link', this.value)"> px
+                </div>
+                <div class="cad-control-group">
+                    <label style="color:#8e44ad;">कच्चा रास्ता:</label>
+                    <input type="range" id="kachchiWidthRange" min="5" max="500" value="45" oninput="syncWidths('kachchi', this.value)">
+                    <input type="number" id="kachchiWidthNum" class="cad-number-input" min="5" max="500" value="45" oninput="syncWidths('kachchi', this.value)"> px
+                </div>
+            </div>
+
+            <div class="cad-panel" id="exportPanel" style="display: none; background: #f8fafc; border-color: #cbd5e1;">
+                <span style="font-weight: 600; color: var(--cad-text-muted); margin-right: 10px;">एक्सपोर्ट:</span>
+                <button class="cad-btn cad-btn-success" onclick="generateOfficialPDF()" style="font-size: 14px;">🖨️ आधिकारिक दस्तावेज़ प्रिंट (A4 Form)</button>
+                <button class="cad-btn cad-btn-dark" onclick="downloadSVG()">SVG (Word Shapes)</button>
+                <button class="cad-btn" onclick="downloadImage('png')">PNG</button>
+                <button class="cad-btn" onclick="downloadImage('jpeg')">JPG</button>
+            </div>
+
+            <div id="instruction">प्रोजेक्ट खोलें या नया मैप अपलोड कर काम शुरू करें।</div>
+
+            <div class="viewport" id="viewport">
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="mapCanvas" width="1600" height="1740"></canvas>
+                    <div id="cadDistanceBox">दूरी: <span id="cadDistValue"></span></div>
+                </div>
+            </div>
+        </div>
         
-        <div class="card">
-            <div class="section-title">
-                <span>Table 1: संयुक्त विवरण</span>
-                <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblRaw')">Copy</button>
+        <div id="downTab" class="tab-content">
+            <div class="card">
+                <div class="section-title">
+                    <span>File Repository (Github)</span>
+                    <button class="btn" style="background:#2c3e50;" onclick="loadGithubFiles()">
+                        ↻ Refresh List
+                    </button>
+                </div>
+                
+                <div id="fileLoader" style="display:none; text-align:center; padding:20px;">
+                    Loading files from server...
+                </div>
+                <div id="filesContainer">
+                </div>
             </div>
-            <div class="table-wrap">
-                <table id="tblRaw">
-                    <thead>
-                        <tr><th>भूमि स्‍वामी का नाम + हिस्‍सा</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+        </div>
+    </div> <div id="printArea">
+        <div class="document-container">
+            <table class="header-table">
+                <tr>
+                    <td class="header-left">
+                        <div id="printOfficeLine1" class="font-14 bold"></div>
+                        <div id="printOfficeLine2" class="font-11 bold" style="white-space: pre-line; margin-top: 2px;"></div>
+                    </td>
+                    <td class="header-mid">
+                        <table class="mid-table">
+                            <tr>
+                                <td class="title-cell font-14 bold">नजरी नक्शा (चौहद्दी)</td>
+                            </tr>
+                            <tr>
+                                <td class="date-cell font-11 regular">
+                                    दिनांक : <span id="printDateValue" class="bold">_ _ _ _ _ _ _ _ 2026</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td class="header-right">
+                        <img src="https://png.pngtree.com/png-vector/20230131/ourmid/pngtree-beautiful-compass-icon-vector-illustration-png-image_6580312.png" alt="Compass" class="compass-img">
+                    </td>
+                </tr>
+            </table>
+
+            <div class="map-area">
+                <img id="printMapImage" style="width: 100%; height: 100%; object-fit: contain;" src="">
             </div>
+
+            <div class="declaration-text font-11 regular">
+                आवेदक/भूमि स्वामी(गण) से प्राप्त जानकारी एवं मौका जांच के आधार पर नजरी नक्शा तैयार किया।
+            </div>
+
+            <div class="signature-line font-11 regular">
+                हस्ता. आवेदक(गण) ----------------------------------------
+            </div>
+
+            <table class="footer-layout-table">
+                <tr>
+                    <td style="width: 70%; padding: 0;">
+                        <table class="footer-details-table">
+                            <tr>
+                                <td class="label-col font-11 regular">ग्राम/नगर:</td>
+                                <td class="value-col font-11 bold" id="printVillage"></td>
+                            </tr>
+                            <tr>
+                                <td class="label-col font-11 regular">खसरा, रकवा व भू-<br>स्वामी विवरण:</td>
+                                <td class="value-col font-11 bold" id="printKhasra"></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width: 30%; padding: 0;">
+                        <div class="patwari-block">
+                            <div class="font-11 bold" style="margin-bottom: 5px;">पटवारी</div>
+                            <div class="font-11" id="printPatwari" style="white-space: pre-line;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
-        <div class="card">
-            <div class="section-title">
-                <span>Table 2: विस्तृत विवरण</span>
-                <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblDetail')">Copy</button>
-            </div>
-            <div class="table-wrap">
-                <table id="tblDetail">
-                    <thead>
-                        <tr>
-                            <th>भूमि स्‍वामी का नाम</th>
-                            <th>हिस्‍सा</th>
-                            <th>अंश</th>
-                            <th>हर</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
+        <div id="newToolTab" class="tab-content">
+    <div style="width: 100%; height: 85vh; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: white;">
+        
+        <iframe 
+            src="TraceNaksha.html" 
+            style="width: 100%; height: 100%; border: none;"
+            title="My New Tool">
+        </iframe>
 
     </div>
 </div>
 
-<div id="downTab" class="tab-content">
-    <div class="card">
-        <div class="section-title">
-            <span>File Repository (Github)</span>
-            <button class="btn" style="background:#2c3e50;" onclick="loadGithubFiles()">
-                ↻ Refresh List
-            </button>
-        </div>
-        
-        <div id="fileLoader" style="display:none; text-align:center; padding:20px;">
-            Loading files from server...
-        </div>
-        <div id="filesContainer">
-            </div>
     </div>
-</div>
-    </div>
+
 
     <script>
-        // --- AUTH & UI ---
+        // --- AUTH & UI (ROCKTECH CORE) ---
         function checkLogin() {
             if(document.getElementById('userId').value === "RockTechnology" && document.getElementById('password').value === "Manish@31689") {
                 document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('navBar').style.display = 'flex'; // Changed to flex to support justify-between
+                document.getElementById('navBar').style.display = 'flex';
                 document.getElementById('mainApp').style.display = 'block';
+                drawCanvas(); 
             } else { document.getElementById('loginError').style.display = 'block'; }
         }
         function openTab(evt, name) {
@@ -329,21 +663,15 @@
             evt.currentTarget.classList.add('active');
         }
         
-        // GENERIC COPY FOR INPUTS
+        // GENERIC COPY
         function copyData(id) { document.getElementById(id).select(); document.execCommand('copy'); }
-        
-        // SPECIFIC COPY FOR BATWARA RESULT (DIV CONTENT)
         function copyBatwaraResult() { 
             const text = document.getElementById('resultText').innerText;
             if(!text) return alert("कोई परिणाम उपलब्ध नहीं है।");
-            navigator.clipboard.writeText(text).then(() => {
-                alert("टेक्स्ट कॉपी कर लिया गया है!");
-            }).catch(err => {
-                alert("कॉपी करने में त्रुटि: " + err);
-            });
+            navigator.clipboard.writeText(text).then(() => { alert("टेक्स्ट कॉपी कर लिया गया है!"); }).catch(err => { alert("कॉपी करने में त्रुटि: " + err); });
         }
 
-        // --- B1 EXTRACTOR (SMART LOGIC - Same as previous) ---
+        // --- B1 EXTRACTOR LOGIC ---
         function processLandData() {
             const f = document.getElementById('fileInput').files[0];
             if(!f) return alert("Select File (.txt)");
@@ -351,61 +679,33 @@
             
             r.onload = e => {
                 const lines = e.target.result.split('\n');
-
-                // 1. Gram
                 let gram = "अज्ञात";
-                if(lines.length > 6) {
-                    let rawGram = lines[6];
-                    if(rawGram.includes("ग्राम")) {
-                        gram = rawGram.split(":")[1].trim().split(/\s+/)[0];
-                    }
-                }
-
-                // 2. Khata
+                if(lines.length > 6) { let rawGram = lines[6]; if(rawGram.includes("ग्राम")) { gram = rawGram.split(":")[1].trim().split(/\s+/)[0]; } }
                 let khata = "अज्ञात";
-                if(lines.length > 20) {
-                    let rawKhata = lines[20];
-                    let match = rawKhata.match(/\d+/);
-                    if(match) khata = match[0];
-                }
-
-                // 3. Owners
-                let owners = [];
-                let nameBuffer = ""; 
+                if(lines.length > 20) { let rawKhata = lines[20]; let match = rawKhata.match(/\d+/); if(match) khata = match[0]; }
+                
+                let owners = []; let nameBuffer = ""; 
                 for(let i = 22; i < lines.length; i++) {
                     let line = lines[i].trim();
                     if(!line) continue;
-
                     if(line.includes("पता")) {
                         if(nameBuffer) {
-                            let cleanName = nameBuffer.trim();
-                            let share = "0/1";
-                            if(i + 1 < lines.length) {
-                                let shareLine = lines[i+1].trim();
-                                share = shareLine.split(" ")[0]; 
-                            }
-                            owners.push(`${cleanName} ${share}`);
-                            nameBuffer = ""; 
-                            i++; 
+                            let cleanName = nameBuffer.trim(); let share = "0/1";
+                            if(i + 1 < lines.length) { let shareLine = lines[i+1].trim(); share = shareLine.split(" ")[0]; }
+                            owners.push(`${cleanName} ${share}`); nameBuffer = ""; i++; 
                         }
                     } 
                     else if(line.includes("भूमि स्वामी") || line.length < 2) continue;
                     else nameBuffer += line + " ";
                 }
 
-                // 4. Khasara
-                let khasaras = [];
-                let totalArea = 0.0;
+                let khasaras = []; let totalArea = 0.0;
                 for(let i=0; i<lines.length; i++) {
                     if(lines[i].includes("(S)")) {
-                        let parts = lines[i].trim().split(/\s+/);
-                        let kno = parts[0]; 
-                        let areaLine = lines[i+1] || "";
+                        let parts = lines[i].trim().split(/\s+/); let kno = parts[0]; let areaLine = lines[i+1] || "";
                         if (areaLine.includes("हेक्टेयर")) {
-                            let val = areaLine.replace("हेक्टेयर", "").trim();
-                            khasaras.push(`${kno} रकवा ${val}हे.`);
-                            let vNum = parseFloat(val);
-                            if(!isNaN(vNum)) totalArea += vNum;
+                            let val = areaLine.replace("हेक्टेयर", "").trim(); khasaras.push(`${kno} रकवा ${val}हे.`);
+                            let vNum = parseFloat(val); if(!isNaN(vNum)) totalArea += vNum;
                         }
                     }
                 }
@@ -419,7 +719,7 @@
             r.readAsText(f);
         }
 
-        // --- MATH & BATWARA LOGIC (With S.No) ---
+        // --- MATH & BATWARA LOGIC ---
         class Fraction {
             constructor(n,d){if(d===0n)throw new Error("Div0");if(d<0n){n=-n;d=-d}this.n=BigInt(n);this.d=BigInt(d);this.simplify()}
             static gcd(a,b){return b===0n?a:Fraction.gcd(b,a%b)}
@@ -431,7 +731,6 @@
             toString(){return `${this.n}/${this.d}`}
             static fromString(s){if(!s)return new Fraction(0,1);s=s.toString().trim();if(s.includes('/')){let p=s.split('/');return new Fraction(p[0],p[1])}if(s.includes('.')){let p=s.split('.'),d=10n**BigInt(p[1].length);return new Fraction(BigInt(p[0]+p[1]),d)}return new Fraction(s,1)}
         }
-
         let rowData=[];
         function parseAndLoad(){
             rowData=[]; document.getElementById('rawInput').value.split('\n').forEach(l=>{
@@ -476,175 +775,590 @@
                 document.getElementById('resultText').innerText=out.join(", ");
             }catch(e){console.error(e)}
         }
+        
         // Fraction Tools
         function calculateSum(){let s=new Fraction(0,1);document.getElementById('sumInput').value.split(/[\n,]+/).forEach(x=>{if(x.trim())s=s.add(Fraction.fromString(x))});document.getElementById('sumResult').innerText=s.toString()}
         function calculateSub(){document.getElementById('subResult').innerText=Fraction.fromString(document.getElementById('subMain').value).sub(Fraction.fromString(document.getElementById('subValues').value)).toString()}
         function calculateDiv(){document.getElementById('divResult').innerText=new Fraction(BigInt(Fraction.fromString(document.getElementById('divMain').value).n), Fraction.fromString(document.getElementById('divMain').value).d * BigInt(document.getElementById('divCount').value)).toString()}
 
         // --- DATA FORMATTER LOGIC ---
-function processFmt() {
-    const raw = document.getElementById('fmtInput').value;
-    if(!raw.trim()) return alert("डाटा पेस्ट करें!");
+        function processFmt() {
+            const raw = document.getElementById('fmtInput').value;
+            if(!raw.trim()) return alert("डाटा पेस्ट करें!");
+            const items = raw.replace(/\n/g, ',').split(',');
+            const t1 = document.querySelector('#tblRaw tbody');
+            const t2 = document.querySelector('#tblDetail tbody');
+            t1.innerHTML = ""; t2.innerHTML = "";
+            let hasData = false;
 
-    // कोमा और नई लाइन दोनों को सेपरेटर मानें
-    const items = raw.replace(/\n/g, ',').split(',');
-    
-    const t1 = document.querySelector('#tblRaw tbody');
-    const t2 = document.querySelector('#tblDetail tbody');
-    t1.innerHTML = "";
-    t2.innerHTML = "";
+            items.forEach(item => {
+                let text = item.trim(); if(!text) return;
+                t1.innerHTML += `<tr><td>${text}</td></tr>`;
+                
+                let match = text.match(/(\d+\/\d+)$/); let name = text; let share = "-"; let num = ""; let den = "";
+                if(match) {
+                    share = match[0]; name = text.replace(share, "").trim();
+                    let p = share.split('/'); num = p[0]; den = p[1];
+                }
+                t2.innerHTML += `<tr><td>${name}</td><td>${share}</td><td>${num}</td><td>${den}</td></tr>`;
+                hasData = true;
+            });
 
-    let hasData = false;
-
-    items.forEach(item => {
-        let text = item.trim();
-        if(!text) return;
-
-        // 1. Table 1 Row (Raw Text)
-        t1.innerHTML += `<tr><td>${text}</td></tr>`;
-
-        // 2. Process for Table 2
-        // हिस्सा (Fraction) निकालने के लिए Regex
-        let match = text.match(/(\d+\/\d+)$/);
-        let name = text;
-        let share = "-";
-        let num = "";
-        let den = "";
-
-        if(match) {
-            share = match[0];
-            name = text.replace(share, "").trim();
-            let p = share.split('/');
-            num = p[0];
-            den = p[1];
+            if(hasData) document.getElementById('fmtResult').style.display = "grid";
         }
 
-        // Table 2 Row
-        t2.innerHTML += `<tr>
-            <td>${name}</td>
-            <td>${share}</td>
-            <td>${num}</td>
-            <td>${den}</td>
-        </tr>`;
+        function copyTable(id) {
+            const el = document.getElementById(id); const range = document.createRange(); range.selectNode(el);
+            window.getSelection().removeAllRanges(); window.getSelection().addRange(range);
+            document.execCommand('copy'); window.getSelection().removeAllRanges(); alert("टेबल कॉपी हो गई!");
+        }
 
-        hasData = true;
-    });
+        // --- GITHUB FILE DOWNLOADER LOGIC ---
+        async function loadGithubFiles() {
+            const owner = 'rocktech-web'; const repo = 'AllFormats'; const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
+            const container = document.getElementById('filesContainer'); const loader = document.getElementById('fileLoader');
+            container.innerHTML = ""; loader.style.display = "block";
 
-    if(hasData) {
-        document.getElementById('fmtResult').style.display = "grid";
-    }
-}
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Repository not found or private");
+                const data = await response.json();
+                
+                const grouped = {};
+                data.forEach(file => {
+                    if (file.type === 'file') {
+                        const ext = file.name.split('.').pop().toUpperCase();
+                        if (!grouped[ext]) grouped[ext] = []; grouped[ext].push(file);
+                    }
+                });
 
-// जेनेरिक टेबल कॉपी फंक्शन
-function copyTable(id) {
-    const el = document.getElementById(id);
-    const range = document.createRange();
-    range.selectNode(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand('copy');
-    window.getSelection().removeAllRanges();
-    alert("टेबल कॉपी हो गई!");
-}
+                loader.style.display = "none";
+                if (Object.keys(grouped).length === 0) { container.innerHTML = "<p>No files found in repository.</p>"; return; }
 
-// --- GITHUB FILE DOWNLOADER LOGIC ---
+                for (const [ext, files] of Object.entries(grouped)) {
+                    let sectionHtml = `
+                        <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                            <div style="background: #e9ecef; padding: 10px 15px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ddd;">📂 ${ext} FILES (${files.length})</div>
+                            <div class="table-wrap"><table><thead><tr><th width="70%">File Name</th><th width="15%">Size</th><th width="15%">Action</th></tr></thead><tbody>
+                    `;
+                    files.forEach(file => {
+                        let sizeKB = (file.size / 1024).toFixed(1) + ' KB';
+                        sectionHtml += `<tr><td>${file.name}</td><td>${sizeKB}</td><td><button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="verifyAndDownload('${file.download_url}')">⬇ Download</button></td></tr>`;
+                    });
+                    sectionHtml += `</tbody></table></div></div>`;
+                    container.innerHTML += sectionHtml;
+                }
+            } catch (error) {
+                loader.style.display = "none";
+                container.innerHTML = `<p style="color:red;">Error: ${error.message}. <br>Make sure the repository is Public.</p>`;
+            }
+        }
 
-async function loadGithubFiles() {
-    const owner = 'rocktech-web';
-    const repo = 'AllFormats';
-    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
-    
-    const container = document.getElementById('filesContainer');
-    const loader = document.getElementById('fileLoader');
-    
-    container.innerHTML = "";
-    loader.style.display = "block";
+        function verifyAndDownload(url) {
+            let code = prompt("सुरक्षा कोड दर्ज करें (Enter Code to Download):");
+            if (code === "258") window.open(url, '_blank');
+            else if (code !== null) alert("❌ गलत कोड! डाउनलोड अस्वीकृत।");
+        }
 
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error("Repository not found or private");
+
+        // =========================================================================
+        // NAZRI NAKSHA (CAD TOOL) JAVASCRIPT LOGIC
+        // =========================================================================
+
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvasWrapper');
+        const cadBox = document.getElementById('cadDistanceBox');
+        const cadValue = document.getElementById('cadDistValue');
         
-        const data = await response.json();
+        let uploadedImage = null; let mode = null; let editMode = null; 
+        let isGenerated = false; let currentZoom = 1;
         
-        // 1. Group files by Extension
-        const grouped = {};
-        data.forEach(file => {
-            if (file.type === 'file') {
-                // Get extension (e.g., pdf, docx)
-                const ext = file.name.split('.').pop().toUpperCase();
-                if (!grouped[ext]) grouped[ext] = [];
-                grouped[ext].push(file);
+        let historyStack = []; let finalSegments = []; let finalTexts = [];
+        let undoStack = []; let redoStack = [];
+
+        function resetCanvasState() {
+            uploadedImage = null; mode = null; editMode = null; isGenerated = false; currentZoom = 1;
+            historyStack = []; finalSegments = []; finalTexts = []; undoStack = []; redoStack = [];
+            currentPath = []; typedDistance = ""; snapPoint = null;
+            document.getElementById('imageInput').value = "";
+            restoreState({isGenerated: false, historyStack: [], finalSegments: [], finalTexts: []});
+            drawCanvas();
+        }
+        
+        function saveProject() {
+            const projectData = {
+                version: "1.1", 
+                imgSrc: uploadedImage ? uploadedImage.src : null,
+                historyStack: historyStack, 
+                finalSegments: finalSegments, 
+                finalTexts: finalTexts,
+                isGenerated: isGenerated,
+                widths: { 
+                    main: document.getElementById('mainWidthNum').value, 
+                    link: document.getElementById('linkWidthNum').value, 
+                    kachchi: document.getElementById('kachchiWidthNum').value 
+                },
+                docDetails: {
+                    office: document.getElementById('docOffice').value,
+                    village: document.getElementById('docVillage').value,
+                    date: document.getElementById('docDate').value,
+                    khasra: document.getElementById('docKhasra').value,
+                    patwari: document.getElementById('docPatwari').value
+                }
+            };
+            const blob = new Blob([JSON.stringify(projectData)], {type: "application/json"});
+            saveAs(blob, "RockTech_Project.json");
+        }
+
+        document.getElementById('projectInput').addEventListener('change', function(e) {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    historyStack = data.historyStack || []; 
+                    finalSegments = data.finalSegments || []; 
+                    finalTexts = data.finalTexts || []; 
+                    isGenerated = data.isGenerated || false;
+                    
+                    if(data.widths) {
+                        ['main', 'link', 'kachchi'].forEach(type => {
+                            if(data.widths[type] !== undefined) {
+                                document.getElementById(type + 'WidthRange').value = data.widths[type];
+                                document.getElementById(type + 'WidthNum').value = data.widths[type];
+                            }
+                        });
+                    }
+                    if(data.docDetails) {
+                        document.getElementById('docOffice').value = data.docDetails.office || "";
+                        document.getElementById('docVillage').value = data.docDetails.village || "";
+                        document.getElementById('docDate').value = data.docDetails.date || "";
+                        document.getElementById('docKhasra').value = data.docDetails.khasra || "";
+                        document.getElementById('docPatwari').value = data.docDetails.patwari || "";
+                    }
+                    if(data.imgSrc) {
+                        uploadedImage = new Image(); 
+                        uploadedImage.onload = () => restoreState({isGenerated, historyStack, finalSegments, finalTexts}); 
+                        uploadedImage.src = data.imgSrc;
+                    } else { 
+                        uploadedImage = null; 
+                        restoreState({isGenerated, historyStack, finalSegments, finalTexts}); 
+                    }
+                } catch(err) { alert("फाइल को पढ़ने में त्रुटि! सही RockTech_Project.json फाइल चुनें।"); }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // reset
+        });
+
+        function saveState() {
+            undoStack.push({ isGenerated: isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) });
+            redoStack = []; 
+        }
+
+        function undo() {
+            if(undoStack.length > 0) {
+                redoStack.push({ isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) });
+                restoreState(undoStack.pop());
+            }
+        }
+
+        function redo() {
+            if(redoStack.length > 0) {
+                undoStack.push({ isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) });
+                restoreState(redoStack.pop());
+            }
+        }
+
+        function restoreState(state) {
+            isGenerated = state.isGenerated; historyStack = state.historyStack; finalSegments = state.finalSegments; finalTexts = state.finalTexts;
+            
+            document.getElementById('drawToolbar').style.display = isGenerated ? 'none' : 'flex';
+            document.getElementById('sliderPanel').style.display = isGenerated ? 'none' : 'flex';
+            document.getElementById('editToolbar').style.display = isGenerated ? 'flex' : 'none';
+            document.getElementById('exportPanel').style.display = isGenerated ? 'flex' : 'none';
+            document.getElementById('docDetailsPanel').style.display = isGenerated ? 'flex' : 'none';
+            
+            if(!isGenerated) { currentPath = []; mode = null; document.querySelectorAll('.active-tool').forEach(el => el.classList.remove('active-tool')); }
+            selectedTextIdx = -1; hoveredNode = null; drawCanvas();
+        }
+
+        function changeZoom(delta) {
+            currentZoom += delta; if(currentZoom < 0.4) currentZoom = 0.4; if(currentZoom > 4) currentZoom = 4;
+            wrapper.style.transform = `scale(${currentZoom})`; wrapper.style.width = `calc(160mm * ${currentZoom})`; wrapper.style.height = `calc(174mm * ${currentZoom})`;
+        }
+
+        let currentPath = []; let mousePos = {x: 0, y: 0}; let typedDistance = ""; let snapPoint = null; 
+        let hoverSegmentIdx = -1; let selectedTextIdx = -1; let isDraggingText = false;
+        let hoveredNode = null; let draggedNode = null; 
+
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            if(e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedImage = new Image(); uploadedImage.onload = () => { saveState(); drawCanvas(); }; uploadedImage.src = event.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);
             }
         });
 
-        // 2. Render Groups
-        loader.style.display = "none";
+        function syncWidths(type, val) {
+            if(val === "") return; document.getElementById(type + 'WidthRange').value = val; document.getElementById(type + 'WidthNum').value = val;
+            if(isGenerated) { regenerateSegments(); drawCanvas(); } else { drawCanvas(); }
+        }
+
+        function getWidth(type) { return parseInt(document.getElementById(type + 'WidthNum').value) || 20; }
+
+        function setMode(newMode) {
+            if(isGenerated) return;
+            if(currentPath.length > 0) { saveState(); historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; typedDistance=""; }
+            mode = newMode;
+            ['btnMain', 'btnLink', 'btnKachchi', 'btnRail', 'btnPlot', 'btnText'].forEach(id => document.getElementById(id).classList.remove('active-tool'));
+            let btnMap = {'main':'btnMain', 'link':'btnLink', 'kachchi':'btnKachchi', 'rail':'btnRail', 'plot':'btnPlot', 'text':'btnText'};
+            if(btnMap[mode]) document.getElementById(btnMap[mode]).classList.add('active-tool');
+        }
+
+        function setEditMode(newMode) {
+            editMode = newMode;
+            ['btnTrim', 'btnSmartText', 'btnFreeTextEdit', 'btnEditText', 'btnEditLine'].forEach(id => document.getElementById(id).classList.remove('active-tool'));
+            document.getElementById('textControls').style.display = 'none';
+
+            if(editMode === 'trim') { document.getElementById('btnTrim').classList.add('active-tool'); document.getElementById('instruction').textContent = "कैंची: एक्स्ट्रा लाइन पर क्लिक करके मिटाएं।"; canvas.style.cursor = 'crosshair'; }
+            if(editMode === 'editLine') { document.getElementById('btnEditLine').classList.add('active-tool'); document.getElementById('instruction').textContent = "नोड खिसकाएं: किसी भी लाइन के कोने (हरे गोले) को पकड़ कर खिसकाएं।"; canvas.style.cursor = 'move'; }
+            if(editMode === 'smartText') { document.getElementById('btnSmartText').classList.add('active-tool'); document.getElementById('instruction').textContent = "मार्ग नाम: सड़क की लाइन पर क्लिक करें।"; canvas.style.cursor = 'pointer'; }
+            if(editMode === 'freeText') { document.getElementById('btnFreeTextEdit').classList.add('active-tool'); document.getElementById('instruction').textContent = "फ्री टेक्स्ट: कहीं भी क्लिक करके लिखें।"; canvas.style.cursor = 'text'; }
+            if(editMode === 'editText') { 
+                document.getElementById('btnEditText').classList.add('active-tool'); 
+                document.getElementById('instruction').textContent = "टेक्स्ट एडिट: टेक्स्ट पर क्लिक करें। खिसकाएं, साइज़ बदलें, घुमाएं या शब्द सुधारें।"; 
+                document.getElementById('textControls').style.display = 'flex'; canvas.style.cursor = 'default'; 
+            }
+            hoverSegmentIdx = -1; selectedTextIdx = -1; hoveredNode = null; draggedNode = null; drawCanvas();
+        }
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: (e.clientX - rect.left) * (canvas.width / rect.width), y: (e.clientY - rect.top) * (canvas.height / rect.height) };
+        }
+
+        function spawnFloatingTextarea(e, onSave) {
+            if(document.querySelector('.floating-input-container')) return; 
+            const container = document.createElement('div'); container.className = 'floating-input-container';
+            container.style.left = e.pageX + 'px'; container.style.top = (e.pageY - 20) + 'px';
+
+            const textarea = document.createElement('textarea'); textarea.className = 'floating-textarea'; textarea.placeholder = "टेक्स्ट लिखें... (नई लाइन के लिए Enter दबाएं)";
+            const btn = document.createElement('button'); btn.textContent = "✔ सेव करें"; btn.className = "cad-btn cad-btn-primary"; btn.style.marginTop = "5px";
+
+            container.appendChild(textarea); container.appendChild(btn); document.body.appendChild(container); textarea.focus();
+
+            const saveText = () => {
+                let val = textarea.value.trim(); if(val !== "") onSave(val);
+                if(document.body.contains(container)) document.body.removeChild(container); drawCanvas();
+            };
+            btn.addEventListener('click', saveText);
+        }
+
+        function promptSingleLine(msg, onSave) { let val = prompt(msg); if(val && val.trim() !== "") onSave(val.trim()); }
+
+        function updateTextProp(prop, val) {
+            if (isGenerated && selectedTextIdx !== -1 && finalTexts[selectedTextIdx]) {
+                if(prop === 'size') finalTexts[selectedTextIdx].fontSize = parseInt(val);
+                if(prop === 'angle') finalTexts[selectedTextIdx].angle = parseInt(val) * (Math.PI / 180); 
+                if(prop === 'content') finalTexts[selectedTextIdx].text = val; 
+                drawCanvas();
+            }
+        }
         
-        if (Object.keys(grouped).length === 0) {
-            container.innerHTML = "<p>No files found in repository.</p>";
-            return;
+        function deleteSelectedText() {
+            if (isGenerated && selectedTextIdx !== -1) {
+                saveState(); finalTexts.splice(selectedTextIdx, 1); selectedTextIdx = -1; document.getElementById('textContentInput').value = ""; drawCanvas(); 
+            }
         }
 
-        for (const [ext, files] of Object.entries(grouped)) {
-            // Create Section for each File Type
-            let sectionHtml = `
-                <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
-                    <div style="background: #e9ecef; padding: 10px 15px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ddd;">
-                        📂 ${ext} FILES (${files.length})
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th width="70%">File Name</th>
-                                    <th width="15%">Size</th>
-                                    <th width="15%">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-            `;
+        function findClosestText(p) {
+            let minDist = 40; let bestIdx = -1;
+            for(let i=0; i<finalTexts.length; i++) {
+                let dist = Math.hypot(p.x - finalTexts[i].x, p.y - finalTexts[i].y);
+                if(dist < minDist) { minDist = dist; bestIdx = i; }
+            } return bestIdx;
+        }
 
-            files.forEach(file => {
-                // Convert size to KB
-                let sizeKB = (file.size / 1024).toFixed(1) + ' KB';
-                
-                sectionHtml += `
-                    <tr>
-                        <td>${file.name}</td>
-                        <td>${sizeKB}</td>
-                        <td>
-                            <button class="btn" style="padding: 5px 10px; font-size: 12px;" 
-                                onclick="verifyAndDownload('${file.download_url}')">
-                                ⬇ Download
-                            </button>
-                        </td>
-                    </tr>
-                `;
+        function findClosestNode(p) {
+            let minDist = 30; let bestNode = null;
+            for(let i=0; i<finalSegments.length; i++) {
+                let d1 = Math.hypot(p.x - finalSegments[i].A.x, p.y - finalSegments[i].A.y); let d2 = Math.hypot(p.x - finalSegments[i].B.x, p.y - finalSegments[i].B.y);
+                if(d1 < minDist) { minDist = d1; bestNode = {segIdx: i, isA: true}; } if(d2 < minDist) { minDist = d2; bestNode = {segIdx: i, isA: false}; }
+            } return bestNode;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if(!isGenerated && currentPath.length > 0 && mode && mode !== 'text') {
+                if((e.key >= '0' && e.key <= '9') || e.key === '.') { typedDistance += e.key; drawCanvas(); } 
+                else if(e.key === 'Backspace') { typedDistance = typedDistance.slice(0, -1); drawCanvas(); } 
+                else if(e.key === 'Enter' && typedDistance !== "") {
+                    let lastPt = currentPath[currentPath.length - 1]; let angle = Math.atan2(mousePos.y - lastPt.y, mousePos.x - lastPt.x);
+                    saveState(); currentPath.push({x: lastPt.x + Math.cos(angle) * parseFloat(typedDistance), y: lastPt.y + Math.sin(angle) * parseFloat(typedDistance)}); typedDistance = ""; drawCanvas();
+                }
+            }
+        });
+
+        wrapper.addEventListener('mousemove', (e) => {
+            mousePos = getCoords(e);
+            if (isGenerated) {
+                if (editMode === 'trim' || editMode === 'smartText') { hoverSegmentIdx = findClosestSegment(mousePos); drawCanvas(); } 
+                else if (editMode === 'editLine') {
+                    if (draggedNode) {
+                        if(draggedNode.isA) finalSegments[draggedNode.segIdx].A = {x: mousePos.x, y: mousePos.y}; else finalSegments[draggedNode.segIdx].B = {x: mousePos.x, y: mousePos.y}; drawCanvas();
+                    } else { hoveredNode = findClosestNode(mousePos); drawCanvas(); }
+                }
+                else if (editMode === 'editText' && isDraggingText && selectedTextIdx !== -1) { finalTexts[selectedTextIdx].x = mousePos.x; finalTexts[selectedTextIdx].y = mousePos.y; drawCanvas(); }
+            } else if (!isGenerated && currentPath.length > 0) {
+                let startPt = currentPath[0]; let distToStart = Math.hypot(mousePos.x - startPt.x, mousePos.y - startPt.y); snapPoint = (distToStart < 30 && currentPath.length > 2) ? startPt : null; drawCanvas(); 
+            }
+        });
+
+        window.addEventListener('mouseup', () => { isDraggingText = false; if(draggedNode) { draggedNode = null; saveState(); } });
+
+        wrapper.addEventListener('mousedown', (e) => {
+            if(document.querySelector('.floating-input-container')) return; 
+            const coords = getCoords(e);
+
+            if (isGenerated) {
+                if (editMode === 'trim' && hoverSegmentIdx !== -1) { saveState(); finalSegments.splice(hoverSegmentIdx, 1); hoverSegmentIdx = -1; drawCanvas(); }
+                else if (editMode === 'editLine' && hoveredNode) { saveState(); draggedNode = hoveredNode; }
+                else if (editMode === 'smartText') {
+                    let segIdx = findClosestSegment(coords);
+                    if(segIdx !== -1) {
+                        let seg = finalSegments[segIdx]; let midX = (seg.A.x + seg.B.x) / 2; let midY = (seg.A.y + seg.B.y) / 2;
+                        let angle = Math.atan2(seg.B.y - seg.A.y, seg.B.x - seg.A.x); if (angle > Math.PI/2) angle -= Math.PI; if (angle < -Math.PI/2) angle += Math.PI;
+                        promptSingleLine("मार्ग का नाम दर्ज करें:", (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: midX, y: midY, angle: angle, fontSize: size }); drawCanvas(); });
+                    } else { alert("सड़क की लाइन पर क्लिक करें।"); }
+                }
+                else if (editMode === 'freeText') {
+                    spawnFloatingTextarea(e, (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: coords.x, y: coords.y, angle: 0, fontSize: size }); drawCanvas(); });
+                }
+                else if (editMode === 'editText') {
+                    let clickedIdx = findClosestText(coords);
+                    if(clickedIdx !== -1) {
+                        saveState(); selectedTextIdx = clickedIdx; isDraggingText = true;
+                        document.getElementById('textSizeSlider').value = finalTexts[clickedIdx].fontSize || 35;
+                        document.getElementById('textAngleSlider').value = Math.round((finalTexts[clickedIdx].angle || 0) * (180/Math.PI));
+                        document.getElementById('textContentInput').value = finalTexts[clickedIdx].text; 
+                        drawCanvas();
+                    } else { selectedTextIdx = -1; document.getElementById('textContentInput').value = ""; drawCanvas(); }
+                }
+                return;
+            }
+
+            if(!mode) return;
+            if(mode === 'text') {
+                spawnFloatingTextarea(e, (val) => { saveState(); let size = parseInt(document.getElementById('mainWidthNum').value) || 35; historyStack.push({ type: 'text', text: val, x: coords.x, y: coords.y, angle: 0, fontSize: size }); drawCanvas(); });
+                return;
+            }
+
+            saveState();
+            if(snapPoint) { currentPath.push({x: snapPoint.x, y: snapPoint.y}); historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; snapPoint = null; typedDistance = ""; } 
+            else if(typedDistance !== "") { let lastPt = currentPath[currentPath.length - 1]; let angle = Math.atan2(coords.y - lastPt.y, coords.x - lastPt.x); currentPath.push({x: lastPt.x + Math.cos(angle) * parseFloat(typedDistance), y: lastPt.y + Math.sin(angle) * parseFloat(typedDistance)}); typedDistance = ""; } 
+            else { currentPath.push(coords); }
+            drawCanvas();
+        });
+
+        canvas.addEventListener('dblclick', () => {
+            if(mode === 'text' || !mode || currentPath.length === 0 || isGenerated) return;
+            saveState(); historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; typedDistance = ""; snapPoint = null; drawCanvas();
+        });
+
+        function getParallelPaths(pts, width) {
+            let left = [], right = []; let halfW = width / 2;
+            for(let i=0; i<pts.length; i++) {
+                let p = pts[i]; let v1, v2;
+                if(i === 0) { v1 = {x: pts[1].x - p.x, y: pts[1].y - p.y}; v2 = v1; } 
+                else if (i === pts.length - 1) { v1 = {x: p.x - pts[i-1].x, y: p.y - pts[i-1].y}; v2 = v1; } 
+                else { v1 = {x: p.x - pts[i-1].x, y: p.y - pts[i-1].y}; v2 = {x: pts[i+1].x - p.x, y: pts[i+1].y - p.y}; }
+                let len1 = Math.hypot(v1.x, v1.y) || 1; v1 = {x: v1.x/len1, y: v1.y/len1}; let len2 = Math.hypot(v2.x, v2.y) || 1; v2 = {x: v2.x/len2, y: v2.y/len2};
+                let tangent = {x: v1.x + v2.x, y: v1.y + v2.y}; let tLen = Math.hypot(tangent.x, tangent.y); if(tLen === 0) tangent = v1; else tangent = {x: tangent.x/tLen, y: tangent.y/tLen};
+                let normal = {x: -tangent.y, y: tangent.x}; let n1 = {x: -v1.y, y: v1.x}; let dot = normal.x * n1.x + normal.y * n1.y; let miter = dot !== 0 ? 1/dot : 1;
+                if (Math.abs(miter) > 3) miter = 3 * Math.sign(miter); 
+                left.push({x: p.x + normal.x * halfW * miter, y: p.y + normal.y * halfW * miter}); right.push({x: p.x - normal.x * halfW * miter, y: p.y - normal.y * halfW * miter});
+            } return {left, right};
+        }
+
+        function getRailwayTicks(pts) {
+            let ticks = []; let tickSpacing = 30; let tickWidth = 25; let totalLength = 0; let distances = [0];
+            for(let i=1; i<pts.length; i++) { totalLength += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y); distances.push(totalLength); }
+            let currentDist = tickSpacing / 2; let pIdx = 1;
+            while(currentDist < totalLength && pIdx < pts.length) {
+                if(currentDist > distances[pIdx]) { pIdx++; continue; }
+                let prev = pts[pIdx-1], curr = pts[pIdx]; let ratio = (currentDist - distances[pIdx-1]) / (distances[pIdx] - distances[pIdx-1]);
+                let x = prev.x + (curr.x - prev.x) * ratio; let y = prev.y + (curr.y - prev.y) * ratio; let dx = curr.x - prev.x, dy = curr.y - prev.y; let len = Math.hypot(dx, dy) || 1; let nx = -dy/len, ny = dx/len;
+                ticks.push([ {x: x + nx*(tickWidth/2), y: y + ny*(tickWidth/2)}, {x: x - nx*(tickWidth/2), y: y - ny*(tickWidth/2)} ]); currentDist += tickSpacing;
+            } return ticks;
+        }
+
+        function getIntersection(A, B, C, D) {
+            let bottom = (D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y); if (Math.abs(bottom) < 0.0001) return null;
+            let t = ((D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x)) / bottom; let u = ((B.x - A.x) * (A.y - C.y) - (B.y - A.y) * (A.x - C.x)) / bottom;
+            if (t > 0.01 && t < 0.99 && u > 0.01 && u < 0.99) { return { x: A.x + t * (B.x - A.x), y: A.y + t * (B.y - A.y) }; } return null;
+        }
+
+        function shatterSegments(segs) {
+            let result = [...segs]; let foundSplit = true; let maxIters = 1000;
+            while(foundSplit && maxIters-- > 0) {
+                foundSplit = false;
+                for(let i=0; i<result.length; i++) {
+                    for(let j=i+1; j<result.length; j++) {
+                        let intP = getIntersection(result[i].A, result[i].B, result[j].A, result[j].B);
+                        if(intP) {
+                            let s1 = result[i], s2 = result[j];
+                            result.splice(j, 1, {A: intP, B: s2.B, dash: s2.dash}, {A: s2.A, B: intP, dash: s2.dash});
+                            result.splice(i, 1, {A: intP, B: s1.B, dash: s1.dash}, {A: s1.A, B: intP, dash: s1.dash});
+                            foundSplit = true; break;
+                        }
+                    } if(foundSplit) break;
+                }
+            } return result;
+        }
+
+        function pointToSegmentDistance(p, v, w) {
+            let l2 = (v.x - w.x)**2 + (v.y - w.y)**2; if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
+            let t = Math.max(0, Math.min(1, ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2)); return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+        }
+
+        function findClosestSegment(p) {
+            let minDist = 30; let bestIdx = -1;
+            for(let i=0; i<finalSegments.length; i++) { let dist = pointToSegmentDistance(p, finalSegments[i].A, finalSegments[i].B); if(dist < minDist) { minDist = dist; bestIdx = i; } } return bestIdx;
+        }
+
+        function drawPathArray(ctx, pts) {
+            if(pts.length < 2) return; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+            for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+        }
+
+        function renderDraftElement(el) {
+            if(el.type === 'text') return;
+            ctx.strokeStyle = el.type==='main' ? '#c0392b' : el.type==='link' ? '#d35400' : el.type==='kachchi' ? '#8e44ad' : '#16a085'; ctx.lineWidth = 4; 
+            let w = el.type === 'main' ? getWidth('main') : el.type === 'link' ? getWidth('link') : getWidth('kachchi');
+
+            if(el.type === 'rail' || el.type === 'plot') {
+                drawPathArray(ctx, el.points); if(el.type === 'rail') getRailwayTicks(el.points).forEach(t => drawPathArray(ctx, t));
+            } else {
+                let parallels = getParallelPaths(el.points, w); if(el.type === 'kachchi') ctx.setLineDash([20, 20]);
+                drawPathArray(ctx, parallels.left); drawPathArray(ctx, parallels.right); ctx.setLineDash([]); 
+            }
+        }
+
+        function drawTexts(sourceArray, isFinal) {
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            sourceArray.forEach((el, idx) => {
+                if(el.type === 'text' || el.text) {
+                    let txt = el.text || el.text; let size = el.fontSize || 35; ctx.font = `600 ${size}px Poppins, Arial`;
+                    ctx.fillStyle = (isFinal && idx === selectedTextIdx && editMode === 'editText') ? "#e74c3c" : (isFinal ? "#000" : "#2980b9");
+                    ctx.save(); ctx.translate(el.x, el.y); ctx.rotate(el.angle || 0);
+                    let lines = txt.split('\n'); let lineHeight = size * 1.2; let startY = -((lines.length - 1) * lineHeight) / 2;
+                    lines.forEach((line, i) => { let lineY = startY + (i * lineHeight); if(isFinal) { ctx.lineWidth = Math.max(2, size/6); ctx.strokeStyle = "white"; ctx.strokeText(line, 0, lineY); } ctx.fillText(line, 0, lineY); });
+                    ctx.restore();
+                }
             });
-
-            sectionHtml += `</tbody></table></div></div>`;
-            container.innerHTML += sectionHtml;
         }
 
-    } catch (error) {
-        loader.style.display = "none";
-        container.innerHTML = `<p style="color:red;">Error: ${error.message}. <br>Make sure the repository is Public.</p>`;
-    }
-}
+        function regenerateSegments() {
+            let initialSegments = [];
+            historyStack.forEach(el => {
+                if (el.type === 'text') return; 
+                let w = el.type === 'main' ? getWidth('main') : el.type === 'link' ? getWidth('link') : getWidth('kachchi');
+                if (el.type === 'rail' || el.type === 'plot') {
+                    for(let i=0; i<el.points.length-1; i++) initialSegments.push({A: el.points[i], B: el.points[i+1], dash: false});
+                    if(el.type === 'rail') getRailwayTicks(el.points).forEach(t => initialSegments.push({A: t[0], B: t[1], dash: false}));
+                } else {
+                    let parallels = getParallelPaths(el.points, w); let isDash = el.type === 'kachchi';
+                    for(let i=0; i<parallels.left.length-1; i++) initialSegments.push({A: parallels.left[i], B: parallels.left[i+1], dash: isDash});
+                    for(let i=0; i<parallels.right.length-1; i++) initialSegments.push({A: parallels.right[i], B: parallels.right[i+1], dash: isDash});
+                }
+            });
+            finalSegments = shatterSegments(initialSegments);
+        }
 
-function verifyAndDownload(url) {
-    let code = prompt("सुरक्षा कोड दर्ज करें (Enter Code to Download):");
-    
-    if (code === "258") {
-        // Open download link in new tab
-        window.open(url, '_blank');
-    } else if (code !== null) {
-        alert("❌ गलत कोड! डाउनलोड अस्वीकृत।");
-    }
-}
+        function drawCanvas() {
+            if(!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); cadBox.style.display = 'none'; 
+            if (!isGenerated) {
+                if (uploadedImage) { 
+                    ctx.globalAlpha = 0.4; let imgRatio = uploadedImage.width / uploadedImage.height; let canvasRatio = canvas.width / canvas.height; let drawW, drawH, drawX, drawY;
+                    if (imgRatio > canvasRatio) { drawW = canvas.width; drawH = canvas.width / imgRatio; drawX = 0; drawY = (canvas.height - drawH) / 2; } 
+                    else { drawH = canvas.height; drawW = canvas.height * imgRatio; drawX = (canvas.width - drawW) / 2; drawY = 0; }
+                    ctx.drawImage(uploadedImage, drawX, drawY, drawW, drawH); ctx.globalAlpha = 1.0; 
+                }
+                historyStack.forEach(el => renderDraftElement(el));
+                if(currentPath.length > 0) {
+                    renderDraftElement({ type: mode, points: currentPath }); let lastPt = currentPath[currentPath.length - 1]; let previewPt = {x: mousePos.x, y: mousePos.y};
+                    if(typedDistance !== "") { let angle = Math.atan2(mousePos.y - lastPt.y, mousePos.x - lastPt.x); let dist = parseFloat(typedDistance); previewPt = {x: lastPt.x + Math.cos(angle)*dist, y: lastPt.y + Math.sin(angle)*dist}; cadBox.style.display = 'block'; cadBox.style.left = (event.pageX + 15) + 'px'; cadBox.style.top = (event.pageY - 20) + 'px'; cadValue.textContent = typedDistance; } 
+                    else if(snapPoint) { previewPt = snapPoint; ctx.beginPath(); ctx.arc(snapPoint.x, snapPoint.y, 15, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3; ctx.stroke(); }
+                    ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y); ctx.lineTo(previewPt.x, previewPt.y); ctx.strokeStyle = "rgba(41, 128, 185, 0.7)"; ctx.lineWidth = 3; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]);
+                }
+                drawTexts(historyStack, false);
+            } else {
+                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.lineWidth = 2; ctx.lineCap = 'round';
+                finalSegments.forEach((s, idx) => {
+                    ctx.strokeStyle = (idx === hoverSegmentIdx && (editMode==='trim'||editMode==='smartText')) ? "#e74c3c" : "#000000"; ctx.lineWidth = (idx === hoverSegmentIdx) ? 6 : 2; 
+                    if (s.dash) ctx.setLineDash([15, 15]); else ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.moveTo(s.A.x, s.A.y); ctx.lineTo(s.B.x, s.B.y); ctx.stroke();
+                }); ctx.setLineDash([]); 
+                if(editMode === 'editLine' && hoveredNode && !draggedNode) { let pt = hoveredNode.isA ? finalSegments[hoveredNode.segIdx].A : finalSegments[hoveredNode.segIdx].B; ctx.beginPath(); ctx.arc(pt.x, pt.y, 15, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3; ctx.stroke(); }
+                drawTexts(finalTexts, true);
+            }
+        }
 
-// Auto load on first click (Optional)
-// document.addEventListener('DOMContentLoaded', () => { if(document.getElementById('downTab').classList.contains('active')) loadGithubFiles(); });
+        function generateLineArt() {
+            saveState();
+            if(currentPath.length > 0 && mode !== 'text') { historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; typedDistance=""; }
+            if(!isGenerated) { finalTexts = []; historyStack.forEach(el => { if (el.type === 'text') { finalTexts.push({ text: el.text, x: el.x, y: el.y, angle: el.angle || 0, fontSize: el.fontSize || 35 }); } }); }
+            regenerateSegments(); isGenerated = true;
+            
+            document.getElementById('drawToolbar').style.display = 'none'; 
+            document.getElementById('sliderPanel').style.display = 'none'; 
+            document.getElementById('docDetailsPanel').style.display = 'flex'; 
+            document.getElementById('editToolbar').style.display = 'flex'; 
+            document.getElementById('exportPanel').style.display = 'flex'; 
+            setEditMode('editText'); 
+            
+            if(!document.getElementById('docDate').value) {
+                document.getElementById('docDate').value = new Date().toLocaleDateString('en-GB');
+            }
+        }
+
+        function generateOfficialPDF() {
+            let officeLines = document.getElementById('docOffice').value.split('\n');
+            document.getElementById('printOfficeLine1').innerText = officeLines[0] || "";
+            document.getElementById('printOfficeLine2').innerText = officeLines.slice(1).join('\n') || "";
+            document.getElementById('printVillage').innerText = document.getElementById('docVillage').value;
+            document.getElementById('printKhasra').innerText = document.getElementById('docKhasra').value;
+            document.getElementById('printPatwari').innerText = document.getElementById('docPatwari').value;
+            
+            let dateVal = document.getElementById('docDate').value; 
+            document.getElementById('printDateValue').innerText = dateVal ? dateVal : "_ _ _ _ _ _ _ _ 2026";
+            
+            document.getElementById('printMapImage').src = canvas.toDataURL('image/jpeg', 1.0);
+            
+            setTimeout(() => { window.print(); }, 300);
+        }
+
+        function downloadImage(format) { const link = document.createElement('a'); link.download = `RockTech_Map.${format}`; link.href = canvas.toDataURL(`image/${format}`, 1.0); link.click(); }
+        
+        function downloadSVG() {
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1740" width="160mm" height="174mm" style="width:160mm; height:174mm;">\n<rect width="100%" height="100%" fill="white" stroke="none"/>\n`;
+            finalSegments.forEach(s => { let dash = s.dash ? `stroke-dasharray="15,15"` : ""; svg += `<line x1="${s.A.x}" y1="${s.A.y}" x2="${s.B.x}" y2="${s.B.y}" stroke="black" stroke-width="2" stroke-linecap="round" ${dash} />\n`; });
+            finalTexts.forEach(el => {
+                let deg = el.angle * (180 / Math.PI); let size = el.fontSize || 35; let strokeW = Math.max(2, size/6);
+                let lines = el.text.split('\n'); let lineHeight = size * 1.2; let startY = el.y - ((lines.length - 1) * lineHeight) / 2;
+                let whiteTextGrp = `<text font-family="Poppins, Arial" font-size="${size}" font-weight="600" fill="white" stroke="white" stroke-width="${strokeW}" text-anchor="middle" transform="rotate(${deg}, ${el.x}, ${el.y})">\n`;
+                let blackTextGrp = `<text font-family="Poppins, Arial" font-size="${size}" font-weight="600" fill="black" stroke="none" text-anchor="middle" transform="rotate(${deg}, ${el.x}, ${el.y})">\n`;
+                lines.forEach((line, i) => { let lineY = startY + (i * lineHeight) + (size * 0.3); whiteTextGrp += `<tspan x="${el.x}" y="${lineY}">${line}</tspan>\n`; blackTextGrp += `<tspan x="${el.x}" y="${lineY}">${line}</tspan>\n`; });
+                whiteTextGrp += `</text>\n`; blackTextGrp += `</text>\n`; svg += whiteTextGrp + blackTextGrp;
+            });
+            svg += `</svg>`; saveAs(new Blob([svg], {type: "image/svg+xml;charset=utf-8"}), "RockTech_Word_Shapes.svg");
+        }
+        
+        // Ensure fonts are loaded before drawing initial empty canvas state
+        document.fonts.ready.then(() => { if(document.getElementById('mapCanvas')) drawCanvas(); });
     </script>
 </body>
 </html>
