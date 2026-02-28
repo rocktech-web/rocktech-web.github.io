@@ -17,6 +17,7 @@
             font-family: 'Poppins', sans-serif; background-color: var(--bg-body);
             margin: 0; padding: 15px; color: var(--text-main);
             display: flex; flex-direction: column; align-items: center; height: 100vh; box-sizing: border-box;
+            overflow: hidden; /* Prevent native scrollbars when zooming */
         }
 
         .header { text-align: center; margin-bottom: 10px; width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center;}
@@ -59,7 +60,7 @@
             border-radius: 8px; overflow: hidden; position: relative;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        canvas { display: block; cursor: crosshair; }
+        canvas { display: block; cursor: crosshair; touch-action: none; }
         
         .final-preview-container {
             flex: 2; background: #e2e8f0; border: 2px solid var(--border-color);
@@ -130,6 +131,8 @@
         <button class="btn" onclick="clearBgImage()" id="btnClearBg" style="display:none;">फोटो हटाएं</button>
         <div style="width: 1px; background: #ccc; margin: 0 5px;"></div>
         
+        <button class="btn" id="btnPan" onclick="setMode('pan')">✋ खिसकाएं (Pan)</button>
+        
         <button class="btn active-tool" id="btnPoly" onclick="setMode('polygon')">बहुभुज (Line)</button>
         <button class="btn" id="btnFreehand" onclick="setMode('freehand')">✏️ फ्रीहैंड</button>
         <button class="btn" id="btnBox" onclick="setMode('box')">चौकोर</button>
@@ -142,6 +145,12 @@
         <div style="width: 1px; background: #ccc; margin: 0 5px;"></div>
         <button class="btn" onclick="undo()">Undo</button>
         <button class="btn" onclick="clearCanvas()">नया</button>
+    </div>
+
+    <div id="floatingInputContainer" style="display:none; position:absolute; z-index:1000; background:#1e3a8a; color:white; padding:6px 10px; border-radius:6px; box-shadow:0 4px 10px rgba(0,0,0,0.3); font-family:'Poppins', sans-serif; display:flex; align-items:center; gap:8px;">
+        <label style="font-size:12px; font-weight:600;">लंबाई:</label>
+        <input type="number" id="floatingDistance" style="width:70px; padding:4px; font-size:13px; border:none; border-radius:4px; outline:none; text-align:center;" placeholder="0.00">
+        <span style="font-size:12px; font-weight:600;" id="floatingUnitTxt">m</span>
     </div>
 
     <div class="main-container">
@@ -172,14 +181,13 @@
                 
                 <canvas id="exactCanvas" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; cursor:grab;"></canvas>
                 
-                <div style="position:absolute; bottom:30mm; left:0; width:100%; text-align:center; z-index:2; font-family:'Poppins', sans-serif; font-size:14px; font-weight:600; color:black; pointer-events:none;">
-                    मेरे द्वारा मूल कार्यकारी नक्शा से ट्रेस नक्शा तैयार किया गया है।
+                <div style="position:absolute; bottom:30mm; left:0; width:100%; text-align:center; z-index:2; font-family:'Poppins', sans-serif; font-size:12px; font-weight:600; color:black; pointer-events:none;">
+                    मेरे द्वारा कार्यकारी (मूल) नक्शा से ट्रेस नक्शा तैयार किया गया है।
                 </div>
             </div>
         </div>
 
         <div class="sidebar">
-
             <div id="scaleInfoBlock" class="scale-info-box">
                 <span style="color:#7c3aed; font-weight:700; font-size:13px;">✅ ऑटो-स्केल सक्रिय</span><br>
                 <span style="font-size:11px; color:#475569;">अब क्षेत्रफल स्वतः निकलेगा।</span>
@@ -211,9 +219,9 @@
 
             <div class="print-settings-box">
                 <div class="section-title" style="color: var(--accent); border-color: #fdba74; margin-bottom: 5px;">4. प्रिंट लेआउट सेटिंग</div>
-                <label style="font-size: 11px; font-weight: 600;">खसरा लाइन की लंबाई: <span id="arrowLenVal">80</span>px</label>
+                <label style="font-size: 11px; font-weight: 600;">बाहरी खसरा लाइन की लंबाई: <span id="arrowLenVal">80</span>px</label>
                 <input type="range" id="printArrowLen" min="30" max="250" value="80" oninput="document.getElementById('arrowLenVal').innerText=this.value; if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();">
-                <label style="font-size: 11px; font-weight: 600; margin-top: 5px; display: block;">खसरा टेक्स्ट साइज़: <span id="textSzVal">16</span>px</label>
+                <label style="font-size: 11px; font-weight: 600; margin-top: 5px; display: block;">बाहरी खसरा टेक्स्ट साइज़: <span id="textSzVal">16</span>px</label>
                 <input type="range" id="printFontSize" min="10" max="40" value="16" oninput="document.getElementById('textSzVal').innerText=this.value; if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();">
             </div>
 
@@ -265,6 +273,7 @@
         let selectedShapeIdx = -1; let selectedLabelIdx = -1;
         let draggedNode = null; let draggedWholeShape = null; 
         let draggedLabelNode = null; let draggedWholeLabel = null;
+        let draggedInnerText = null; // NEW: For dragging text inside shape
         
         let zoom = 1; let panX = 0, panY = 0;
         let isPanning = false, panStart = {x:0, y:0};
@@ -286,9 +295,22 @@
         let mapScaleP2M = null;
         let calibStart = null; let calibEnd = null;
 
+        // DDE (Direct Distance Entry) & Spacebar Variables
+        let lastMouseGlobalPos = {x: 0, y: 0};
+        let lastMouseCanvasPos = {x: 0, y: 0};
+        let isShiftPressed = false; 
+        let isSpacePressed = false; 
+
         // FIXED 96 DPI Print Resolution
         exactCanvas.width = 190 * 3.7795;
         exactCanvas.height = 277 * 3.7795;
+
+        // 100% शुद्ध क्षेत्रफल के लिए त्रिभुज का फॉर्मूला (Heron's Formula)
+        function getTriangleArea(a, b, c) {
+            let s = (a + b + c) / 2;
+            let val = s * (s - a) * (s - b) * (s - c);
+            return val > 0 ? Math.sqrt(val) : 0;
+        }
 
         function getExactMousePos(e) {
             const rect = exactCanvas.getBoundingClientRect();
@@ -317,19 +339,23 @@
         });
 
         window.addEventListener('mousemove', (e) => {
+            lastMouseGlobalPos = { x: e.clientX, y: e.clientY };
+            if(mode === 'polygon') lastMouseCanvasPos = getMousePos(e);
+
+            const floatBox = document.getElementById('floatingInputContainer');
+            if (floatBox.style.display === 'flex') {
+                floatBox.style.left = (e.clientX + 15) + 'px';
+                floatBox.style.top = (e.clientY + 15) + 'px';
+            }
+
             if(draggedPrintShapeIdx !== -1) {
                 const pos = getExactMousePos(e);
                 let localX = pos.x - ((exactCanvas.width / 2) + printPanX);
                 let localY = pos.y - ((exactCanvas.height / 2) + printPanY);
-                
-                let dx = localX - printShapeLastX;
-                let dy = localY - printShapeLastY;
-                
+                let dx = localX - printShapeLastX; let dy = localY - printShapeLastY;
                 shapes[draggedPrintShapeIdx].printOffsetX = (shapes[draggedPrintShapeIdx].printOffsetX || 0) + dx;
                 shapes[draggedPrintShapeIdx].printOffsetY = (shapes[draggedPrintShapeIdx].printOffsetY || 0) + dy;
-                
-                printShapeLastX = localX;
-                printShapeLastY = localY;
+                printShapeLastX = localX; printShapeLastY = localY;
                 drawExactScaleMap();
             } else if(isPrintPanning) {
                 printPanX = e.clientX - printPanStart.x;
@@ -347,29 +373,21 @@
             const scaleFactor = 0.944875; 
             let validShapes = shapes.filter(s => s.origCx !== undefined);
             if(validShapes.length === 0) return -1;
-
-            let globalMinX = Math.min(...validShapes.map(s => s.origCx));
-            let globalMaxX = Math.max(...validShapes.map(s => s.origCx));
-            let globalMinY = Math.min(...validShapes.map(s => s.origCy));
-            let globalMaxY = Math.max(...validShapes.map(s => s.origCy));
-            let globalCx = (globalMinX + globalMaxX) / 2;
-            let globalCy = (globalMinY + globalMaxY) / 2;
+            let globalMinX = Math.min(...validShapes.map(s => s.origCx)); let globalMaxX = Math.max(...validShapes.map(s => s.origCx));
+            let globalMinY = Math.min(...validShapes.map(s => s.origCy)); let globalMaxY = Math.max(...validShapes.map(s => s.origCy));
+            let globalCx = (globalMinX + globalMaxX) / 2; let globalCy = (globalMinY + globalMaxY) / 2;
             let avgP2M = validShapes.reduce((sum, s) => sum + (s.p2m || 1), 0) / validShapes.length;
 
             for(let s = shapes.length - 1; s >= 0; s--) {
                 let shape = shapes[s];
                 if(shape.origCx === undefined) continue;
-
-                let poX = shape.printOffsetX || 0;
-                let poY = shape.printOffsetY || 0;
+                let poX = shape.printOffsetX || 0; let poY = shape.printOffsetY || 0;
                 let offX = ((shape.origCx - globalCx) / avgP2M) * scaleFactor + poX;
                 let offY = ((shape.origCy - globalCy) / avgP2M) * scaleFactor + poY;
-
                 let px = lx - offX; let py = ly - offY;
 
                 if((shape.type === 'poly' || shape.type === 'freehand') && shape.adjustedPoints) {
-                    let pts = shape.adjustedPoints;
-                    let inside = false;
+                    let pts = shape.adjustedPoints; let inside = false;
                     for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
                         let xi = pts[i].x * scaleFactor, yi = pts[i].y * scaleFactor;
                         let xj = pts[j].x * scaleFactor, yj = pts[j].y * scaleFactor;
@@ -385,10 +403,8 @@
         }
 
         function syncDetails() {
-            let g = document.getElementById('inpGram').value || "_______";
-            let h = document.getElementById('inpHalka').value || "_______";
-            let t = document.getElementById('inpTehsil').value || "_______";
-            let z = document.getElementById('inpZila').value || "_______";
+            let g = document.getElementById('inpGram').value || "_______"; let h = document.getElementById('inpHalka').value || "_______";
+            let t = document.getElementById('inpTehsil').value || "_______"; let z = document.getElementById('inpZila').value || "_______";
             document.getElementById('prevGram').innerText = g; document.getElementById('prevHalka').innerText = h;
             document.getElementById('prevTehsil').innerText = t; document.getElementById('prevZila').innerText = z;
             document.getElementById('prtGram').innerText = g; document.getElementById('prtHalka').innerText = h;
@@ -398,13 +414,9 @@
         function saveProject() {
             const projectData = {
                 shapes: shapes, labels: labels, mapScaleP2M: mapScaleP2M,
-                docDetails: {
-                    gram: document.getElementById('inpGram').value, halka: document.getElementById('inpHalka').value,
-                    tehsil: document.getElementById('inpTehsil').value, zila: document.getElementById('inpZila').value
-                }
+                docDetails: { gram: document.getElementById('inpGram').value, halka: document.getElementById('inpHalka').value, tehsil: document.getElementById('inpTehsil').value, zila: document.getElementById('inpZila').value }
             };
-            const blob = new Blob([JSON.stringify(projectData)], {type: "application/json"});
-            saveAs(blob, "RockTech_AreaMap.json");
+            saveAs(new Blob([JSON.stringify(projectData)], {type: "application/json"}), "RockTech_AreaMap.json");
         }
 
         document.getElementById('projectInput').addEventListener('change', function(e) {
@@ -413,15 +425,11 @@
             reader.onload = function(ev) {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    shapes = data.shapes || []; labels = data.labels || [];
-                    mapScaleP2M = data.mapScaleP2M || null;
+                    shapes = data.shapes || []; labels = data.labels || []; mapScaleP2M = data.mapScaleP2M || null;
                     if(mapScaleP2M) document.getElementById('scaleInfoBlock').style.display = 'block';
-                    
                     if(data.docDetails) {
-                        document.getElementById('inpGram').value = data.docDetails.gram || "";
-                        document.getElementById('inpHalka').value = data.docDetails.halka || "";
-                        document.getElementById('inpTehsil').value = data.docDetails.tehsil || "";
-                        document.getElementById('inpZila').value = data.docDetails.zila || "";
+                        document.getElementById('inpGram').value = data.docDetails.gram || ""; document.getElementById('inpHalka').value = data.docDetails.halka || "";
+                        document.getElementById('inpTehsil').value = data.docDetails.tehsil || ""; document.getElementById('inpZila').value = data.docDetails.zila || "";
                         syncDetails();
                     }
                     undoStack = []; redoStack = []; generateInputs(); draw();
@@ -461,14 +469,14 @@
         }
 
         function setMode(newMode) {
-            mode = newMode; currentPath = []; snapActive = false; draggedWholeShape = null; draggedWholeLabel = null;
+            mode = newMode; currentPath = []; snapActive = false; draggedWholeShape = null; draggedWholeLabel = null; draggedInnerText = null;
             selectedShapeIdx = -1; selectedLabelIdx = -1;
             if(mode === 'calibrate') alert("स्केल सेट करने का तरीका:\n1. नक्शे की किसी ज्ञात लाइन के एक सिरे पर क्लिक करें।\n2. माउस को खिसका कर दूसरे सिरे पर क्लिक करें (सीधी लाइन के लिए Shift दबाकर रखें)।");
-            
             document.querySelectorAll('.toolbar .btn').forEach(b => b.classList.remove('active-tool'));
-            let modeMap = {'polygon':'btnPoly', 'box':'btnBox', 'circle':'btnCircle', 'arrow':'btnArrow', 'edit':'btnEdit', 'freehand':'btnFreehand', 'calibrate':'btnCalibrate'};
+            let modeMap = {'polygon':'btnPoly', 'box':'btnBox', 'circle':'btnCircle', 'arrow':'btnArrow', 'edit':'btnEdit', 'freehand':'btnFreehand', 'calibrate':'btnCalibrate', 'pan':'btnPan'};
             if(modeMap[mode]) document.getElementById(modeMap[mode]).classList.add('active-tool');
-            canvas.style.cursor = mode === 'edit' ? 'move' : 'crosshair';
+            
+            canvas.style.cursor = mode === 'edit' ? 'move' : (mode === 'pan' ? 'grab' : 'crosshair');
             generateInputs(); draw();
         }
 
@@ -490,7 +498,28 @@
             else if (selectedLabelIdx !== -1) { saveState(); labels.splice(selectedLabelIdx, 1); selectedLabelIdx = -1; generateInputs(); draw(); }
         }
 
-        function changeZoom(delta) { zoom += delta; if(zoom < 0.2) zoom = 0.2; if(zoom > 5) zoom = 5; draw(); }
+        function changeZoom(delta) { 
+            let mouseX = canvas.width / 2; let mouseY = canvas.height / 2;
+            let oldZoom = zoom;
+            zoom += delta; if(zoom < 0.2) zoom = 0.2; if(zoom > 5) zoom = 5; 
+            panX -= (mouseX - panX) * (zoom - oldZoom) / oldZoom;
+            panY -= (mouseY - panY) * (zoom - oldZoom) / oldZoom;
+            draw(); 
+        }
+        
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            let mouseX = e.clientX - canvas.getBoundingClientRect().left;
+            let mouseY = e.clientY - canvas.getBoundingClientRect().top;
+            let zoomAmount = e.deltaY > 0 ? -0.1 : 0.1;
+            let oldZoom = zoom;
+            zoom += zoomAmount;
+            if(zoom < 0.2) zoom = 0.2; if(zoom > 5) zoom = 5;
+            panX -= (mouseX - panX) * (zoom - oldZoom) / oldZoom;
+            panY -= (mouseY - panY) * (zoom - oldZoom) / oldZoom;
+            draw();
+        });
+
         function getMousePos(e) { const rect = canvas.getBoundingClientRect(); return { x: (e.clientX - rect.left - panX) / zoom, y: (e.clientY - rect.top - panY) / zoom }; }
 
         function applyShiftSnap(start, current, isShift) {
@@ -509,27 +538,54 @@
 
         canvas.addEventListener('mousedown', (e) => {
             const pos = getMousePos(e);
-            if(e.button === 1 || e.button === 2) { isPanning = true; panStart = {x: e.clientX - panX, y: e.clientY - panY}; return; }
+            
+            if(e.button === 1 || e.button === 2 || isSpacePressed || mode === 'pan') { 
+                isPanning = true; 
+                panStart = {x: e.clientX - panX, y: e.clientY - panY}; 
+                canvas.style.cursor = 'grabbing';
+                return; 
+            }
 
             if(mode === 'edit') {
+                // 1. Check if clicking Inner Khasra Text FIRST (so it's easy to grab)
+                for(let s=shapes.length-1; s>=0; s--) {
+                    let shape = shapes[s];
+                    if(shape.khasraNo && shape.origCx !== undefined) {
+                        let cx = shape.origCx + (shape.khasraOffsetX || 0);
+                        let cy = shape.origCy + (shape.khasraOffsetY || 0);
+                        ctx.font = `bold ${(shape.khasraFontSize || 16)/zoom}px Arial`;
+                        let w = ctx.measureText(shape.khasraNo).width;
+                        let h = (shape.khasraFontSize || 16) / zoom;
+                        if(Math.abs(pos.x - cx) <= w/2 + 10/zoom && Math.abs(pos.y - cy) <= h/2 + 10/zoom) {
+                            draggedInnerText = { idx: s, lastX: pos.x, lastY: pos.y };
+                            selectedShapeIdx = s; selectedLabelIdx = -1;
+                            saveState(); generateInputs(); draw(); return;
+                        }
+                    }
+                }
+
+                // 2. Check Line Labels
                 for(let i=0; i<labels.length; i++) {
                     if(Math.hypot(pos.x - labels[i].start.x, pos.y - labels[i].start.y) < 10/zoom) { draggedLabelNode = { idx: i, isStart: true }; selectedLabelIdx = i; selectedShapeIdx = -1; saveState(); generateInputs(); draw(); return; }
                     if(Math.hypot(pos.x - labels[i].end.x, pos.y - labels[i].end.y) < 10/zoom) { draggedLabelNode = { idx: i, isStart: false }; selectedLabelIdx = i; selectedShapeIdx = -1; saveState(); generateInputs(); draw(); return; }
                 }
+
+                // 3. Check Shape Nodes
                 if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) {
                     const shape = shapes[selectedShapeIdx];
                     if(shape.type === 'poly' || shape.type === 'freehand') {
-                        for(let i=0; i<shape.points.length; i++) {
-                            if(Math.hypot(pos.x - shape.points[i].x, pos.y - shape.points[i].y) < 10 / zoom) { draggedNode = {shapeIdx: selectedShapeIdx, nodeIdx: i}; saveState(); return; }
-                        }
+                        for(let i=0; i<shape.points.length; i++) { if(Math.hypot(pos.x - shape.points[i].x, pos.y - shape.points[i].y) < 10 / zoom) { draggedNode = {shapeIdx: selectedShapeIdx, nodeIdx: i}; saveState(); return; } }
                     } else if (shape.type === 'circle') {
                         if(Math.hypot(pos.x - shape.center.x, pos.y - shape.center.y) < 10 / zoom) { draggedNode = {shapeIdx: selectedShapeIdx, isCenter: true}; saveState(); return; }
                     }
                 }
+                
+                // 4. Check entire Line Label Drag
                 for(let i=0; i<labels.length; i++) {
                     if(pointToLineDist(pos, labels[i].start, labels[i].end) < 10/zoom) { selectedLabelIdx = i; selectedShapeIdx = -1; draggedWholeLabel = { idx: i, lastX: pos.x, lastY: pos.y }; saveState(); generateInputs(); draw(); return; }
                 }
                 
+                // 5. Check Shape Body
                 let clickedShape = findClickedShape(pos);
                 if(clickedShape !== -1) { selectedShapeIdx = clickedShape; selectedLabelIdx = -1; draggedWholeShape = { idx: selectedShapeIdx, lastX: pos.x, lastY: pos.y }; saveState(); } 
                 else { selectedShapeIdx = -1; selectedLabelIdx = -1; }
@@ -538,11 +594,8 @@
 
             if(mode !== 'calibrate') saveState();
 
-            // FIXED CALIBRATION LOGIC
             if(mode === 'calibrate') { 
-                if(!calibStart) {
-                    calibStart = pos; draw(pos);
-                } else {
+                if(!calibStart) { calibStart = pos; draw(pos); } else {
                     calibEnd = applyShiftSnap(calibStart, pos, e.shiftKey);
                     let pxLen = Math.hypot(calibEnd.x - calibStart.x, calibEnd.y - calibStart.y);
                     if(pxLen > 10) {
@@ -550,8 +603,7 @@
                         let unit = document.getElementById('unitSelect').value;
                         let toMeters = (unit === 'feet') ? 0.3048 : (unit === 'zareeb') ? 20 : 1;
                         if(len && !isNaN(parseFloat(len)) && parseFloat(len) > 0) {
-                            let lenMeters = parseFloat(len) * toMeters;
-                            mapScaleP2M = pxLen / lenMeters;
+                            mapScaleP2M = pxLen / (parseFloat(len) * toMeters);
                             document.getElementById('scaleInfoBlock').style.display = 'block';
                             alert("स्केल सेट हो गया! अब आपको भुजाओं की नाप डालने की जरूरत नहीं है।");
                             calculateArea(); setMode('polygon');
@@ -568,8 +620,7 @@
                     shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null });
                     currentPath = []; snapActive = false; selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs();
                 } else {
-                    let newPos = currentPath.length > 0 ? applyShiftSnap(currentPath[currentPath.length-1], pos, e.shiftKey) : pos;
-                    currentPath.push(newPos); draw();
+                    currentPath.push(currentPath.length > 0 ? applyShiftSnap(currentPath[currentPath.length-1], pos, e.shiftKey) : pos); draw();
                 }
             }
         });
@@ -578,7 +629,15 @@
             if(isPanning) { panX = e.clientX - panStart.x; panY = e.clientY - panStart.y; draw(); return; }
             let pos = getMousePos(e);
             
-            if(mode === 'edit' && draggedLabelNode) {
+            // Handle Inner Text Dragging
+            if (mode === 'edit' && draggedInnerText) {
+                let dx = pos.x - draggedInnerText.lastX; let dy = pos.y - draggedInnerText.lastY;
+                shapes[draggedInnerText.idx].khasraOffsetX = (shapes[draggedInnerText.idx].khasraOffsetX || 0) + dx;
+                shapes[draggedInnerText.idx].khasraOffsetY = (shapes[draggedInnerText.idx].khasraOffsetY || 0) + dy;
+                draggedInnerText.lastX = pos.x; draggedInnerText.lastY = pos.y;
+                draw(); return;
+            }
+            else if(mode === 'edit' && draggedLabelNode) {
                 if(draggedLabelNode.isStart) labels[draggedLabelNode.idx].start = pos; else labels[draggedLabelNode.idx].end = pos; draw();
             }
             else if (mode === 'edit' && draggedWholeLabel) {
@@ -599,53 +658,43 @@
                 else if (shape.type === 'circle') { shape.center.x += dx; shape.center.y += dy; }
                 draggedWholeShape.lastX = pos.x; draggedWholeShape.lastY = pos.y; draw(); calculateArea();
             }
-            else if(mode === 'calibrate' && calibStart) { 
-                draw(applyShiftSnap(calibStart, pos, e.shiftKey)); 
-            }
+            else if(mode === 'calibrate' && calibStart) { draw(applyShiftSnap(calibStart, pos, e.shiftKey)); }
             else if(mode === 'freehand' && isDrawingFreehand) {
-                let last = currentPath[currentPath.length-1];
-                if(Math.hypot(pos.x - last.x, pos.y - last.y) > 10 / zoom) { currentPath.push(pos); draw(); } 
+                if(Math.hypot(pos.x - currentPath[currentPath.length-1].x, pos.y - currentPath[currentPath.length-1].y) > 10 / zoom) { currentPath.push(pos); draw(); } 
             }
-            else if (mode === 'box' && isDrawingBox) {
-                currentPath[1] = {x: pos.x, y: boxStart.y}; currentPath[2] = {x: pos.x, y: pos.y}; currentPath[3] = {x: boxStart.x, y: pos.y}; draw();
-            } else if (mode === 'circle' && isDrawingCircle) {
-                tempCircleRadius = Math.hypot(pos.x - circleStart.x, pos.y - circleStart.y); draw();
-            } else if (mode === 'arrow' && isDrawingArrow) {
-                arrowEnd = applyShiftSnap(arrowStart, pos, e.shiftKey); draw();
-            } else if (mode === 'polygon' && currentPath.length > 0) {
+            else if (mode === 'box' && isDrawingBox) { currentPath[1] = {x: pos.x, y: boxStart.y}; currentPath[2] = {x: pos.x, y: pos.y}; currentPath[3] = {x: boxStart.x, y: pos.y}; draw(); } 
+            else if (mode === 'circle' && isDrawingCircle) { tempCircleRadius = Math.hypot(pos.x - circleStart.x, pos.y - circleStart.y); draw(); } 
+            else if (mode === 'arrow' && isDrawingArrow) { arrowEnd = applyShiftSnap(arrowStart, pos, e.shiftKey); draw(); } 
+            else if (mode === 'polygon' && currentPath.length > 0) {
                 pos = applyShiftSnap(currentPath[currentPath.length-1], pos, e.shiftKey);
-                if(currentPath.length > 2) {
-                    let dist = Math.hypot(pos.x - currentPath[0].x, pos.y - currentPath[0].y);
-                    snapActive = (dist < 15 / zoom);
-                }
+                if(currentPath.length > 2) snapActive = (Math.hypot(pos.x - currentPath[0].x, pos.y - currentPath[0].y) < 15 / zoom);
                 draw(pos); 
             }
         });
 
         canvas.addEventListener('mouseup', (e) => {
-            isPanning = false; if(draggedNode) { draggedNode = null; } if(draggedWholeShape) { draggedWholeShape = null; } if(draggedLabelNode) { draggedLabelNode = null; } if(draggedWholeLabel) { draggedWholeLabel = null; }
+            if(isPanning) { 
+                isPanning = false; 
+                canvas.style.cursor = isSpacePressed || mode === 'pan' ? 'grab' : (mode === 'edit' ? 'move' : 'crosshair');
+                if (mode === 'pan' || isSpacePressed || e.button === 1 || e.button === 2) return;
+            }
+
+            if(draggedNode) draggedNode = null; if(draggedWholeShape) draggedWholeShape = null; 
+            if(draggedLabelNode) draggedLabelNode = null; if(draggedWholeLabel) draggedWholeLabel = null;
+            if(draggedInnerText) draggedInnerText = null; // Clear Inner Text Drag
 
             if(mode === 'freehand' && isDrawingFreehand) {
                 isDrawingFreehand = false;
-                if(currentPath.length > 3) {
-                    shapes.push({ type: 'freehand', points: [...currentPath], userLengths: [], adjustedPoints: null });
-                    selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs();
-                }
+                if(currentPath.length > 3) { shapes.push({ type: 'freehand', points: [...currentPath], userLengths: [], adjustedPoints: null }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); }
                 currentPath = []; draw();
             }
             else if(mode === 'box' && isDrawingBox) {
                 isDrawingBox = false;
-                if(Math.hypot(currentPath[0].x - currentPath[2].x, currentPath[0].y - currentPath[2].y) > 10) {
-                    shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null });
-                    selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs();
-                }
+                if(Math.hypot(currentPath[0].x - currentPath[2].x, currentPath[0].y - currentPath[2].y) > 10) { shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); }
                 currentPath = []; draw();
             } else if(mode === 'circle' && isDrawingCircle) {
                 isDrawingCircle = false;
-                if(tempCircleRadius > 10) {
-                    shapes.push({ type: 'circle', center: circleStart, pixelRadius: tempCircleRadius, userRadius: "" });
-                    selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs();
-                }
+                if(tempCircleRadius > 10) { shapes.push({ type: 'circle', center: circleStart, pixelRadius: tempCircleRadius, userRadius: "" }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); }
                 draw();
             } else if(mode === 'arrow' && isDrawingArrow) {
                 isDrawingArrow = false;
@@ -667,8 +716,7 @@
                     let pts = shape.points; let inside = false;
                     for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
                         let xi = pts[i].x, yi = pts[i].y; let xj = pts[j].x, yj = pts[j].y;
-                        let intersect = ((yi > pos.y) != (yj > pos.y)) && (pos.x < (xj - xi) * (pos.y - yi) / (yj - yi) + xi);
-                        if (intersect) inside = !inside;
+                        if (((yi > pos.y) != (yj > pos.y)) && (pos.x < (xj - xi) * (pos.y - yi) / (yj - yi) + xi)) inside = !inside;
                     }
                     if(inside) return s;
                 } else if(shape.type === 'circle') {
@@ -679,17 +727,28 @@
         }
 
         function updateLabelText(idx, val) { if(labels[idx]) { labels[idx].text = val; draw(); } }
+        
+        // NEW FUNCTIONS: Inner Khasra Text
+        function updateInnerKhasra(val) {
+            if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) {
+                shapes[selectedShapeIdx].khasraNo = val; draw();
+                if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();
+            }
+        }
+        function updateInnerKhasraSize(val) {
+            if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) {
+                shapes[selectedShapeIdx].khasraFontSize = parseInt(val);
+                document.getElementById('innerKhasraSzVal').innerText = val; draw();
+                if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();
+            }
+        }
 
         function generateInputs() {
             const container = document.getElementById('sideInputsContainer');
             container.innerHTML = '';
             
             if (selectedLabelIdx !== -1 && labels[selectedLabelIdx]) {
-                container.innerHTML = `
-                    <div class="side-input-row">
-                        <span class="side-label" style="width:70px;">खसरा नं.:</span>
-                        <input type="text" class="side-input" value="${labels[selectedLabelIdx].text}" oninput="updateLabelText(${selectedLabelIdx}, this.value)">
-                    </div>`;
+                container.innerHTML = `<div class="side-input-row"><span class="side-label" style="width:70px;">खसरा नं.:</span><input type="text" class="side-input" value="${labels[selectedLabelIdx].text}" oninput="updateLabelText(${selectedLabelIdx}, this.value)"></div>`;
                 calculateArea(); return;
             }
 
@@ -707,44 +766,59 @@
             else if(shape.type === 'poly') {
                 const pts = shape.points;
                 if(!shape.userLengths || shape.userLengths.length !== pts.length) shape.userLengths = new Array(pts.length).fill("");
-                
-                if(mapScaleP2M) {
-                    container.innerHTML = '<p style="font-size: 11px; color: #16a34a; margin-bottom:5px;">स्केल सक्रिय है। आप चाहें तो नीचे नाप बदलकर ओवरराइड कर सकते हैं:</p>';
-                }
+                if(mapScaleP2M) container.innerHTML = '<p style="font-size: 11px; color: #16a34a; margin-bottom:5px;">स्केल सक्रिय है। आप चाहें तो नीचे नाप बदलकर ओवरराइड कर सकते हैं:</p>';
 
                 for(let i=0; i<pts.length; i++) {
                     let j = (i + 1) % pts.length;
                     let labelStr = String.fromCharCode(65 + i) + "-" + String.fromCharCode(65 + j); 
-                    
                     let placeholderText = "लंबाई दर्ज करें";
                     if(mapScaleP2M) {
-                        let unit = document.getElementById('unitSelect').value;
-                        let toMeters = (unit === 'feet') ? 0.3048 : (unit === 'zareeb') ? 20 : 1;
-                        let pxLen = Math.hypot(pts[j].x - pts[i].x, pts[j].y - pts[i].y);
-                        let autoLen = (pxLen / mapScaleP2M) / toMeters;
+                        let toMeters = (document.getElementById('unitSelect').value === 'feet') ? 0.3048 : (document.getElementById('unitSelect').value === 'zareeb') ? 20 : 1;
+                        let autoLen = ((Math.hypot(pts[j].x - pts[i].x, pts[j].y - pts[i].y)) / mapScaleP2M) / toMeters;
                         placeholderText = `Auto: ${autoLen.toFixed(2)}`;
                     }
+                    container.innerHTML += `<div class="side-input-row"><span class="side-label">${labelStr}:</span><input type="number" class="side-input" value="${shape.userLengths[i]}" placeholder="${placeholderText}" oninput="updateSideLength(${i}, this.value)"></div>`;
+                }
 
+                if (pts.length === 4) {
+                    if (shape.userDiagonal === undefined) shape.userDiagonal = "";
                     container.innerHTML += `
-                        <div class="side-input-row">
-                            <span class="side-label">${labelStr}:</span>
-                            <input type="number" class="side-input" value="${shape.userLengths[i]}" placeholder="${placeholderText}" oninput="updateSideLength(${i}, this.value)">
+                        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1;">
+                            <p style="font-size:11px; color:#ea580c; margin:0 0 5px 0; font-weight:600;">📐 100% शुद्ध रकबा हेतु (वैकल्पिक)</p>
+                            <div class="side-input-row">
+                                <span class="side-label" style="width:70px; color:#ea580c;">विकर्ण (A-C):</span>
+                                <input type="number" class="side-input" value="${shape.userDiagonal}" placeholder="वैकल्पिक नाप" oninput="updateDiagonal(this.value)">
+                            </div>
                         </div>`;
                 }
+
             } else if (shape.type === 'circle') {
                 let placeholderText = "Radius दर्ज करें";
                 if(mapScaleP2M) {
-                    let unit = document.getElementById('unitSelect').value;
-                    let toMeters = (unit === 'feet') ? 0.3048 : (unit === 'zareeb') ? 20 : 1;
-                    let autoLen = (shape.pixelRadius / mapScaleP2M) / toMeters;
-                    placeholderText = `Auto: ${autoLen.toFixed(2)}`;
+                    let toMeters = (document.getElementById('unitSelect').value === 'feet') ? 0.3048 : (document.getElementById('unitSelect').value === 'zareeb') ? 20 : 1;
+                    placeholderText = `Auto: ${((shape.pixelRadius / mapScaleP2M) / toMeters).toFixed(2)}`;
                 }
-                container.innerHTML += `
-                    <div class="side-input-row">
-                        <span class="side-label" style="width:70px;">त्रिज्या (R):</span>
-                        <input type="number" class="side-input" value="${shape.userRadius}" placeholder="${placeholderText}" oninput="updateSideLength('radius', this.value)">
-                    </div>`;
+                container.innerHTML += `<div class="side-input-row"><span class="side-label" style="width:70px;">त्रिज्या (R):</span><input type="number" class="side-input" value="${shape.userRadius}" placeholder="${placeholderText}" oninput="updateSideLength('radius', this.value)"></div>`;
             }
+            
+            // NEW: Add Inner Khasra UI for ALL shape types
+            let kNo = shape.khasraNo || "";
+            let kSz = shape.khasraFontSize || 16;
+            container.innerHTML += `
+                <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; background: #eff6ff; padding: 10px; border-radius: 6px;">
+                    <p style="font-size:12px; color:#1e3a8a; margin:0 0 8px 0; font-weight:700;">🏷️ नक्शे के अंदर खसरा नंबर</p>
+                    <div class="side-input-row">
+                        <span class="side-label" style="width:70px;">खसरा नं.:</span>
+                        <input type="text" class="side-input" value="${kNo}" placeholder="उदा. 941/1/2" oninput="updateInnerKhasra(this.value)">
+                    </div>
+                    <div class="side-input-row">
+                        <span class="side-label" style="width:70px;">साइज़:</span>
+                        <input type="range" min="8" max="60" value="${kSz}" style="flex:1;" oninput="updateInnerKhasraSize(this.value)">
+                        <span style="font-size:11px; font-weight:bold; width:20px; text-align:right;" id="innerKhasraSzVal">${kSz}</span>
+                    </div>
+                    <p style="font-size:10px; color:#475569; margin:4px 0 0 0; line-height:1.3;">टिप: इसे 'सुधारें' टूल से पकड़कर अंदर कहीं भी खिसका सकते हैं।</p>
+                </div>`;
+                
             calculateArea();
         }
 
@@ -756,152 +830,130 @@
             }
         }
 
+        function updateDiagonal(val) {
+            if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) { shapes[selectedShapeIdx].userDiagonal = val; calculateArea(); }
+        }
+
         function calculateArea() {
             let totalSqm = 0; let curSqm = 0;
-            let unit = document.getElementById('unitSelect').value;
-            let toMeters = (unit === 'feet') ? 0.3048 : (unit === 'zareeb') ? 20 : 1;
+            let toMeters = (document.getElementById('unitSelect').value === 'feet') ? 0.3048 : (document.getElementById('unitSelect').value === 'zareeb') ? 20 : 1;
 
             shapes.forEach((shape, idx) => {
                 shape.computedAreaSqm = 0;
-                
                 if(shape.type === 'poly' || shape.type === 'freehand') {
-                    let minX = Math.min(...shape.points.map(p=>p.x)), maxX = Math.max(...shape.points.map(p=>p.x));
-                    let minY = Math.min(...shape.points.map(p=>p.y)), maxY = Math.max(...shape.points.map(p=>p.y));
-                    shape.origCx = (minX + maxX)/2; shape.origCy = (minY + maxY)/2;
-                } else {
-                    shape.origCx = shape.center.x; shape.origCy = shape.center.y;
-                }
+                    shape.origCx = (Math.min(...shape.points.map(p=>p.x)) + Math.max(...shape.points.map(p=>p.x)))/2;
+                    shape.origCy = (Math.min(...shape.points.map(p=>p.y)) + Math.max(...shape.points.map(p=>p.y)))/2;
+                } else { shape.origCx = shape.center.x; shape.origCy = shape.center.y; }
 
                 if(shape.type === 'freehand') {
-                    // FIXED FALLBACK FOR FREEHAND
-                    let activeScale = mapScaleP2M || 1;
-                    let area = 0; let n = shape.points.length;
+                    let activeScale = mapScaleP2M || 1; let area = 0; let n = shape.points.length;
                     for(let i=0; i<n; i++) area += shape.points[i].x * shape.points[(i+1)%n].y - shape.points[(i+1)%n].x * shape.points[i].y;
-                    let pixelArea = Math.abs(area / 2);
-                    shape.computedAreaSqm = mapScaleP2M ? (pixelArea / (activeScale * activeScale)) : 0;
-                    
-                    shape.adjustedPoints = shape.points.map(p => ({
-                        x: (p.x - shape.origCx) / activeScale,
-                        y: (p.y - shape.origCy) / activeScale
-                    }));
+                    shape.computedAreaSqm = mapScaleP2M ? (Math.abs(area / 2) / (activeScale * activeScale)) : 0;
+                    shape.adjustedPoints = shape.points.map(p => ({ x: (p.x - shape.origCx) / activeScale, y: (p.y - shape.origCy) / activeScale }));
                     shape.p2m = activeScale;
                 } 
                 else if(shape.type === 'poly') {
-                    let n = shape.points.length;
-                    let lengthsM = []; let isComplete = true; let userPerimeterM = 0;
-
+                    let n = shape.points.length; let lengthsM = []; let isComplete = true; let userPerimeterM = 0;
                     for(let i=0; i<n; i++) {
                         let val = parseFloat(shape.userLengths[i]);
-                        if(isNaN(val) || val <= 0) { isComplete = false; lengthsM.push(0); }
-                        else { lengthsM.push(val * toMeters); userPerimeterM += val * toMeters; }
+                        if(isNaN(val) || val <= 0) { isComplete = false; lengthsM.push(0); } else { lengthsM.push(val * toMeters); userPerimeterM += val * toMeters; }
                     }
-
-                    let pixelPerim = 0;
-                    for(let i=0; i<n; i++) pixelPerim += Math.hypot(shape.points[(i+1)%n].x - shape.points[i].x, shape.points[(i+1)%n].y - shape.points[i].y);
+                    let pixelPerim = 0; for(let i=0; i<n; i++) pixelPerim += Math.hypot(shape.points[(i+1)%n].x - shape.points[i].x, shape.points[(i+1)%n].y - shape.points[i].y);
                     
                     if(isComplete) {
                         shape.p2m = (pixelPerim > 0 && userPerimeterM > 0) ? (userPerimeterM / pixelPerim) : 1;
-                        let angles = [];
-                        for(let i=0; i<n; i++) angles.push(Math.atan2(shape.points[(i+1)%n].y - shape.points[i].y, shape.points[(i+1)%n].x - shape.points[i].x));
-
+                        let angles = []; for(let i=0; i<n; i++) angles.push(Math.atan2(shape.points[(i+1)%n].y - shape.points[i].y, shape.points[(i+1)%n].x - shape.points[i].x));
                         let unadj_dx = [], unadj_dy = [], sum_dx = 0, sum_dy = 0, sum_L = 0;
                         for(let i=0; i<n; i++) {
-                            let L = lengthsM[i]; let dx = L * Math.cos(angles[i]); let dy = L * Math.sin(angles[i]);
-                            unadj_dx.push(dx); unadj_dy.push(dy); sum_dx += dx; sum_dy += dy; sum_L += L;
+                            let dx = lengthsM[i] * Math.cos(angles[i]); let dy = lengthsM[i] * Math.sin(angles[i]);
+                            unadj_dx.push(dx); unadj_dy.push(dy); sum_dx += dx; sum_dy += dy; sum_L += lengthsM[i];
                         }
-
                         let adj_pts = [{x: 0, y: 0}]; let currX = 0, currY = 0;
                         for(let i=0; i<n; i++) {
-                            let cx = -(sum_dx * (lengthsM[i] / sum_L)); let cy = -(sum_dy * (lengthsM[i] / sum_L));
-                            currX += (unadj_dx[i] + cx); currY += (unadj_dy[i] + cy);
+                            currX += (unadj_dx[i] - (sum_dx * (lengthsM[i] / sum_L))); currY += (unadj_dy[i] - (sum_dy * (lengthsM[i] / sum_L)));
                             if(i < n - 1) adj_pts.push({x: currX, y: currY});
                         }
-                        
-                        let aMinX = Math.min(...adj_pts.map(p=>p.x)), aMaxX = Math.max(...adj_pts.map(p=>p.x));
-                        let aMinY = Math.min(...adj_pts.map(p=>p.y)), aMaxY = Math.max(...adj_pts.map(p=>p.y));
-                        let acx = (aMinX + aMaxX)/2; let acy = (aMinY + aMaxY)/2;
+                        let acx = (Math.min(...adj_pts.map(p=>p.x)) + Math.max(...adj_pts.map(p=>p.x)))/2;
+                        let acy = (Math.min(...adj_pts.map(p=>p.y)) + Math.max(...adj_pts.map(p=>p.y)))/2;
                         adj_pts.forEach(p => { p.x -= acx; p.y -= acy; });
-
                         shape.adjustedPoints = adj_pts; 
-                        let area = 0;
-                        for(let i=0; i<n; i++) area += adj_pts[i].x * adj_pts[(i+1)%n].y - adj_pts[(i+1)%n].x * adj_pts[i].y;
-                        shape.computedAreaSqm = Math.abs(area / 2);
+
+                        shape.isExactHeron = false;
+                        if (n === 4 && shape.userDiagonal && parseFloat(shape.userDiagonal) > 0) {
+                            let diagM = parseFloat(shape.userDiagonal) * toMeters;
+                            shape.computedAreaSqm = getTriangleArea(lengthsM[0], lengthsM[1], diagM) + getTriangleArea(lengthsM[3], lengthsM[2], diagM);
+                            shape.isExactHeron = true;
+                        } else {
+                            let calculatedArea = 0;
+                            for(let i=0; i<n; i++) calculatedArea += adj_pts[i].x * adj_pts[(i+1)%n].y - adj_pts[(i+1)%n].x * adj_pts[i].y;
+                            shape.computedAreaSqm = Math.abs(calculatedArea / 2);
+                        }
                     } else {
-                        // FIXED FALLBACK FOR INCOMPLETE POLYGONS (ALWAYS SHOW ON TAB 2)
-                        let activeScale = mapScaleP2M || 1;
-                        let area = 0;
-                        for(let i=0; i<n; i++) area += shape.points[i].x * shape.points[(i+1)%n].y - shape.points[(i+1)%n].x * shape.points[i].y;
-                        let pixelArea = Math.abs(area / 2);
-                        shape.computedAreaSqm = mapScaleP2M ? (pixelArea / (activeScale * activeScale)) : 0;
-                        
-                        shape.adjustedPoints = shape.points.map(p => ({
-                            x: (p.x - shape.origCx) / activeScale,
-                            y: (p.y - shape.origCy) / activeScale
-                        }));
+                        let activeScale = mapScaleP2M || 1; let calculatedArea = 0;
+                        for(let i=0; i<n; i++) calculatedArea += shape.points[i].x * shape.points[(i+1)%n].y - shape.points[(i+1)%n].x * shape.points[i].y;
+                        shape.computedAreaSqm = mapScaleP2M ? (Math.abs(calculatedArea / 2) / (activeScale * activeScale)) : 0;
+                        shape.adjustedPoints = shape.points.map(p => ({ x: (p.x - shape.origCx) / activeScale, y: (p.y - shape.origCy) / activeScale }));
                         shape.p2m = activeScale;
                     }
                 } 
                 else if(shape.type === 'circle') {
                     let r = parseFloat(shape.userRadius);
                     if(!isNaN(r) && r > 0) {
-                        let rMeters = r * toMeters;
-                        shape.computedAreaSqm = Math.PI * rMeters * rMeters;
-                        shape.adjustedRadiusMeters = rMeters;
-                        shape.p2m = rMeters / shape.pixelRadius;
+                        shape.computedAreaSqm = Math.PI * (r * toMeters) * (r * toMeters);
+                        shape.adjustedRadiusMeters = r * toMeters; shape.p2m = (r * toMeters) / shape.pixelRadius;
                     } else {
-                        // FIXED FALLBACK FOR CIRCLE
-                        let activeScale = mapScaleP2M || 1;
-                        let rMeters = shape.pixelRadius / activeScale;
+                        let activeScale = mapScaleP2M || 1; let rMeters = shape.pixelRadius / activeScale;
                         shape.computedAreaSqm = mapScaleP2M ? (Math.PI * rMeters * rMeters) : 0;
-                        shape.adjustedRadiusMeters = rMeters;
-                        shape.p2m = activeScale;
+                        shape.adjustedRadiusMeters = rMeters; shape.p2m = activeScale;
                     }
                 }
-
                 totalSqm += shape.computedAreaSqm;
                 if(idx === selectedShapeIdx) curSqm = shape.computedAreaSqm;
             });
 
-            document.getElementById('curHectare').innerText = (curSqm / 10000).toFixed(4);
-            document.getElementById('curSqm').innerText = curSqm.toFixed(2);
-            document.getElementById('totHectare').innerText = (totalSqm / 10000).toFixed(4);
-            document.getElementById('totSqm').innerText = totalSqm.toFixed(2);
-            
+            document.getElementById('curHectare').innerText = (curSqm / 10000).toFixed(4); document.getElementById('curSqm').innerText = curSqm.toFixed(2);
+            document.getElementById('totHectare').innerText = (totalSqm / 10000).toFixed(4); document.getElementById('totSqm').innerText = totalSqm.toFixed(2);
             if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();
         }
 
         function draw(tempMousePos = null) {
-            ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.translate(panX, panY); ctx.scale(zoom, zoom);
-
+            ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.translate(panX, panY); ctx.scale(zoom, zoom);
             if(bgImage) { ctx.globalAlpha = 0.6; ctx.drawImage(bgImage, 0, 0); ctx.globalAlpha = 1.0; }
 
             shapes.forEach((shape, idx) => {
                 const isSelected = (idx === selectedShapeIdx);
-                ctx.fillStyle = isSelected ? "rgba(59, 130, 246, 0.2)" : "rgba(226, 232, 240, 0.5)";
-                ctx.lineWidth = 1.5 / zoom; 
-                ctx.strokeStyle = isSelected ? "#1d4ed8" : "#0f172a";
-
+                ctx.fillStyle = isSelected ? "rgba(59, 130, 246, 0.2)" : "rgba(226, 232, 240, 0.5)"; ctx.lineWidth = 1.5 / zoom; ctx.strokeStyle = isSelected ? "#1d4ed8" : "#0f172a";
                 if(shape.type === 'poly' || shape.type === 'freehand') {
-                    const pts = shape.points;
-                    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-                    for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                    ctx.beginPath(); ctx.moveTo(shape.points[0].x, shape.points[0].y);
+                    for(let i=1; i<shape.points.length; i++) ctx.lineTo(shape.points[i].x, shape.points[i].y);
                     ctx.closePath(); ctx.fill(); ctx.stroke();
-
                     if(isSelected && shape.type === 'poly') {
-                        ctx.fillStyle = "#dc2626"; ctx.font = `${14/zoom}px Poppins`;
-                        ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                        for(let i=0; i<pts.length; i++) {
-                            ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 4/zoom, 0, 2*Math.PI); ctx.fill();
-                            ctx.fillText(String.fromCharCode(65 + i), pts[i].x - (12/zoom), pts[i].y - (12/zoom));
+                        ctx.fillStyle = "#dc2626"; ctx.font = `${14/zoom}px Poppins`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                        for(let i=0; i<shape.points.length; i++) {
+                            ctx.beginPath(); ctx.arc(shape.points[i].x, shape.points[i].y, 4/zoom, 0, 2*Math.PI); ctx.fill();
+                            ctx.fillText(String.fromCharCode(65 + i), shape.points[i].x - (12/zoom), shape.points[i].y - (12/zoom));
                         }
                     }
                 } else if(shape.type === 'circle') {
-                    ctx.beginPath(); ctx.arc(shape.center.x, shape.center.y, shape.pixelRadius, 0, 2*Math.PI);
-                    ctx.fill(); ctx.stroke();
-                    if(isSelected) {
-                        ctx.beginPath(); ctx.arc(shape.center.x, shape.center.y, 4/zoom, 0, 2*Math.PI); 
-                        ctx.fillStyle = "#dc2626"; ctx.fill();
+                    ctx.beginPath(); ctx.arc(shape.center.x, shape.center.y, shape.pixelRadius, 0, 2*Math.PI); ctx.fill(); ctx.stroke();
+                    if(isSelected) { ctx.beginPath(); ctx.arc(shape.center.x, shape.center.y, 4/zoom, 0, 2*Math.PI); ctx.fillStyle = "#dc2626"; ctx.fill(); }
+                }
+
+                // NEW: Draw Inner Khasra Text in Draft View
+                if(shape.khasraNo && shape.origCx !== undefined) {
+                    let cx = shape.origCx + (shape.khasraOffsetX || 0);
+                    let cy = shape.origCy + (shape.khasraOffsetY || 0);
+                    ctx.fillStyle = isSelected ? "#dc2626" : "#0f172a";
+                    ctx.font = `bold ${(shape.khasraFontSize || 16)/zoom}px Arial`;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(shape.khasraNo, cx, cy);
+                    
+                    // Show small dot to indicate it is draggable
+                    if(isSelected && mode === 'edit') {
+                        ctx.beginPath(); ctx.arc(cx, cy, 3/zoom, 0, 2*Math.PI);
+                        ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.fill();
+                        ctx.strokeStyle = "#dc2626"; ctx.lineWidth = 1/zoom; ctx.stroke();
                     }
                 }
             });
@@ -910,153 +962,142 @@
                 const isSelectedLbl = (idx === selectedLabelIdx);
                 ctx.beginPath(); ctx.moveTo(lbl.start.x, lbl.start.y); ctx.lineTo(lbl.end.x, lbl.end.y);
                 ctx.strokeStyle = isSelectedLbl ? "#dc2626" : "#1d4ed8"; ctx.lineWidth = 1.5 / zoom; ctx.stroke();
-                
-                if(isSelectedLbl) {
-                    ctx.fillStyle = "#dc2626";
-                    ctx.beginPath(); ctx.arc(lbl.start.x, lbl.start.y, 4/zoom, 0, 2*Math.PI); ctx.fill();
-                    ctx.beginPath(); ctx.arc(lbl.end.x, lbl.end.y, 4/zoom, 0, 2*Math.PI); ctx.fill();
-                }
-
-                if(lbl.text) {
-                    ctx.fillStyle = isSelectedLbl ? "#dc2626" : "#1d4ed8"; ctx.font = `600 ${14/zoom}px Arial`;
-                    ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-                    ctx.fillText(lbl.text, lbl.end.x, lbl.end.y - (5/zoom));
-                }
+                if(isSelectedLbl) { ctx.fillStyle = "#dc2626"; ctx.beginPath(); ctx.arc(lbl.start.x, lbl.start.y, 4/zoom, 0, 2*Math.PI); ctx.fill(); ctx.beginPath(); ctx.arc(lbl.end.x, lbl.end.y, 4/zoom, 0, 2*Math.PI); ctx.fill(); }
+                if(lbl.text) { ctx.fillStyle = isSelectedLbl ? "#dc2626" : "#1d4ed8"; ctx.font = `600 ${14/zoom}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText(lbl.text, lbl.end.x, lbl.end.y - (5/zoom)); }
             });
 
-            if(mode === 'calibrate' && calibStart && tempMousePos) {
-                ctx.beginPath(); ctx.moveTo(calibStart.x, calibStart.y); ctx.lineTo(tempMousePos.x, tempMousePos.y);
-                ctx.lineWidth = 2.5 / zoom; ctx.strokeStyle = "#8b5cf6"; ctx.setLineDash([5/zoom, 5/zoom]); ctx.stroke(); ctx.setLineDash([]);
-            }
+            if(mode === 'calibrate' && calibStart && tempMousePos) { ctx.beginPath(); ctx.moveTo(calibStart.x, calibStart.y); ctx.lineTo(tempMousePos.x, tempMousePos.y); ctx.lineWidth = 2.5 / zoom; ctx.strokeStyle = "#8b5cf6"; ctx.setLineDash([5/zoom, 5/zoom]); ctx.stroke(); ctx.setLineDash([]); }
 
             if(currentPath.length > 0) {
                 ctx.beginPath(); ctx.moveTo(currentPath[0].x, currentPath[0].y);
                 for(let i=1; i<currentPath.length; i++) ctx.lineTo(currentPath[i].x, currentPath[i].y);
                 if(tempMousePos && mode !== 'freehand') ctx.lineTo(tempMousePos.x, tempMousePos.y);
-                
-                ctx.lineJoin = mode === 'freehand' ? 'round' : 'miter';
-                ctx.lineCap = mode === 'freehand' ? 'round' : 'butt';
-                ctx.lineWidth = 1.5 / zoom; ctx.strokeStyle = "#ea580c"; ctx.stroke();
-                
-                if(snapActive) {
-                    ctx.beginPath(); ctx.arc(currentPath[0].x, currentPath[0].y, 10/zoom, 0, Math.PI*2);
-                    ctx.fillStyle = "rgba(22, 163, 74, 0.4)"; ctx.fill(); ctx.strokeStyle = "#16a34a"; ctx.stroke();
-                }
+                ctx.lineJoin = mode === 'freehand' ? 'round' : 'miter'; ctx.lineCap = mode === 'freehand' ? 'round' : 'butt'; ctx.lineWidth = 1.5 / zoom; ctx.strokeStyle = "#ea580c"; ctx.stroke();
+                if(snapActive) { ctx.beginPath(); ctx.arc(currentPath[0].x, currentPath[0].y, 10/zoom, 0, Math.PI*2); ctx.fillStyle = "rgba(22, 163, 74, 0.4)"; ctx.fill(); ctx.strokeStyle = "#16a34a"; ctx.stroke(); }
             }
-            if(isDrawingCircle && circleStart && tempMousePos) {
-                ctx.beginPath(); ctx.arc(circleStart.x, circleStart.y, tempCircleRadius, 0, 2*Math.PI);
-                ctx.lineWidth = 1.5 / zoom; ctx.strokeStyle = "#ea580c"; ctx.stroke();
-            }
-            if(isDrawingArrow && arrowStart && tempMousePos) {
-                ctx.beginPath(); ctx.moveTo(arrowStart.x, arrowStart.y); ctx.lineTo(tempMousePos.x, tempMousePos.y);
-                ctx.lineWidth = 1.5 / zoom; ctx.strokeStyle = "#1d4ed8"; ctx.stroke();
-            }
+            if(isDrawingCircle && circleStart && tempMousePos) { ctx.beginPath(); ctx.arc(circleStart.x, circleStart.y, tempCircleRadius, 0, 2*Math.PI); ctx.lineWidth = 1.5 / zoom; ctx.strokeStyle = "#ea580c"; ctx.stroke(); }
+            if(isDrawingArrow && arrowStart && tempMousePos) { ctx.beginPath(); ctx.moveTo(arrowStart.x, arrowStart.y); ctx.lineTo(tempMousePos.x, tempMousePos.y); ctx.lineWidth = 1.5 / zoom; ctx.strokeStyle = "#1d4ed8"; ctx.stroke(); }
 
             ctx.restore();
         }
 
-        // --- RENDER 1:4000 EXACT SCALE ---
         function drawExactScaleMap() {
             exactCtx.clearRect(0, 0, exactCanvas.width, exactCanvas.height);
-            
-            let arrowLen = parseInt(document.getElementById('printArrowLen').value) || 80;
-            let fontSize = parseInt(document.getElementById('printFontSize').value) || 16;
+            let arrowLen = parseInt(document.getElementById('printArrowLen').value) || 80; let fontSize = parseInt(document.getElementById('printFontSize').value) || 16;
             const scaleFactor = 0.944875; 
-            
-            let validShapes = shapes.filter(s => s.origCx !== undefined);
-            if(validShapes.length === 0) return;
-
-            let globalMinX = Math.min(...validShapes.map(s => s.origCx));
-            let globalMaxX = Math.max(...validShapes.map(s => s.origCx));
-            let globalMinY = Math.min(...validShapes.map(s => s.origCy));
-            let globalMaxY = Math.max(...validShapes.map(s => s.origCy));
-            let globalCx = (globalMinX + globalMaxX) / 2;
-            let globalCy = (globalMinY + globalMaxY) / 2;
-
+            let validShapes = shapes.filter(s => s.origCx !== undefined); if(validShapes.length === 0) return;
+            let globalCx = (Math.min(...validShapes.map(s => s.origCx)) + Math.max(...validShapes.map(s => s.origCx))) / 2;
+            let globalCy = (Math.min(...validShapes.map(s => s.origCy)) + Math.max(...validShapes.map(s => s.origCy))) / 2;
             let avgP2M = validShapes.reduce((sum, s) => sum + (s.p2m || 1), 0) / validShapes.length;
 
-            exactCtx.save();
-            exactCtx.translate((exactCanvas.width / 2) + printPanX, (exactCanvas.height / 2) + printPanY);
-            exactCtx.lineWidth = 1.33; 
-            exactCtx.lineJoin = "round";
+            exactCtx.save(); exactCtx.translate((exactCanvas.width / 2) + printPanX, (exactCanvas.height / 2) + printPanY); exactCtx.lineWidth = 1.33; exactCtx.lineJoin = "round";
 
             shapes.forEach(shape => {
-                let poX = shape.printOffsetX || 0;
-                let poY = shape.printOffsetY || 0;
-
-                // FIXED MATH: Divide by avgP2M to map Pixels -> Meters, then multiply by 1:4000 Scale Factor
-                let offX = ((shape.origCx - globalCx) / avgP2M) * scaleFactor + poX;
-                let offY = ((shape.origCy - globalCy) / avgP2M) * scaleFactor + poY;
-                
-                exactCtx.save();
-                exactCtx.translate(offX, offY);
-                exactCtx.strokeStyle = "black";
-
+                let offX = ((shape.origCx - globalCx) / avgP2M) * scaleFactor + (shape.printOffsetX || 0);
+                let offY = ((shape.origCy - globalCy) / avgP2M) * scaleFactor + (shape.printOffsetY || 0);
+                exactCtx.save(); exactCtx.translate(offX, offY); exactCtx.strokeStyle = "black";
                 if((shape.type === 'poly' || shape.type === 'freehand') && shape.adjustedPoints) {
-                    let pts = shape.adjustedPoints;
-                    exactCtx.beginPath();
-                    exactCtx.moveTo(pts[0].x * scaleFactor, pts[0].y * scaleFactor);
-                    for(let i=1; i<pts.length; i++) exactCtx.lineTo(pts[i].x * scaleFactor, pts[i].y * scaleFactor);
-                    exactCtx.closePath();
-                    exactCtx.stroke();
-                } else if(shape.type === 'circle' && shape.adjustedRadiusMeters) {
-                    exactCtx.beginPath();
-                    exactCtx.arc(0, 0, shape.adjustedRadiusMeters * scaleFactor, 0, 2*Math.PI);
-                    exactCtx.stroke();
-                }
+                    exactCtx.beginPath(); exactCtx.moveTo(shape.adjustedPoints[0].x * scaleFactor, shape.adjustedPoints[0].y * scaleFactor);
+                    for(let i=1; i<shape.adjustedPoints.length; i++) exactCtx.lineTo(shape.adjustedPoints[i].x * scaleFactor, shape.adjustedPoints[i].y * scaleFactor);
+                    exactCtx.closePath(); exactCtx.stroke();
+                } else if(shape.type === 'circle' && shape.adjustedRadiusMeters) { exactCtx.beginPath(); exactCtx.arc(0, 0, shape.adjustedRadiusMeters * scaleFactor, 0, 2*Math.PI); exactCtx.stroke(); }
                 exactCtx.restore();
+
+                // NEW: Draw Inner Khasra Text for Print 1:4000
+                if (shape.khasraNo) {
+                    let tx = offX + ((shape.khasraOffsetX || 0) / avgP2M) * scaleFactor;
+                    let ty = offY + ((shape.khasraOffsetY || 0) / avgP2M) * scaleFactor;
+                    exactCtx.save();
+                    exactCtx.fillStyle = "black";
+                    exactCtx.font = `bold ${shape.khasraFontSize || 16}px Arial`;
+                    exactCtx.textAlign = "center";
+                    exactCtx.textBaseline = "middle";
+                    exactCtx.fillText(shape.khasraNo, tx, ty);
+                    exactCtx.restore();
+                }
             });
 
             labels.forEach(lbl => {
                 let closestShape = null; let minDist = Infinity;
-                shapes.forEach(s => {
-                    if (s.origCx !== undefined) {
-                        let d = Math.hypot(lbl.start.x - s.origCx, lbl.start.y - s.origCy);
-                        if(d < minDist) { minDist = d; closestShape = s; }
-                    }
-                });
-                
+                shapes.forEach(s => { if (s.origCx !== undefined) { let d = Math.hypot(lbl.start.x - s.origCx, lbl.start.y - s.origCy); if(d < minDist) { minDist = d; closestShape = s; } } });
                 if(closestShape) {
-                    let poX = closestShape.printOffsetX || 0;
-                    let poY = closestShape.printOffsetY || 0;
-
-                    let offX = ((closestShape.origCx - globalCx) / avgP2M) * scaleFactor + poX;
-                    let offY = ((closestShape.origCy - globalCy) / avgP2M) * scaleFactor + poY;
+                    let offX = ((closestShape.origCx - globalCx) / avgP2M) * scaleFactor + (closestShape.printOffsetX || 0);
+                    let offY = ((closestShape.origCy - globalCy) / avgP2M) * scaleFactor + (closestShape.printOffsetY || 0);
                     let angle = Math.atan2(lbl.end.y - lbl.start.y, lbl.end.x - lbl.start.x);
-                    
-                    let txtX = offX + Math.cos(angle) * arrowLen;
-                    let txtY = offY + Math.sin(angle) * arrowLen;
-                    let edgeX = offX + Math.cos(angle) * 15;
-                    let edgeY = offY + Math.sin(angle) * 15;
-
-                    exactCtx.beginPath(); exactCtx.moveTo(txtX, txtY); exactCtx.lineTo(edgeX, edgeY);
+                    let txtX = offX + Math.cos(angle) * arrowLen; let txtY = offY + Math.sin(angle) * arrowLen;
+                    exactCtx.beginPath(); exactCtx.moveTo(txtX, txtY); exactCtx.lineTo(offX + Math.cos(angle) * 15, offY + Math.sin(angle) * 15);
                     exactCtx.strokeStyle = "black"; exactCtx.lineWidth = 1.33; exactCtx.stroke();
-                    
-                    exactCtx.fillStyle = "black"; exactCtx.font = `bold ${fontSize}px Arial`;
-                    exactCtx.textAlign = "center"; exactCtx.textBaseline = "bottom";
-                    exactCtx.fillText(lbl.text, txtX, txtY - 5);
+                    exactCtx.fillStyle = "black"; exactCtx.font = `bold ${fontSize}px Arial`; exactCtx.textAlign = "center"; exactCtx.textBaseline = "bottom"; exactCtx.fillText(lbl.text, txtX, txtY - 5);
                 }
             });
-
             exactCtx.restore();
         }
 
         function printSafeMap() {
-            syncDetails(); 
-            calculateArea();
-            drawExactScaleMap();
-            
-            let dataUrl = exactCanvas.toDataURL('image/png');
+            syncDetails(); calculateArea(); drawExactScaleMap();
             let imgEl = document.getElementById('printImg');
-            
-            // Wait for image to load before printing to prevent blank pages
-            imgEl.onload = function() {
-                setTimeout(() => {
-                    window.print();
-                }, 150);
-            };
-            imgEl.src = dataUrl;
+            imgEl.onload = function() { setTimeout(() => { window.print(); }, 150); };
+            imgEl.src = exactCanvas.toDataURL('image/png');
         }
+
+        // --- KEYBOARD & DDE LOGIC ---
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'Shift') isShiftPressed = true;
+            
+            if(e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault(); 
+                isSpacePressed = true;
+                canvas.style.cursor = 'grab';
+            }
+            
+            if (mode === 'polygon' && currentPath.length > 0) {
+                const floatBox = document.getElementById('floatingInputContainer');
+                const floatInput = document.getElementById('floatingDistance');
+                
+                if (/[0-9]/.test(e.key) && document.activeElement !== floatInput && !isSpacePressed) {
+                    if (!mapScaleP2M) { alert("⚠️ सटीक नाप से ड्रॉ करने के लिए पहले 'नक्शा स्केल सेट करें' टूल का उपयोग करें!"); return; }
+                    floatBox.style.display = 'flex'; floatBox.style.left = (lastMouseGlobalPos.x + 15) + 'px'; floatBox.style.top = (lastMouseGlobalPos.y + 15) + 'px';
+                    document.getElementById('floatingUnitTxt').innerText = document.getElementById('unitSelect').options[document.getElementById('unitSelect').selectedIndex].text.split(' ')[0];
+                    floatInput.focus();
+                }
+                
+                if (e.key === 'Enter' && document.activeElement === floatInput) {
+                    let userVal = parseFloat(floatInput.value);
+                    if (!isNaN(userVal) && userVal > 0) {
+                        let targetPoint = applyShiftSnap(currentPath[currentPath.length - 1], lastMouseCanvasPos, isShiftPressed);
+                        let angle = Math.atan2(targetPoint.y - currentPath[currentPath.length - 1].y, targetPoint.x - currentPath[currentPath.length - 1].x);
+                        let toMeters = (document.getElementById('unitSelect').value === 'feet') ? 0.3048 : (document.getElementById('unitSelect').value === 'zareeb') ? 20 : 1;
+                        let lengthInPixels = (userVal * toMeters) * mapScaleP2M;
+                        let newPos = { x: currentPath[currentPath.length - 1].x + Math.cos(angle) * lengthInPixels, y: currentPath[currentPath.length - 1].y + Math.sin(angle) * lengthInPixels };
+                        currentPath.push(newPos); draw(newPos);
+                    }
+                    floatInput.value = ''; floatBox.style.display = 'none'; canvas.focus();
+                }
+                
+                if (e.key === 'Escape') { floatInput.value = ''; floatBox.style.display = 'none'; canvas.focus(); }
+
+                if (e.key === 'Backspace' && document.activeElement !== floatInput) {
+                    if (currentPath.length > 1) { currentPath.pop(); draw(); } 
+                    else { currentPath = []; draw(); }
+                }
+
+                if ((e.key === 'c' || e.key === 'C') && document.activeElement !== floatInput) {
+                    if (currentPath.length > 2) {
+                        shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null });
+                        currentPath = []; snapActive = false; selectedShapeIdx = shapes.length - 1; 
+                        setMode('edit'); generateInputs(); draw();
+                    } else { alert("आकृति को बंद करने के लिए कम से कम 3 बिन्दु (Points) होने चाहिए!"); }
+                }
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => { 
+            if(e.key === 'Shift') isShiftPressed = false; 
+            if(e.code === 'Space') {
+                isSpacePressed = false;
+                canvas.style.cursor = mode === 'edit' ? 'move' : (mode === 'pan' ? 'grab' : 'crosshair');
+            }
+        });
     </script>
 </body>
 </html>
