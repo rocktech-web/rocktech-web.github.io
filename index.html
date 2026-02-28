@@ -187,8 +187,7 @@
                 <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
                 <span style="font-weight: 600; color: var(--primary); font-family: monospace; font-size: 1.1rem;">📞 7869731689</span>
             </div>
-            
-            <button onclick="if(confirm('क्या आप लॉगआउट करना चाहते हैं? सारा डेटा मिट जाएगा।')) location.reload();" 
+            <button onclick="if(confirm('क्या आप लॉगआउट करना चाहते हैं? सारा डेटा मिट जाएगा।')) { document.querySelectorAll('input, textarea').forEach(el => el.value = ''); location.reload(); }" 
                     style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: inherit; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 5px rgba(231, 76, 60, 0.3);">
                 🚪 Logout
             </button>
@@ -517,4 +516,5 @@
     </script>
 </body>
 </html>
+
 
