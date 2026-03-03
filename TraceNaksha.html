@@ -17,7 +17,7 @@
             font-family: 'Poppins', sans-serif; background-color: var(--bg-body);
             margin: 0; padding: 15px; color: var(--text-main);
             display: flex; flex-direction: column; align-items: center; height: 100vh; box-sizing: border-box;
-            overflow: hidden; /* Prevent native scrollbars when zooming */
+            overflow: hidden; 
         }
 
         .header { text-align: center; margin-bottom: 10px; width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center;}
@@ -84,8 +84,9 @@
         .side-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
         .side-label { font-weight: 600; font-size: 12px; width: 50px; color: var(--accent); }
         .side-input { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-weight: 600; }
-        select, input[type="range"], .form-input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; outline: none; box-sizing: border-box; }
-        
+        select, input[type="range"], .form-input, textarea.form-input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; outline: none; box-sizing: border-box; }
+        textarea.form-input { resize: vertical; min-height: 50px; font-size: 11px; }
+
         .result-box { background: #f0fdfa; border: 1px solid #5eead4; padding: 12px; border-radius: 6px; }
         .result-item { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
         .result-val { font-weight: 700; font-family: monospace; font-size: 14px;}
@@ -119,11 +120,12 @@
     </div>
 
     <input type="file" id="bgImageInput" accept="image/*" style="display:none;">
-    <input type="file" id="projectInput" accept=".json" style="display:none;">
+    <input type="file" id="projectInput" accept=".rock" style="display:none;">
 
     <div class="toolbar" id="toolbar">
-        <button class="btn btn-dark" onclick="document.getElementById('projectInput').click()">📂 खोलें</button>
-        <button class="btn btn-dark" onclick="saveProject()">💾 सेव</button>
+        <button class="btn btn-dark" onclick="openFile()">📂 खोलें</button>
+        <button class="btn btn-dark" onclick="saveFile()">💾 सेव</button>
+        <button class="btn btn-dark" onclick="saveFileAs()">💾 सेव ऐज़</button>
         <div style="width: 1px; background: #ccc; margin: 0 5px;"></div>
 
         <button class="btn btn-dark" onclick="document.getElementById('bgImageInput').click()">🗺️ फोटो ट्रेस</button>
@@ -181,7 +183,7 @@
                 
                 <canvas id="exactCanvas" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; cursor:grab;"></canvas>
                 
-                <div style="position:absolute; bottom:30mm; left:0; width:100%; text-align:center; z-index:2; font-family:'Poppins', sans-serif; font-size:12px; font-weight:600; color:black; pointer-events:none;">
+                <div id="prevDeclaration" style="position:absolute; bottom:30mm; left:0; width:100%; text-align:center; z-index:2; font-family:'Poppins', sans-serif; font-size:12px; font-weight:600; color:black; pointer-events:none;">
                     मेरे द्वारा कार्यकारी (मूल) नक्शा से ट्रेस नक्शा तैयार किया गया है।
                 </div>
             </div>
@@ -198,7 +200,10 @@
                 <input type="text" id="inpGram" class="form-input" placeholder="ग्राम का नाम" oninput="syncDetails()" style="margin-bottom:6px;">
                 <input type="text" id="inpHalka" class="form-input" placeholder="पटवारी हल्का नं." oninput="syncDetails()" style="margin-bottom:6px;">
                 <input type="text" id="inpTehsil" class="form-input" placeholder="तहसील" oninput="syncDetails()" style="margin-bottom:6px;">
-                <input type="text" id="inpZila" class="form-input" placeholder="जिला" oninput="syncDetails()">
+                <input type="text" id="inpZila" class="form-input" placeholder="जिला" oninput="syncDetails()" style="margin-bottom:8px;">
+                
+                <label style="font-size: 11px; font-weight: 600;">घोषणा पत्र (प्रिंट के नीचे):</label>
+                <textarea id="inpDeclaration" class="form-input" oninput="syncDetails()">मेरे द्वारा कार्यकारी (मूल) नक्शा से ट्रेस नक्शा तैयार किया गया है।</textarea>
             </div>
 
             <div>
@@ -223,6 +228,11 @@
                 <input type="range" id="printArrowLen" min="30" max="250" value="80" oninput="document.getElementById('arrowLenVal').innerText=this.value; if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();">
                 <label style="font-size: 11px; font-weight: 600; margin-top: 5px; display: block;">बाहरी खसरा टेक्स्ट साइज़: <span id="textSzVal">16</span>px</label>
                 <input type="range" id="printFontSize" min="10" max="40" value="16" oninput="document.getElementById('textSzVal').innerText=this.value; if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();">
+                
+                <div style="border-top: 1px dashed #fdba74; margin-top: 8px; padding-top: 8px;">
+                    <label style="font-size: 11px; font-weight: 600; color:#1e3a8a; display: block;">अंदरूनी खसरा टेक्स्ट साइज़ (प्रिंट): <span id="printInnerKhasraSzVal">18</span>px</label>
+                    <input type="range" id="printInnerKhasraSize" min="8" max="60" value="18" oninput="document.getElementById('printInnerKhasraSzVal').innerText=this.value; if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();">
+                </div>
             </div>
 
             <div class="result-box">
@@ -254,7 +264,7 @@
                 तहसील <span id="prtTehsil">_______</span>, जिला <span id="prtZila">_______</span> (म.प्र.)
             </div>
             <img id="printImg" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; z-index:1;" />
-            <div style="position:absolute; bottom:30mm; left:0; width:100%; text-align:center; z-index:2; font-family:'Poppins', sans-serif; font-size:12px; font-weight:500; color:black;">
+            <div id="prtDeclaration" style="position:absolute; bottom:30mm; left:0; width:100%; text-align:center; z-index:2; font-family:'Poppins', sans-serif; font-size:12px; font-weight:500; color:black;">
                 मेरे द्वारा कार्यकारी (मूल) नक्शा से ट्रेस नक्शा तैयार किया गया है।
             </div>
         </div>
@@ -273,7 +283,7 @@
         let selectedShapeIdx = -1; let selectedLabelIdx = -1;
         let draggedNode = null; let draggedWholeShape = null; 
         let draggedLabelNode = null; let draggedWholeLabel = null;
-        let draggedInnerText = null; // NEW: For dragging text inside shape
+        let draggedInnerText = null; 
         
         let zoom = 1; let panX = 0, panY = 0;
         let isPanning = false, panStart = {x:0, y:0};
@@ -295,17 +305,32 @@
         let mapScaleP2M = null;
         let calibStart = null; let calibEnd = null;
 
-        // DDE (Direct Distance Entry) & Spacebar Variables
         let lastMouseGlobalPos = {x: 0, y: 0};
         let lastMouseCanvasPos = {x: 0, y: 0};
         let isShiftPressed = false; 
         let isSpacePressed = false; 
 
+        // --- NEW: Unsaved Data Protection & File System ---
+        let hasUnsavedChanges = false;
+        const originalTitle = document.title;
+        let currentFileHandle = null; // Track current file for "Save" vs "Save As"
+
+        function markUnsaved() {
+            if (!hasUnsavedChanges) { hasUnsavedChanges = true; document.title = "*" + originalTitle; }
+        }
+
+        function markSaved() {
+            hasUnsavedChanges = false; document.title = originalTitle;
+        }
+
+        window.addEventListener('beforeunload', function (e) {
+            if (hasUnsavedChanges) { e.preventDefault(); e.returnValue = 'आपके बदलाव सेव नहीं किए गए हैं।'; }
+        });
+
         // FIXED 96 DPI Print Resolution
         exactCanvas.width = 190 * 3.7795;
         exactCanvas.height = 277 * 3.7795;
 
-        // 100% शुद्ध क्षेत्रफल के लिए त्रिभुज का फॉर्मूला (Heron's Formula)
         function getTriangleArea(a, b, c) {
             let s = (a + b + c) / 2;
             let val = s * (s - a) * (s - b) * (s - c);
@@ -327,13 +352,10 @@
             let clickedIdx = findExactClickedShape(localX, localY);
             
             if(clickedIdx !== -1) {
-                draggedPrintShapeIdx = clickedIdx;
-                printShapeLastX = localX;
-                printShapeLastY = localY;
+                draggedPrintShapeIdx = clickedIdx; printShapeLastX = localX; printShapeLastY = localY;
                 exactCanvas.style.cursor = 'move';
             } else {
-                isPrintPanning = true;
-                printPanStart = {x: e.clientX - printPanX, y: e.clientY - printPanY};
+                isPrintPanning = true; printPanStart = {x: e.clientX - printPanX, y: e.clientY - printPanY};
                 exactCanvas.style.cursor = 'grabbing';
             }
         });
@@ -344,8 +366,7 @@
 
             const floatBox = document.getElementById('floatingInputContainer');
             if (floatBox.style.display === 'flex') {
-                floatBox.style.left = (e.clientX + 15) + 'px';
-                floatBox.style.top = (e.clientY + 15) + 'px';
+                floatBox.style.left = (e.clientX + 15) + 'px'; floatBox.style.top = (e.clientY + 15) + 'px';
             }
 
             if(draggedPrintShapeIdx !== -1) {
@@ -357,10 +378,9 @@
                 shapes[draggedPrintShapeIdx].printOffsetY = (shapes[draggedPrintShapeIdx].printOffsetY || 0) + dy;
                 printShapeLastX = localX; printShapeLastY = localY;
                 drawExactScaleMap();
+                markUnsaved(); // Mark unsaved on print layout move
             } else if(isPrintPanning) {
-                printPanX = e.clientX - printPanStart.x;
-                printPanY = e.clientY - printPanStart.y;
-                drawExactScaleMap();
+                printPanX = e.clientX - printPanStart.x; printPanY = e.clientY - printPanStart.y; drawExactScaleMap();
             }
         });
 
@@ -405,52 +425,119 @@
         function syncDetails() {
             let g = document.getElementById('inpGram').value || "_______"; let h = document.getElementById('inpHalka').value || "_______";
             let t = document.getElementById('inpTehsil').value || "_______"; let z = document.getElementById('inpZila').value || "_______";
+            let decl = document.getElementById('inpDeclaration').value;
+            
             document.getElementById('prevGram').innerText = g; document.getElementById('prevHalka').innerText = h;
             document.getElementById('prevTehsil').innerText = t; document.getElementById('prevZila').innerText = z;
             document.getElementById('prtGram').innerText = g; document.getElementById('prtHalka').innerText = h;
             document.getElementById('prtTehsil').innerText = t; document.getElementById('prtZila').innerText = z;
+            document.getElementById('prevDeclaration').innerText = decl; document.getElementById('prtDeclaration').innerText = decl;
+            markUnsaved(); // Mark when typing in form
         }
 
-        function saveProject() {
+        // --- ENCODING & FILE SYSTEM LOGIC ---
+        function getEncodedData() {
             const projectData = {
                 shapes: shapes, labels: labels, mapScaleP2M: mapScaleP2M,
-                docDetails: { gram: document.getElementById('inpGram').value, halka: document.getElementById('inpHalka').value, tehsil: document.getElementById('inpTehsil').value, zila: document.getElementById('inpZila').value }
+                docDetails: { gram: document.getElementById('inpGram').value, halka: document.getElementById('inpHalka').value, tehsil: document.getElementById('inpTehsil').value, zila: document.getElementById('inpZila').value },
+                declaration: document.getElementById('inpDeclaration').value
             };
-            saveAs(new Blob([JSON.stringify(projectData)], {type: "application/json"}), "RockTech_AreaMap.json");
+            const jsonString = JSON.stringify(projectData);
+            return btoa(unescape(encodeURIComponent(jsonString))); 
         }
 
+        function loadProjectData(base64Data) {
+            try {
+                const decodedData = decodeURIComponent(escape(atob(base64Data)));
+                const data = JSON.parse(decodedData);
+                
+                shapes = data.shapes || []; labels = data.labels || []; mapScaleP2M = data.mapScaleP2M || null;
+                if(mapScaleP2M) document.getElementById('scaleInfoBlock').style.display = 'block';
+                if(data.docDetails) {
+                    document.getElementById('inpGram').value = data.docDetails.gram || ""; document.getElementById('inpHalka').value = data.docDetails.halka || "";
+                    document.getElementById('inpTehsil').value = data.docDetails.tehsil || ""; document.getElementById('inpZila').value = data.docDetails.zila || "";
+                }
+                document.getElementById('inpDeclaration').value = data.declaration || "मेरे द्वारा कार्यकारी (मूल) नक्शा से ट्रेस नक्शा तैयार किया गया है।";
+                syncDetails();
+                undoStack = []; redoStack = []; generateInputs(); draw();
+                markSaved(); 
+            } catch(err) { alert("फ़ाइल को पढ़ने में त्रुटि! सही .rock फ़ाइल चुनें या फ़ाइल करप्ट हो सकती है।"); }
+        }
+
+        // Open File (Supports Modern API & Fallback)
+        async function openFile() {
+            if (window.showOpenFilePicker) {
+                try {
+                    const [handle] = await window.showOpenFilePicker({
+                        types: [{ description: 'RockTech File', accept: {'application/octet-stream': ['.rock']} }]
+                    });
+                    currentFileHandle = handle;
+                    const file = await handle.getFile();
+                    const contents = await file.text();
+                    loadProjectData(contents);
+                } catch (e) { /* user cancelled */ }
+            } else {
+                document.getElementById('projectInput').click();
+            }
+        }
+
+        // Fallback file input reader
         document.getElementById('projectInput').addEventListener('change', function(e) {
             const file = e.target.files[0]; if(!file) return;
+            currentFileHandle = null; // Reset handle for fallback mode
             const reader = new FileReader();
-            reader.onload = function(ev) {
-                try {
-                    const data = JSON.parse(ev.target.result);
-                    shapes = data.shapes || []; labels = data.labels || []; mapScaleP2M = data.mapScaleP2M || null;
-                    if(mapScaleP2M) document.getElementById('scaleInfoBlock').style.display = 'block';
-                    if(data.docDetails) {
-                        document.getElementById('inpGram').value = data.docDetails.gram || ""; document.getElementById('inpHalka').value = data.docDetails.halka || "";
-                        document.getElementById('inpTehsil').value = data.docDetails.tehsil || ""; document.getElementById('inpZila').value = data.docDetails.zila || "";
-                        syncDetails();
-                    }
-                    undoStack = []; redoStack = []; generateInputs(); draw();
-                } catch(err) { alert("फ़ाइल को पढ़ने में त्रुटि! सही प्रोजेक्ट फ़ाइल चुनें।"); }
-            };
+            reader.onload = function(ev) { loadProjectData(ev.target.result); };
             reader.readAsText(file); e.target.value = '';
         });
+
+        // Save File (Overwrite current if exists)
+        async function saveFile() {
+            if (window.showSaveFilePicker) {
+                if (!currentFileHandle) { return saveFileAs(); }
+                try {
+                    const writable = await currentFileHandle.createWritable();
+                    await writable.write(getEncodedData());
+                    await writable.close();
+                    markSaved();
+                } catch (err) { alert("फ़ाइल सेव करने में त्रुटि: " + err); }
+            } else {
+                saveProjectFallback();
+            }
+        }
+
+        // Save File As (Always prompt for new location)
+        async function saveFileAs() {
+            if (window.showSaveFilePicker) {
+                try {
+                    currentFileHandle = await window.showSaveFilePicker({
+                        suggestedName: 'RockTech_AreaMap.rock',
+                        types: [{ description: 'RockTech File', accept: {'application/octet-stream': ['.rock']} }]
+                    });
+                    await saveFile();
+                } catch (err) { /* user cancelled */ }
+            } else {
+                saveProjectFallback();
+            }
+        }
+
+        function saveProjectFallback() {
+            saveAs(new Blob([getEncodedData()], {type: "application/octet-stream"}), "RockTech_AreaMap.rock");
+            markSaved();
+        }
 
         document.getElementById('bgImageInput').addEventListener('change', function(e) {
             if(e.target.files && e.target.files[0]) {
                 let reader = new FileReader();
                 reader.onload = function(event) {
                     bgImage = new Image();
-                    bgImage.onload = function() { document.getElementById('btnClearBg').style.display = 'inline-block'; draw(); }
+                    bgImage.onload = function() { document.getElementById('btnClearBg').style.display = 'inline-block'; draw(); markUnsaved(); }
                     bgImage.src = event.target.result;
                 }
                 reader.readAsDataURL(e.target.files[0]);
             }
         });
 
-        function clearBgImage() { bgImage = null; document.getElementById('btnClearBg').style.display = 'none'; document.getElementById('bgImageInput').value = ""; draw(); }
+        function clearBgImage() { bgImage = null; document.getElementById('btnClearBg').style.display = 'none'; document.getElementById('bgImageInput').value = ""; draw(); markUnsaved();}
         function resizeCanvas() { canvas.width = wrapper.clientWidth; canvas.height = wrapper.clientHeight; draw(); }
         window.addEventListener('resize', resizeCanvas); setTimeout(resizeCanvas, 100);
 
@@ -480,14 +567,18 @@
             generateInputs(); draw();
         }
 
-        function saveState() { undoStack.push({ shapes: JSON.parse(JSON.stringify(shapes)), labels: JSON.parse(JSON.stringify(labels)) }); redoStack = []; }
-        function undo() { if(undoStack.length > 0) { redoStack.push({ shapes: JSON.parse(JSON.stringify(shapes)), labels: JSON.parse(JSON.stringify(labels)) }); let state = undoStack.pop(); shapes = state.shapes; labels = state.labels; selectedShapeIdx = -1; selectedLabelIdx = -1; generateInputs(); draw(); } }
-        function redo() { if(redoStack.length > 0) { undoStack.push({ shapes: JSON.parse(JSON.stringify(shapes)), labels: JSON.parse(JSON.stringify(labels)) }); let state = redoStack.pop(); shapes = state.shapes; labels = state.labels; selectedShapeIdx = -1; selectedLabelIdx = -1; generateInputs(); draw(); } }
+        function saveState() { 
+            undoStack.push({ shapes: JSON.parse(JSON.stringify(shapes)), labels: JSON.parse(JSON.stringify(labels)) }); 
+            redoStack = []; 
+            markUnsaved(); // Mark unsaved on any shape change
+        }
+        function undo() { if(undoStack.length > 0) { redoStack.push({ shapes: JSON.parse(JSON.stringify(shapes)), labels: JSON.parse(JSON.stringify(labels)) }); let state = undoStack.pop(); shapes = state.shapes; labels = state.labels; selectedShapeIdx = -1; selectedLabelIdx = -1; generateInputs(); draw(); markUnsaved(); } }
+        function redo() { if(redoStack.length > 0) { undoStack.push({ shapes: JSON.parse(JSON.stringify(shapes)), labels: JSON.parse(JSON.stringify(labels)) }); let state = redoStack.pop(); shapes = state.shapes; labels = state.labels; selectedShapeIdx = -1; selectedLabelIdx = -1; generateInputs(); draw(); markUnsaved(); } }
 
         function clearCanvas() {
             if(confirm("नया नक्शा बनाना चाहते हैं? (पूरा डाटा मिट जाएगा)")) {
                 saveState(); shapes = []; labels = []; currentPath = []; selectedShapeIdx = -1; selectedLabelIdx = -1; 
-                zoom = 1; panX = 0; panY = 0; printPanX = 0; printPanY = 0;
+                zoom = 1; panX = 0; panY = 0; printPanX = 0; printPanY = 0; currentFileHandle = null;
                 clearBgImage(); mapScaleP2M = null; document.getElementById('scaleInfoBlock').style.display = 'none';
                 generateInputs(); draw();
             }
@@ -547,7 +638,6 @@
             }
 
             if(mode === 'edit') {
-                // 1. Check if clicking Inner Khasra Text FIRST (so it's easy to grab)
                 for(let s=shapes.length-1; s>=0; s--) {
                     let shape = shapes[s];
                     if(shape.khasraNo && shape.origCx !== undefined) {
@@ -564,13 +654,11 @@
                     }
                 }
 
-                // 2. Check Line Labels
                 for(let i=0; i<labels.length; i++) {
                     if(Math.hypot(pos.x - labels[i].start.x, pos.y - labels[i].start.y) < 10/zoom) { draggedLabelNode = { idx: i, isStart: true }; selectedLabelIdx = i; selectedShapeIdx = -1; saveState(); generateInputs(); draw(); return; }
                     if(Math.hypot(pos.x - labels[i].end.x, pos.y - labels[i].end.y) < 10/zoom) { draggedLabelNode = { idx: i, isStart: false }; selectedLabelIdx = i; selectedShapeIdx = -1; saveState(); generateInputs(); draw(); return; }
                 }
 
-                // 3. Check Shape Nodes
                 if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) {
                     const shape = shapes[selectedShapeIdx];
                     if(shape.type === 'poly' || shape.type === 'freehand') {
@@ -580,12 +668,10 @@
                     }
                 }
                 
-                // 4. Check entire Line Label Drag
                 for(let i=0; i<labels.length; i++) {
                     if(pointToLineDist(pos, labels[i].start, labels[i].end) < 10/zoom) { selectedLabelIdx = i; selectedShapeIdx = -1; draggedWholeLabel = { idx: i, lastX: pos.x, lastY: pos.y }; saveState(); generateInputs(); draw(); return; }
                 }
                 
-                // 5. Check Shape Body
                 let clickedShape = findClickedShape(pos);
                 if(clickedShape !== -1) { selectedShapeIdx = clickedShape; selectedLabelIdx = -1; draggedWholeShape = { idx: selectedShapeIdx, lastX: pos.x, lastY: pos.y }; saveState(); } 
                 else { selectedShapeIdx = -1; selectedLabelIdx = -1; }
@@ -606,7 +692,7 @@
                             mapScaleP2M = pxLen / (parseFloat(len) * toMeters);
                             document.getElementById('scaleInfoBlock').style.display = 'block';
                             alert("स्केल सेट हो गया! अब आपको भुजाओं की नाप डालने की जरूरत नहीं है।");
-                            calculateArea(); setMode('polygon');
+                            calculateArea(); setMode('polygon'); markUnsaved();
                         } else { calibStart = null; calibEnd = null; draw(); }
                     } else { calibStart = pos; draw(pos); }
                 }
@@ -618,7 +704,7 @@
             else if (mode === 'polygon') {
                 if(snapActive) {
                     shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null });
-                    currentPath = []; snapActive = false; selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs();
+                    currentPath = []; snapActive = false; selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); markUnsaved();
                 } else {
                     currentPath.push(currentPath.length > 0 ? applyShiftSnap(currentPath[currentPath.length-1], pos, e.shiftKey) : pos); draw();
                 }
@@ -629,7 +715,6 @@
             if(isPanning) { panX = e.clientX - panStart.x; panY = e.clientY - panStart.y; draw(); return; }
             let pos = getMousePos(e);
             
-            // Handle Inner Text Dragging
             if (mode === 'edit' && draggedInnerText) {
                 let dx = pos.x - draggedInnerText.lastX; let dy = pos.y - draggedInnerText.lastY;
                 shapes[draggedInnerText.idx].khasraOffsetX = (shapes[draggedInnerText.idx].khasraOffsetX || 0) + dx;
@@ -681,26 +766,26 @@
 
             if(draggedNode) draggedNode = null; if(draggedWholeShape) draggedWholeShape = null; 
             if(draggedLabelNode) draggedLabelNode = null; if(draggedWholeLabel) draggedWholeLabel = null;
-            if(draggedInnerText) draggedInnerText = null; // Clear Inner Text Drag
+            if(draggedInnerText) draggedInnerText = null; 
 
             if(mode === 'freehand' && isDrawingFreehand) {
                 isDrawingFreehand = false;
-                if(currentPath.length > 3) { shapes.push({ type: 'freehand', points: [...currentPath], userLengths: [], adjustedPoints: null }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); }
+                if(currentPath.length > 3) { shapes.push({ type: 'freehand', points: [...currentPath], userLengths: [], adjustedPoints: null }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); markUnsaved();}
                 currentPath = []; draw();
             }
             else if(mode === 'box' && isDrawingBox) {
                 isDrawingBox = false;
-                if(Math.hypot(currentPath[0].x - currentPath[2].x, currentPath[0].y - currentPath[2].y) > 10) { shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); }
+                if(Math.hypot(currentPath[0].x - currentPath[2].x, currentPath[0].y - currentPath[2].y) > 10) { shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); markUnsaved(); }
                 currentPath = []; draw();
             } else if(mode === 'circle' && isDrawingCircle) {
                 isDrawingCircle = false;
-                if(tempCircleRadius > 10) { shapes.push({ type: 'circle', center: circleStart, pixelRadius: tempCircleRadius, userRadius: "" }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); }
+                if(tempCircleRadius > 10) { shapes.push({ type: 'circle', center: circleStart, pixelRadius: tempCircleRadius, userRadius: "" }); selectedShapeIdx = shapes.length - 1; setMode('edit'); generateInputs(); markUnsaved(); }
                 draw();
             } else if(mode === 'arrow' && isDrawingArrow) {
                 isDrawingArrow = false;
                 if(Math.hypot(arrowEnd.x - arrowStart.x, arrowEnd.y - arrowStart.y) > 10) {
                     let txt = prompt("खसरा नंबर दर्ज करें:");
-                    if(txt && txt.trim() !== "") { labels.push({ text: txt, start: arrowStart, end: arrowEnd }); selectedLabelIdx = labels.length - 1; selectedShapeIdx = -1; setMode('edit'); generateInputs(); } 
+                    if(txt && txt.trim() !== "") { labels.push({ text: txt, start: arrowStart, end: arrowEnd }); selectedLabelIdx = labels.length - 1; selectedShapeIdx = -1; setMode('edit'); generateInputs(); markUnsaved(); } 
                     else { undoStack.pop(); } 
                 } else { undoStack.pop(); }
                 draw();
@@ -726,20 +811,18 @@
             return -1;
         }
 
-        function updateLabelText(idx, val) { if(labels[idx]) { labels[idx].text = val; draw(); } }
+        function updateLabelText(idx, val) { if(labels[idx]) { labels[idx].text = val; draw(); markUnsaved(); } }
         
-        // NEW FUNCTIONS: Inner Khasra Text
         function updateInnerKhasra(val) {
             if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) {
-                shapes[selectedShapeIdx].khasraNo = val; draw();
+                shapes[selectedShapeIdx].khasraNo = val; draw(); markUnsaved();
                 if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();
             }
         }
         function updateInnerKhasraSize(val) {
             if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) {
                 shapes[selectedShapeIdx].khasraFontSize = parseInt(val);
-                document.getElementById('innerKhasraSzVal').innerText = val; draw();
-                if(document.getElementById('tabFinal').classList.contains('active')) drawExactScaleMap();
+                document.getElementById('innerKhasraSzVal').innerText = val; draw(); markUnsaved();
             }
         }
 
@@ -801,22 +884,20 @@
                 container.innerHTML += `<div class="side-input-row"><span class="side-label" style="width:70px;">त्रिज्या (R):</span><input type="number" class="side-input" value="${shape.userRadius}" placeholder="${placeholderText}" oninput="updateSideLength('radius', this.value)"></div>`;
             }
             
-            // NEW: Add Inner Khasra UI for ALL shape types
             let kNo = shape.khasraNo || "";
             let kSz = shape.khasraFontSize || 16;
             container.innerHTML += `
                 <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; background: #eff6ff; padding: 10px; border-radius: 6px;">
-                    <p style="font-size:12px; color:#1e3a8a; margin:0 0 8px 0; font-weight:700;">🏷️ नक्शे के अंदर खसरा नंबर</p>
+                    <p style="font-size:12px; color:#1e3a8a; margin:0 0 8px 0; font-weight:700;">🏷️ ड्राफ्ट नक्शे के अंदर खसरा नंबर</p>
                     <div class="side-input-row">
                         <span class="side-label" style="width:70px;">खसरा नं.:</span>
                         <input type="text" class="side-input" value="${kNo}" placeholder="उदा. 941/1/2" oninput="updateInnerKhasra(this.value)">
                     </div>
                     <div class="side-input-row">
-                        <span class="side-label" style="width:70px;">साइज़:</span>
+                        <span class="side-label" style="width:70px;">ड्राफ्ट साइज़:</span>
                         <input type="range" min="8" max="60" value="${kSz}" style="flex:1;" oninput="updateInnerKhasraSize(this.value)">
                         <span style="font-size:11px; font-weight:bold; width:20px; text-align:right;" id="innerKhasraSzVal">${kSz}</span>
                     </div>
-                    <p style="font-size:10px; color:#475569; margin:4px 0 0 0; line-height:1.3;">टिप: इसे 'सुधारें' टूल से पकड़कर अंदर कहीं भी खिसका सकते हैं।</p>
                 </div>`;
                 
             calculateArea();
@@ -826,12 +907,12 @@
             if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) {
                 if(idx === 'radius') shapes[selectedShapeIdx].userRadius = val;
                 else shapes[selectedShapeIdx].userLengths[idx] = val;
-                calculateArea();
+                calculateArea(); markUnsaved();
             }
         }
 
         function updateDiagonal(val) {
-            if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) { shapes[selectedShapeIdx].userDiagonal = val; calculateArea(); }
+            if(selectedShapeIdx !== -1 && shapes[selectedShapeIdx]) { shapes[selectedShapeIdx].userDiagonal = val; calculateArea(); markUnsaved(); }
         }
 
         function calculateArea() {
@@ -939,7 +1020,6 @@
                     if(isSelected) { ctx.beginPath(); ctx.arc(shape.center.x, shape.center.y, 4/zoom, 0, 2*Math.PI); ctx.fillStyle = "#dc2626"; ctx.fill(); }
                 }
 
-                // NEW: Draw Inner Khasra Text in Draft View
                 if(shape.khasraNo && shape.origCx !== undefined) {
                     let cx = shape.origCx + (shape.khasraOffsetX || 0);
                     let cy = shape.origCy + (shape.khasraOffsetY || 0);
@@ -949,7 +1029,6 @@
                     ctx.textBaseline = "middle";
                     ctx.fillText(shape.khasraNo, cx, cy);
                     
-                    // Show small dot to indicate it is draggable
                     if(isSelected && mode === 'edit') {
                         ctx.beginPath(); ctx.arc(cx, cy, 3/zoom, 0, 2*Math.PI);
                         ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.fill();
@@ -983,7 +1062,10 @@
 
         function drawExactScaleMap() {
             exactCtx.clearRect(0, 0, exactCanvas.width, exactCanvas.height);
-            let arrowLen = parseInt(document.getElementById('printArrowLen').value) || 80; let fontSize = parseInt(document.getElementById('printFontSize').value) || 16;
+            let arrowLen = parseInt(document.getElementById('printArrowLen').value) || 80; 
+            let fontSize = parseInt(document.getElementById('printFontSize').value) || 16;
+            let printInnerFontSize = parseInt(document.getElementById('printInnerKhasraSize').value) || 18; // NEW Print Font Size
+            
             const scaleFactor = 0.944875; 
             let validShapes = shapes.filter(s => s.origCx !== undefined); if(validShapes.length === 0) return;
             let globalCx = (Math.min(...validShapes.map(s => s.origCx)) + Math.max(...validShapes.map(s => s.origCx))) / 2;
@@ -1003,13 +1085,13 @@
                 } else if(shape.type === 'circle' && shape.adjustedRadiusMeters) { exactCtx.beginPath(); exactCtx.arc(0, 0, shape.adjustedRadiusMeters * scaleFactor, 0, 2*Math.PI); exactCtx.stroke(); }
                 exactCtx.restore();
 
-                // NEW: Draw Inner Khasra Text for Print 1:4000
+                // Draw Inner Khasra Text for Print 1:4000
                 if (shape.khasraNo) {
                     let tx = offX + ((shape.khasraOffsetX || 0) / avgP2M) * scaleFactor;
                     let ty = offY + ((shape.khasraOffsetY || 0) / avgP2M) * scaleFactor;
                     exactCtx.save();
                     exactCtx.fillStyle = "black";
-                    exactCtx.font = `bold ${shape.khasraFontSize || 16}px Arial`;
+                    exactCtx.font = `bold ${printInnerFontSize}px Arial`; // Use Print Font Size slider
                     exactCtx.textAlign = "center";
                     exactCtx.textBaseline = "middle";
                     exactCtx.fillText(shape.khasraNo, tx, ty);
@@ -1044,7 +1126,7 @@
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Shift') isShiftPressed = true;
             
-            if(e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+            if(e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
                 e.preventDefault(); 
                 isSpacePressed = true;
                 canvas.style.cursor = 'grab';
@@ -1054,7 +1136,7 @@
                 const floatBox = document.getElementById('floatingInputContainer');
                 const floatInput = document.getElementById('floatingDistance');
                 
-                if (/[0-9]/.test(e.key) && document.activeElement !== floatInput && !isSpacePressed) {
+                if (/[0-9]/.test(e.key) && document.activeElement !== floatInput && !isSpacePressed && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
                     if (!mapScaleP2M) { alert("⚠️ सटीक नाप से ड्रॉ करने के लिए पहले 'नक्शा स्केल सेट करें' टूल का उपयोग करें!"); return; }
                     floatBox.style.display = 'flex'; floatBox.style.left = (lastMouseGlobalPos.x + 15) + 'px'; floatBox.style.top = (lastMouseGlobalPos.y + 15) + 'px';
                     document.getElementById('floatingUnitTxt').innerText = document.getElementById('unitSelect').options[document.getElementById('unitSelect').selectedIndex].text.split(' ')[0];
@@ -1076,16 +1158,16 @@
                 
                 if (e.key === 'Escape') { floatInput.value = ''; floatBox.style.display = 'none'; canvas.focus(); }
 
-                if (e.key === 'Backspace' && document.activeElement !== floatInput) {
+                if (e.key === 'Backspace' && document.activeElement !== floatInput && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
                     if (currentPath.length > 1) { currentPath.pop(); draw(); } 
                     else { currentPath = []; draw(); }
                 }
 
-                if ((e.key === 'c' || e.key === 'C') && document.activeElement !== floatInput) {
+                if ((e.key === 'c' || e.key === 'C') && document.activeElement !== floatInput && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
                     if (currentPath.length > 2) {
                         shapes.push({ type: 'poly', points: [...currentPath], userLengths: [], adjustedPoints: null });
                         currentPath = []; snapActive = false; selectedShapeIdx = shapes.length - 1; 
-                        setMode('edit'); generateInputs(); draw();
+                        setMode('edit'); generateInputs(); draw(); markUnsaved();
                     } else { alert("आकृति को बंद करने के लिए कम से कम 3 बिन्दु (Points) होने चाहिए!"); }
                 }
             }
