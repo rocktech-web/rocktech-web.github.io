@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>स्मार्ट फर्द बटवारा निर्माण</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --primary: #2c3e50;
+            --page-width: 297mm; 
+            --page-height: 210mm;
+        }
+        
+        html, body { 
+            font-family: 'Arial', sans-serif; 
+            background: var(--bg-color); 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+        
+        .top-container { 
+            flex-shrink: 0; 
+            background: white; 
+            padding: 15px 25px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+            z-index: 1000; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+        
+        .controls-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        
+        .action-bar { background: #e8f4f8; padding: 8px 12px; border-radius: 6px; display: flex; gap: 15px; border: 1px solid #bce0ec; align-items: center; flex-wrap: wrap;}
+        .action-group { display: flex; gap: 4px; align-items: center; border-right: 2px solid #ccc; padding-right: 15px; }
+        .action-group:last-child { border-right: none; }
+        .action-label { font-size: 13px; font-weight: bold; color: #2c3e50; }
+
+        .top-container textarea { width: 100%; height: 45px; padding: 8px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; }
+        button { padding: 6px 10px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s;}
+        button:hover { background: #1a252f; }
+        button.danger { background: #e74c3c; }
+        button.success { background: #27ae60; }
+        button.file-btn { background: #8e44ad; }
+        button.excel-btn { background: #217346; } 
+        select { padding: 6px; border: 1px solid #ccc; font-size: 12px; border-radius: 4px; }
+
+        #current-file-name { font-size: 12px; background: #f39c12; color: #fff; padding: 6px 12px; border-radius: 4px; font-weight: bold; display: inline-block; margin-left: auto;}
+        .unsaved { background: #e74c3c !important; }
+
+        .canvas-wrapper {
+            flex-grow: 1; 
+            width: 100%;
+            overflow: auto; 
+            background: var(--bg-color);
+            padding: 30px 20px;
+            box-sizing: border-box;
+            text-align: center; 
+        }
+
+        .page {
+            background: white; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            padding: 10mm; 
+            position: relative; 
+            box-sizing: border-box; 
+            width: var(--page-width); 
+            min-height: var(--page-height);
+            display: inline-block; 
+            text-align: left; 
+            margin: 0 auto; 
+            transition: width 0.3s ease;
+        }
+
+        .office-heading { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 10px; width: 100%; display: block; }
+        .village-input { border-bottom: 1px dashed #000; display: inline-block; min-width: 100px; padding: 0 5px; outline: none; }
+        .village-input:empty:before { content: '...................'; color: #aaa; font-weight: normal; }
+
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; position: relative; word-wrap: break-word; }
+        .header-bg { font-weight: bold; background-color: #f9f9f9; }
+        .total-row { font-weight: bold; background-color: #eaeaea; }
+        .owner-header { background-color: #e8f4f8 !important; color: #000; }
+        .error-row { background-color: #ffe6e6 !important; }
+        .selected-cell { background-color: #fff3cd !important; outline: 2px solid #f39c12; z-index: 5; }
+        
+        .row-diff { display: block; font-size: 11px; margin-top: 3px; user-select: none; pointer-events: none;}
+        .total-diff { font-size: 11px; }
+        
+        .resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; z-index: 10; }
+        .resizer:hover { background: #3498db; }
+
+        .bottom-note { margin-top: 15px; font-size: 13px; font-weight: bold; width: 100%; text-align: center; border: none; outline: none; background: transparent; font-family: inherit; display: block; padding: 5px; }
+
+        @media print {
+            html, body { overflow: visible !important; width: auto !important; height: auto !important; margin: 0; padding: 0; display: block !important; }
+            .top-container { display: none !important; }
+            .canvas-wrapper { display: block !important; overflow: visible !important; height: auto !important; padding: 0 !important; margin: 0 !important; text-align: left !important; }
+            
+            .page { margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; page-break-inside: avoid; display: block !important; zoom: 1 !important; }
+            ::-webkit-scrollbar { display: none !important; }
+            * { scrollbar-width: none !important; }
+            
+            table, th, td { border: 1px solid #000 !important; }
+            .resizer, .row-diff, .total-diff { display: none !important; }
+            .selected-cell { background-color: transparent !important; outline: none !important; }
+            tfoot { display: table-row-group; } 
+            @page { size: auto; margin: 10mm; @bottom-center { content: "Page " counter(page) " to " counter(pages); } } 
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-container">
+    <div class="controls-row">
+        <button class="file-btn" onclick="App.createNewFile()" style="background:#16a085;">📄 नई फ़ाइल</button>
+        <button class="file-btn" onclick="App.openFile()">📂 ओपन</button>
+        <button class="file-btn" onclick="App.saveFile()">💾 सेव</button>
+        <button class="file-btn" onclick="App.saveAsFile()">💾 सेव ऐज़</button>
+
+        <span style="border-left: 2px solid #ccc; height: 20px; margin: 0 5px;"></span>
+
+        <select id="format-select" onchange="App.changeFormat()">
+            <option value="1">प्रारूप 1</option><option value="2">प्रारूप 2</option>
+            <option value="3">प्रारूप 3</option><option value="4">प्रारूप 4</option>
+        </select>
+        <select id="paper-select" onchange="App.changePaperSize()">
+            <option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="A1">A1</option>
+        </select>
+        <select id="orientation-select" onchange="App.changePaperSize()">
+            <option value="landscape">लैंडस्केप</option><option value="portrait">पोर्ट्रेट</option>
+        </select>
+        
+        <select id="font-select" onchange="App.changeFont()" style="background:#e8f4f8; font-weight:bold;">
+            <option value="'Nirmala UI', sans-serif">फॉन्ट: Nirmala UI</option>
+            <option value="'Kokila', serif">फॉन्ट: Kokila (कोकिला)</option>
+            <option value="'Poppins', sans-serif">फॉन्ट: Poppins</option>
+            <option value="'Aparajita', serif">फॉन्ट: Aparajita (अपराजिता)</option>
+        </select>
+
+        <button class="success" onclick="App.toggleGramColumn()">+ ग्राम कॉलम</button>
+        <button class="excel-btn" onclick="App.exportToExcel()">📊 Excel Export</button>
+        
+        <span id="current-file-name">📄 फ़ाइल: नई फ़ाइल</span>
+        <button onclick="window.print()">🖨️ Print / PDF</button>
+    </div>
+
+    <div class="controls-row action-bar">
+        <div class="action-group">
+            <span class="action-label" id="lbl-khata" style="color:#e67e22;">खाता <b>(-)</b>:</span>
+            <button onclick="App.actionKhata('add-up')">⬆ ऊपर जोड़ें</button>
+            <button onclick="App.actionKhata('add-down')">⬇ नीचे जोड़ें</button>
+            <button onclick="App.actionKhata('move-up')" style="background:#f39c12;">⬆ ऊपर खिसकाएं</button>
+            <button onclick="App.actionKhata('move-down')" style="background:#f39c12;">⬇ नीचे खिसकाएं</button>
+            <button onclick="App.actionKhata('del')" class="danger">🗑️ हटाएं</button>
+        </div>
+        <div class="action-group">
+            <span class="action-label" id="lbl-set" style="color:#e67e22;">सेट <b>(-)</b>:</span>
+            <button onclick="App.actionSet('add-left')">◀ बाएं जोड़ें</button>
+            <button onclick="App.actionSet('add-right')">▶ दाएं जोड़ें</button>
+            <button onclick="App.actionSet('move-left')" style="background:#f39c12;">⬅ बाएं खिसकाएं</button>
+            <button onclick="App.actionSet('move-right')" style="background:#f39c12;">➡ दाएं खिसकाएं</button>
+            <button onclick="App.actionSet('del')" class="danger">🗑️ हटाएं</button>
+        </div>
+    </div>
+
+    <div class="controls-row">
+        <div style="flex: 1;"><textarea id="owner-text" placeholder="भूमि स्वामी का विवरण यहाँ पेस्ट करें..." oninput="App.markDirty()"></textarea></div>
+        <div style="flex: 1;"><textarea id="khasra-text" placeholder="खसरा एवं रकवा का विवरण यहाँ पेस्ट करें..." oninput="App.markDirty()"></textarea></div>
+        <button onclick="App.processData()" style="height: 45px; font-size: 14px;">डेटा जोड़ें ⚡</button>
+    </div>
+</div>
+
+<div class="canvas-wrapper" id="canvas-area">
+    <div id="print-page" class="page">
+        <div class="office-heading">
+            बटवारा प्रस्ताव (ग्राम- <span contenteditable="true" class="village-input" id="village-name"></span>)
+        </div>
+        <table id="batwara-table">
+            <colgroup id="table-colgroup"></colgroup>
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+            <tfoot id="table-foot"></tfoot>
+        </table>
+        <div contenteditable="true" class="bottom-note" oninput="App.markDirty()">उपरोक्त बटवारा प्रस्ताव आवेदक व अनावेदक के स्वत्व के आधार पर तैयार किया गया है।</div>
+    </div>
+</div>
+
+<script>
+const App = (function() {
+    let state = { format: '1', font: "'Nirmala UI', sans-serif", proposedSets: 1, hasGram: false, data: [], colsWidth: {}, headerOwners: [] };
+    let fileHandle = null; 
+    let currentFileName = "नई फ़ाइल";
+    let activeKhata = null;
+    let activeSet = null;
+    let isDirty = false; 
+
+    const PAPER_DIMS = { 'A4': {w: 210, h: 297}, 'A3': {w: 297, h: 420}, 'A2': {w: 420, h: 594}, 'A1': {w: 594, h: 841} };
+
+    function markDirty() {
+        if (!isDirty) {
+            isDirty = true;
+            let el = document.getElementById('current-file-name');
+            el.innerText = `📄 फ़ाइल: ${currentFileName} *`;
+            el.classList.add('unsaved');
+        }
+    }
+
+    function clearDirty() {
+        isDirty = false;
+        let el = document.getElementById('current-file-name');
+        el.innerText = `📄 फ़ाइल: ${currentFileName}`;
+        el.classList.remove('unsaved');
+    }
+
+    function updateFileName(name) {
+        currentFileName = name;
+        clearDirty();
+    }
+
+    function createNewFile() {
+        if (isDirty) {
+            if (!confirm("आपके द्वारा किए गए बदलाव सेव नहीं हुए हैं। क्या आप बिना सेव किए नई फ़ाइल बनाना चाहते हैं?")) {
+                return;
+            }
+        }
+        state = { format: '1', font: "'Nirmala UI', sans-serif", proposedSets: 1, hasGram: false, data: [], colsWidth: {}, headerOwners: [] };
+        fileHandle = null;
+        activeKhata = null;
+        activeSet = null;
+        document.getElementById('village-name').innerText = '';
+        document.getElementById('format-select').value = '1';
+        document.getElementById('paper-select').value = 'A4';
+        document.getElementById('orientation-select').value = 'landscape';
+        document.getElementById('font-select').value = state.font;
+        document.getElementById('lbl-khata').innerHTML = `खाता <b>(-)</b>:`;
+        document.getElementById('lbl-set').innerHTML = `सेट <b>(-)</b>:`;
+        applyFont();
+        changePaperSize();
+        renderTable();
+        updateFileName("नई फ़ाइल");
+    }
+
+    function getCurrentCols() {
+        let cols = [ {n: 'क्र.', w: 40, f: 'sno'}, {n: 'खाता\nक्रमांक', w: 60, f: 'khata'}, {n: 'खसरा\nसंख्यांक', w: 60, link: 'khasra', f: 'khasra'}, {n: 'रकवा', w: 60, link: 'rakba', cls: 'c-rakba', f: 'rakba'}, {n: 'भूमि स्वामी', w: 150, f: 'owner'} ];
+        if(state.hasGram) cols.unshift({n: 'ग्राम', w: 60, f: 'gram'});
+        return cols;
+    }
+    
+    const FORMATS = {
+        '1': [ {n: 'खसरा\nसंख्यांक', w: 60, link: 'khasra', cls: 'p-khasra', f: 'p_khasra'}, {n: 'रकवा', w: 60, link: 'rakba', cls: 'p-rakba', f: 'p_rakba'}, {n: 'भूमि स्वामी', w: 120, f: 'p_owner'} ],
+        '2': [ {n: 'खसरा\nसंख्यांक', w: 60, link: 'khasra', cls: 'p-khasra', f: 'p_khasra'}, {n: 'रकवा', w: 60, link: 'rakba', cls: 'p-rakba', f: 'p_rakba'}, {n: 'भूमि स्वामी', w: 120, f: 'p_owner'} ],
+        '3': [ {n: 'खसरा\nसंख्यांक', w: 60, link: 'khasra', cls: 'p-khasra', f: 'p_khasra'}, {n: 'रकवा', w: 60, link: 'rakba', cls: 'p-rakba', f: 'p_rakba'} ]
+    };
+
+    function getProposedCols(setIndex) { return (state.format === '4') ? (setIndex === 0 ? FORMATS['1'] : FORMATS['3']) : FORMATS[state.format]; }
+
+    function init() { 
+        changePaperSize(); 
+        renderTable(); 
+        attachLiveCalculations(); 
+        attachRowMergeLogic();
+        attachSelectionLogic();
+        attachZoomAndPanLogic();
+        updateFileName("नई फ़ाइल");
+        applyFont();
+
+        window.addEventListener('beforeunload', function (e) {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = ''; 
+            }
+        });
+        document.getElementById('village-name').addEventListener('input', markDirty);
+    }
+
+    function attachZoomAndPanLogic() {
+        let currentZoom = 1;
+        const pageEl = document.getElementById('print-page');
+        const canvasArea = document.getElementById('canvas-area'); 
+        
+        canvasArea.addEventListener('wheel', function(e) {
+            if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+            if (e.ctrlKey) {
+                e.preventDefault(); 
+                if (e.deltaY < 0) currentZoom += 0.1; 
+                else currentZoom -= 0.1; 
+                currentZoom = Math.min(Math.max(0.4, currentZoom), 3); 
+                pageEl.style.zoom = currentZoom;
+            } 
+            else if (e.altKey || e.shiftKey) {
+                e.preventDefault();
+                canvasArea.scrollBy({ left: e.deltaY > 0 ? 150 : -150, behavior: 'auto' });
+            }
+        }, { passive: false });
+    }
+
+    function applyFont() {
+        document.getElementById('print-page').style.fontFamily = state.font;
+        document.getElementById('font-select').value = state.font;
+    }
+
+    function changeFont() {
+        markDirty();
+        state.font = document.getElementById('font-select').value;
+        applyFont();
+        syncTableToState();
+    }
+
+    function syncTableToState() {
+        if (!state.headerOwners) state.headerOwners = [];
+        document.querySelectorAll('th.owner-header').forEach(th => {
+            let s = th.getAttribute('data-header-set');
+            if(s !== null) state.headerOwners[s] = th.innerText.trim();
+        });
+
+        let rows = document.getElementById('table-body').querySelectorAll('tr');
+        rows.forEach(tr => {
+            let khataIdx = tr.getAttribute('data-khata-idx');
+            let khasraIdx = tr.getAttribute('data-khasra-idx');
+            if (khataIdx === null || khasraIdx === null) return;
+            let item = state.data[khataIdx];
+            let khasra = item.khasras[khasraIdx];
+            
+            khasra.c_ui = khasra.c_ui || {};
+            khasra.p_ui = khasra.p_ui || [];
+            if(!khasra.proposed) khasra.proposed = [];
+
+            tr.querySelectorAll('td').forEach(td => {
+                let field = td.getAttribute('data-field');
+                let setIdx = td.getAttribute('data-set') || '';
+                
+                let cloneNode = td.cloneNode(true);
+                let diffSpans = cloneNode.querySelectorAll('.row-diff, .total-diff');
+                diffSpans.forEach(el => el.remove());
+                let val = cloneNode.innerText.trim();
+
+                let isHidden = td.style.display === 'none';
+                let rs = td.getAttribute('rowspan') || 1;
+                let disp = td.style.display || '';
+                let ta = td.style.textAlign || '';
+
+                if(setIdx === '') { 
+                    if(!isHidden) {
+                        if(field === 'gram') item.gram = val;
+                        if(field === 'khata') item.khata = val;
+                        if(field === 'owner') item.owners = val;
+                    }
+                    if(field === 'khasra') khasra.k = val;
+                    if(field === 'rakba') khasra.r = val;
+                    khasra.c_ui[field] = { rs, disp, ta };
+                } else { 
+                    if(!khasra.proposed[setIdx]) khasra.proposed[setIdx] = {k:'', r:'', o:''};
+                    if(field === 'p_khasra') khasra.proposed[setIdx].k = val;
+                    if(field === 'p_rakba') khasra.proposed[setIdx].r = val;
+                    if(field === 'p_owner' && !isHidden) khasra.proposed[setIdx].o = val;
+                    
+                    if(!khasra.p_ui[setIdx]) khasra.p_ui[setIdx] = {};
+                    khasra.p_ui[setIdx][field] = { rs, disp, ta };
+                }
+            });
+        });
+        state.village = document.getElementById('village-name').innerText;
+    }
+
+    function attachSelectionLogic() {
+        document.getElementById('table-body').addEventListener('focusin', function(e) {
+            let td = e.target.closest('td');
+            if(!td) return;
+            
+            document.querySelectorAll('.selected-cell').forEach(el => el.classList.remove('selected-cell'));
+            td.classList.add('selected-cell');
+
+            let tr = td.closest('tr');
+            let khIdx = tr ? tr.getAttribute('data-khata-idx') : null;
+            let setIdx = td.getAttribute('data-set');
+            
+            if(khIdx !== null) {
+                activeKhata = parseInt(khIdx);
+                document.getElementById('lbl-khata').innerHTML = `खाता <b>(${activeKhata + 1})</b> :`;
+            }
+            if(setIdx !== null && setIdx !== '') {
+                activeSet = parseInt(setIdx);
+                document.getElementById('lbl-set').innerHTML = `सेट <b>(${activeSet + 1})</b> :`;
+            } else {
+                activeSet = null;
+                document.getElementById('lbl-set').innerHTML = `सेट <b>(-)</b> :`;
+            }
+        });
+    }
+
+    function actionKhata(action) {
+        if(activeKhata === null) return alert("कृपया पहले टेबल में किसी 'खाते' के सेल पर क्लिक करें।");
+        markDirty();
+        syncTableToState();
+        let i = activeKhata;
+        let emptyKhata = { khata: '', owners: '', khasras: [{ k:'', r:'', c_ui:{}, p_ui:[], proposed:[] }] };
+        
+        if(action === 'add-up' || action === 'add-down') {
+            let insertPos = action === 'add-up' ? i : i + 1;
+            state.data.splice(insertPos, 0, emptyKhata);
+            activeKhata = insertPos;
+            document.getElementById('lbl-khata').innerHTML = `खाता <b>(${activeKhata + 1})</b> :`;
+        }
+        else if(action === 'del') {
+            if(state.data.length <= 1) return alert("कम से कम एक खाता होना अनिवार्य है!");
+            if(confirm("क्या आप इस खाते को हटाना चाहते हैं?")) {
+                state.data.splice(i, 1);
+                activeKhata = null;
+                document.getElementById('lbl-khata').innerHTML = `खाता <b>(-)</b> :`;
+            }
+        }
+        else if(action === 'move-up' && i > 0) {
+            [state.data[i-1], state.data[i]] = [state.data[i], state.data[i-1]];
+            activeKhata = i - 1;
+            document.getElementById('lbl-khata').innerHTML = `खाता <b>(${activeKhata + 1})</b> :`;
+        }
+        else if(action === 'move-down' && i < state.data.length - 1) {
+            [state.data[i+1], state.data[i]] = [state.data[i], state.data[i+1]];
+            activeKhata = i + 1;
+            document.getElementById('lbl-khata').innerHTML = `खाता <b>(${activeKhata + 1})</b> :`;
+        }
+        renderTable();
+    }
+
+    function actionSet(action) {
+        if(activeSet === null) return alert("कृपया पहले 'प्रस्तावित विभाजन सूची' के किसी सेल पर क्लिक करें।");
+        markDirty();
+        syncTableToState();
+        let i = activeSet;
+
+        if(action === 'add-left' || action === 'add-right') {
+            let insertPos = action === 'add-left' ? i : i + 1;
+            state.proposedSets++;
+            state.headerOwners.splice(insertPos, 0, 'नया भूमि स्वामी');
+            state.data.forEach(kh => kh.khasras.forEach(ks => {
+                ks.proposed.splice(insertPos, 0, {k:'', r:'', o:''});
+                ks.p_ui.splice(insertPos, 0, {});
+            }));
+            activeSet = insertPos;
+            document.getElementById('lbl-set').innerHTML = `सेट <b>(${activeSet + 1})</b> :`;
+        }
+        if(action === 'del') {
+            if(state.proposedSets <= 1) return alert("कम से कम एक सेट होना अनिवार्य है!");
+            if(confirm("क्या आप चयनित कॉलम सेट को हटाना चाहते हैं?")) {
+                state.proposedSets--;
+                state.headerOwners.splice(i, 1);
+                state.data.forEach(kh => kh.khasras.forEach(ks => {
+                    ks.proposed.splice(i, 1);
+                    ks.p_ui.splice(i, 1);
+                }));
+                activeSet = null;
+                document.getElementById('lbl-set').innerHTML = `सेट <b>(-)</b> :`;
+            }
+        }
+        if(action === 'move-left' && i > 0) {
+            [state.headerOwners[i-1], state.headerOwners[i]] = [state.headerOwners[i], state.headerOwners[i-1]];
+            state.data.forEach(kh => kh.khasras.forEach(ks => {
+                [ks.proposed[i-1], ks.proposed[i]] = [ks.proposed[i], ks.proposed[i-1]];
+                [ks.p_ui[i-1], ks.p_ui[i]] = [ks.p_ui[i], ks.p_ui[i-1]];
+            }));
+            activeSet = i - 1;
+            document.getElementById('lbl-set').innerHTML = `सेट <b>(${activeSet + 1})</b> :`;
+        }
+        if(action === 'move-right' && i < state.proposedSets - 1) {
+            [state.headerOwners[i+1], state.headerOwners[i]] = [state.headerOwners[i], state.headerOwners[i+1]];
+            state.data.forEach(kh => kh.khasras.forEach(ks => {
+                [ks.proposed[i+1], ks.proposed[i]] = [ks.proposed[i], ks.proposed[i+1]];
+                [ks.p_ui[i+1], ks.p_ui[i]] = [ks.p_ui[i], ks.p_ui[i+1]];
+            }));
+            activeSet = i + 1;
+            document.getElementById('lbl-set').innerHTML = `सेट <b>(${activeSet + 1})</b> :`;
+        }
+        renderTable();
+    }
+
+    function encryptData(obj) { return btoa(encodeURIComponent(JSON.stringify(obj))); }
+    function decryptData(str) { return JSON.parse(decodeURIComponent(atob(str))); }
+
+    async function openFile() {
+        if (isDirty) {
+            if (!confirm("आपके बदलाव सेव नहीं हुए हैं। क्या आप बिना सेव किए दूसरी फ़ाइल खोलना चाहते हैं?")) return;
+        }
+        
+        try {
+            if (window.showOpenFilePicker) {
+                [fileHandle] = await window.showOpenFilePicker({ types: [{ description: 'Rock Batwara File', accept: {'application/rock': ['.rock','.json']} }] });
+                const file = await fileHandle.getFile();
+                const text = await file.text();
+                state = decryptData(text); 
+                document.getElementById('format-select').value = state.format;
+                document.getElementById('village-name').innerText = state.village || '';
+                if(!state.font) state.font = "'Nirmala UI', sans-serif";
+                applyFont();
+                renderTable();
+                updateFileName(file.name);
+            } else {
+                let input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.rock,.json';
+                input.onchange = e => {
+                    let file = e.target.files[0];
+                    if(!file) return;
+                    let reader = new FileReader();
+                    reader.onload = function(event) {
+                        state = decryptData(event.target.result);
+                        document.getElementById('format-select').value = state.format;
+                        document.getElementById('village-name').innerText = state.village || '';
+                        if(!state.font) state.font = "'Nirmala UI', sans-serif";
+                        applyFont();
+                        renderTable();
+                        updateFileName(file.name);
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    async function saveFile() {
+        syncTableToState();
+        try {
+            if (window.showSaveFilePicker) {
+                if (!fileHandle) { return await saveAsFile(); }
+                const writable = await fileHandle.createWritable();
+                await writable.write(encryptData(state));
+                await writable.close();
+                clearDirty();
+                alert("फ़ाइल सफलतापूर्वक अपडेट (Save) हो गई।");
+            } else {
+                saveAsBlob();
+            }
+        } catch (error) { console.error(error); }
+    }
+
+    async function saveAsFile() {
+        syncTableToState();
+        try {
+            if (window.showSaveFilePicker) {
+                let vName = document.getElementById('village-name').innerText.trim() || 'Project';
+                fileHandle = await window.showSaveFilePicker({ 
+                    suggestedName: `Batwara_${vName}.rock`,
+                    types: [{ description: 'Rock Batwara File', accept: {'application/rock': ['.rock']} }] 
+                });
+                const writable = await fileHandle.createWritable();
+                await writable.write(encryptData(state));
+                await writable.close();
+                updateFileName(fileHandle.name);
+                alert("नई फ़ाइल (Save As) सफलतापूर्वक सेव हो गई।");
+            } else {
+                saveAsBlob();
+            }
+        } catch (error) { console.error(error); }
+    }
+
+    function saveAsBlob() {
+        let dataStr = encryptData(state);
+        let blob = new Blob([dataStr], {type: "text/plain"});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        let vName = document.getElementById('village-name').innerText.trim();
+        let fName = vName ? `Batwara_${vName}.rock` : 'Batwara_Project.rock';
+        a.download = fName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        updateFileName(fName);
+    }
+
+    function exportToExcel() {
+        syncTableToState();
+        let tableClone = document.getElementById("batwara-table").cloneNode(true);
+        
+        // 1. COLUMN WIDTH STRICT FIX (एक्सेल पिक्सल नहीं, पॉइंट (pt) समझता है)
+        let totalWidthPt = 0;
+        let colgroup = tableClone.querySelector('colgroup');
+        if(colgroup) {
+            colgroup.querySelectorAll('col').forEach(c => {
+                let px = parseFloat(c.style.width.replace('px', ''));
+                if(!isNaN(px)) {
+                    let pt = Math.round(px * 0.75); // px to pt conversion
+                    c.setAttribute('width', pt);
+                    c.style.width = pt + 'pt';
+                    c.style.cssText += 'mso-width-source:userset;'; // चौड़ाई लॉक कमांड
+                    totalWidthPt += pt;
+                }
+            });
+        }
+
+        // टेबल की कुल चौड़ाई फिक्स करें
+        tableClone.setAttribute('width', totalWidthPt);
+        tableClone.style.width = totalWidthPt + 'pt';
+        tableClone.style.tableLayout = 'fixed';
+        
+        // 2. CLEANUP
+        tableClone.querySelectorAll('td[style*="display: none"], td[style*="display:none"]').forEach(cell => cell.remove());
+        tableClone.querySelectorAll('.row-diff, .total-diff').forEach(el => el.remove());
+        tableClone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+
+        // 3. CELL FORMATTING
+        tableClone.setAttribute('border', '1');
+        tableClone.style.borderCollapse = 'collapse';
+        tableClone.style.fontFamily = state.font ? state.font.split(',')[0].replace(/'/g, '') : 'Arial';
+        tableClone.style.fontSize = '11pt';
+        
+        tableClone.querySelectorAll('td, th').forEach(cell => {
+            cell.style.verticalAlign = 'middle';
+            if (!cell.style.textAlign) cell.style.textAlign = 'center';
+            
+            let text = cell.innerText.trim();
+            let field = cell.getAttribute('data-field');
+            
+            if (/^\(\d+\)$/.test(text) || field === 'khasra' || field === 'p_khasra' || text.match(/^\d+[\/\d]+$/)) {
+                cell.setAttribute('style', (cell.getAttribute('style') || '') + '; mso-number-format:"\\@";');
+            }
+            else if (cell.classList.contains('c-rakba') || cell.classList.contains('p-rakba') || (!isNaN(text) && text.includes('.'))) {
+                cell.setAttribute('style', (cell.getAttribute('style') || '') + '; mso-number-format:"0\\.0000";');
+            }
+        });
+
+        // 4. TITLE ROW
+        let vName = document.getElementById("village-name").innerText.trim();
+        let thead = tableClone.querySelector('thead');
+        let headerTr = document.createElement('tr');
+        let headerTh = document.createElement('th');
+        let totalCols = colgroup ? colgroup.querySelectorAll('col').length : 20;
+        headerTh.setAttribute('colspan', totalCols); 
+        headerTh.innerText = "बटवारा प्रस्ताव (ग्राम- " + vName + ")";
+        headerTh.style.fontSize = "16pt";
+        headerTh.style.fontWeight = "bold";
+        headerTh.style.textAlign = "center";
+        headerTh.style.border = "none";
+        headerTh.style.height = "40pt";
+        headerTr.appendChild(headerTh);
+        thead.insertBefore(headerTr, thead.firstChild);
+
+        // 5. MODERN CSS PAGE SETUP (Office 2019+ के लिए)
+        let htmlContent = tableClone.outerHTML;
+        let isLandscape = document.getElementById('orientation-select').value === 'landscape';
+        let orientStr = isLandscape ? 'landscape' : 'portrait';
+        
+        let excelCSS = "@page { margin: 0.3937in; mso-header-margin: 0.2in; mso-footer-margin: 0.2in; mso-page-orientation: " + orientStr + "; } " +
+                       "table { border-collapse: collapse; table-layout: fixed; } " +
+                       "th, td { border: .5pt solid windowtext; vertical-align: middle; word-wrap: break-word; } " +
+                       ".header-bg { background-color: #f2f2f2; font-weight: bold; } " +
+                       ".total-row { background-color: #e6e6e6; font-weight: bold; }";
+
+        // सुरक्षित HTML निर्माण (String Splitting) ताकि कोड पेज पर न छपे
+        let fullHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+        '<head>' +
+            '<meta charset="UTF-8">' +
+            '<style>' + excelCSS + '<' + '/style>' +
+        '<' + '/head>' +
+        '<body>' +
+            htmlContent +
+        '<' + '/body>' +
+        '<' + '/html>';
+        
+        let blob = new Blob([fullHtml], {type: "application/vnd.ms-excel;charset=utf-8"});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "Batwara_" + (vName || "Project") + ".xls";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function toggleGramColumn() { markDirty(); syncTableToState(); state.hasGram = !state.hasGram; renderTable(); }
+    
+    function changePaperSize() { 
+        markDirty();
+        const size = document.getElementById('paper-select').value;
+        const orient = document.getElementById('orientation-select').value;
+        const root = document.documentElement;
+        if(orient === 'landscape') { root.style.setProperty('--page-width', PAPER_DIMS[size].h + 'mm'); root.style.setProperty('--page-height', PAPER_DIMS[size].w + 'mm'); } 
+        else { root.style.setProperty('--page-width', PAPER_DIMS[size].w + 'mm'); root.style.setProperty('--page-height', PAPER_DIMS[size].h + 'mm'); }
+    }
+    
+    function changeFormat() { markDirty(); syncTableToState(); state.format = document.getElementById('format-select').value; renderTable(); }
+
+    function processData() {
+        markDirty();
+        syncTableToState();
+        const ownerRaw = document.getElementById('owner-text').value;
+        const khasraRaw = document.getElementById('khasra-text').value;
+        let villageMatch = khasraRaw.match(/ग्राम (.*?) स्थित/);
+        if(villageMatch) { document.getElementById('village-name').innerText = villageMatch[1].trim(); }
+        if(!khasraRaw && !ownerRaw) { state.data.push({ khata: '', owners: '', khasras: [{k: '', r: ''}] }); renderTable(); return; }
+
+        const khataMatch = khasraRaw.match(/खाता क्रमांक (\d+)/);
+        const khata = khataMatch ? khataMatch[1] : '';
+        const khasraRegex = /(\d+[\/\d]*)\s*रकवा\s*([\d\.]+)/g;
+        let khasras = [];
+        let match;
+        while ((match = khasraRegex.exec(khasraRaw)) !== null) { khasras.push({ k: match[1], r: parseFloat(match[2]).toFixed(4) }); }
+        if(khasras.length === 0) khasras.push({k: '', r: ''});
+        
+        let newData = { khata: khata, owners: ownerRaw, khasras: khasras };
+        if (activeKhata !== null) { state.data.splice(activeKhata + 1, 0, newData); } 
+        else { state.data.push(newData); }
+        
+        document.getElementById('owner-text').value = ''; document.getElementById('khasra-text').value = '';
+        renderTable();
+    }
+
+    function renderTable() { buildColgroup(); buildHeader(); buildBody(); calculateTotals(); attachResizers(); }
+
+    function buildColgroup() {
+        const colgroup = document.getElementById('table-colgroup');
+        colgroup.innerHTML = '';
+        let allCols = [...getCurrentCols()];
+        for(let s=0; s<state.proposedSets; s++) allCols = allCols.concat(getProposedCols(s));
+        allCols.forEach((col, index) => {
+            const c = document.createElement('col');
+            if(col.link) c.setAttribute('data-link', col.link); 
+            let widthKey = col.link ? col.link : 'col_'+index; 
+            if(!state.colsWidth[widthKey]) state.colsWidth[widthKey] = col.w;
+            c.style.width = state.colsWidth[widthKey] + 'px';
+            colgroup.appendChild(c);
+        });
+    }
+
+    function buildHeader() {
+        const thead = document.getElementById('table-head');
+        let currentCols = getCurrentCols();
+        let html = '';
+        let totalProposedCols = 0;
+        for(let s=0; s<state.proposedSets; s++) totalProposedCols += getProposedCols(s).length;
+
+        html += `<tr><th colspan="${currentCols.length}" class="header-bg">वर्तमान अभिलेखीय स्थिति</th><th colspan="${totalProposedCols}" class="header-bg">प्रस्तावित विभाजन सूची</th></tr><tr>`;
+
+        let hasOwnerHeader = false;
+        for(let s=0; s<state.proposedSets; s++) { if(getProposedCols(s).length === 2) hasOwnerHeader = true; }
+
+        let colIndexTracker = 0;
+
+        if (hasOwnerHeader) {
+            currentCols.forEach((c) => { html += `<th rowspan="2">${c.n}<div class="resizer" data-col="${colIndexTracker++}"></div></th>`; });
+            
+            let tempColTracker = colIndexTracker;
+            for(let s=0; s<state.proposedSets; s++) {
+                let pCols = getProposedCols(s);
+                if(pCols.length === 2) { 
+                    let savedOwner = (state.headerOwners && state.headerOwners[s]) ? state.headerOwners[s] : 'यहाँ भूमि स्वामी का नाम लिखें';
+                    html += `<th colspan="2" class="header-bg owner-header" contenteditable="true" data-header-set="${s}">${savedOwner}</th>`;
+                    tempColTracker += 2;
+                } else { 
+                    pCols.forEach(c => { html += `<th rowspan="2">${c.n}<div class="resizer" data-col="${tempColTracker++}"></div></th>`; });
+                }
+            }
+            html += `</tr><tr>`;
+
+            let bottomColTracker = currentCols.length;
+            for(let s=0; s<state.proposedSets; s++) {
+                let pCols = getProposedCols(s);
+                if(pCols.length === 2) { pCols.forEach(c => { html += `<th>${c.n}<div class="resizer" data-col="${bottomColTracker++}"></div></th>`; }); } 
+                else { bottomColTracker += pCols.length; }
+            }
+            html += `</tr>`;
+        } else {
+            currentCols.forEach((c) => { html += `<th>${c.n}<div class="resizer" data-col="${colIndexTracker++}"></div></th>`; });
+            for(let s=0; s<state.proposedSets; s++) { getProposedCols(s).forEach(c => { html += `<th>${c.n}<div class="resizer" data-col="${colIndexTracker++}"></div></th>`; }); }
+            html += `</tr>`;
+        }
+
+        let totalCols = currentCols.length + totalProposedCols;
+        html += `<tr class="header-bg">`;
+        for(let i = 1; i <= totalCols; i++) { html += `<td>(${i})</td>`; }
+        html += `</tr>`;
+        thead.innerHTML = html;
+    }
+
+    function buildBody() {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        
+        function getUI(khasraObj, field, setIdx, defaultHide, defaultRS) {
+            let uiObj = (setIdx === '') ? (khasraObj.c_ui && khasraObj.c_ui[field]) : (khasraObj.p_ui && khasraObj.p_ui[setIdx] && khasraObj.p_ui[setIdx][field]);
+            let disp = uiObj ? uiObj.disp : (defaultHide ? 'none' : '');
+            let rs = uiObj ? uiObj.rs : defaultRS;
+            let ta = uiObj ? uiObj.ta : (field.includes('owner') ? 'left' : 'center');
+            let style = `text-align:${ta};`;
+            if (disp) style += ` display:${disp};`;
+            return { style, rsAttr: rs > 1 ? `rowspan="${rs}"` : '' };
+        }
+
+        state.data.forEach((item, index) => {
+            const rowCount = item.khasras.length;
+            item.khasras.forEach((khasra, kIndex) => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-khata-idx', index); tr.setAttribute('data-khasra-idx', kIndex);
+                tr.setAttribute('data-orig-khasra', khasra.k); tr.setAttribute('data-orig-rakba', khasra.r);
+                
+                let colIdx = 0;
+                if(state.hasGram) {
+                    let ui = getUI(khasra, 'gram', '', kIndex !== 0, rowCount);
+                    tr.innerHTML += `<td contenteditable="true" data-field="gram" data-set="" data-col-index="${colIdx++}" ${ui.rsAttr} style="${ui.style}">${item.gram || ''}</td>`;
+                }
+                
+                let uiSno = getUI(khasra, 'sno', '', kIndex !== 0, rowCount);
+                tr.innerHTML += `<td contenteditable="true" data-field="sno" data-set="" data-col-index="${colIdx++}" ${uiSno.rsAttr} style="${uiSno.style}">${index + 1}</td>`;
+                
+                let uiKhata = getUI(khasra, 'khata', '', kIndex !== 0, rowCount);
+                tr.innerHTML += `<td contenteditable="true" data-field="khata" data-set="" data-col-index="${colIdx++}" ${uiKhata.rsAttr} style="${uiKhata.style}">${item.khata || ''}</td>`;
+                
+                let uiKhasra = getUI(khasra, 'khasra', '', false, 1);
+                tr.innerHTML += `<td contenteditable="true" data-field="khasra" data-set="" data-col-index="${colIdx++}" ${uiKhasra.rsAttr} style="${uiKhasra.style}">${khasra.k || ''}</td>`;
+                
+                let uiRakba = getUI(khasra, 'rakba', '', false, 1);
+                tr.innerHTML += `<td contenteditable="true" data-field="rakba" data-set="" data-col-index="${colIdx++}" class="c-rakba" ${uiRakba.rsAttr} style="${uiRakba.style}">${khasra.r || ''}</td>`;
+                
+                let uiOwner = getUI(khasra, 'owner', '', kIndex !== 0, rowCount);
+                tr.innerHTML += `<td contenteditable="true" data-field="owner" data-set="" data-col-index="${colIdx++}" ${uiOwner.rsAttr} style="${uiOwner.style}">${item.owners || ''}</td>`;
+
+                for(let s=0; s<state.proposedSets; s++) {
+                    let pSet = (khasra.proposed && khasra.proposed[s]) ? khasra.proposed[s] : {k:'', r:'', o:''};
+                    getProposedCols(s).forEach(c => {
+                        let field = c.f;
+                        let val = field === 'p_owner' ? (pSet.o || '') : (field === 'p_rakba' ? (pSet.r || '') : (pSet.k || ''));
+                        let isOwnerCol = field === 'p_owner';
+                        let uiProp = getUI(khasra, field, s, isOwnerCol && kIndex !== 0, isOwnerCol ? rowCount : 1);
+                        tr.innerHTML += `<td contenteditable="true" data-field="${field}" data-set="${s}" data-col-index="${colIdx++}" class="${c.cls || ''}" ${uiProp.rsAttr} style="${uiProp.style}">${val}</td>`;
+                    });
+                }
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    function attachRowMergeLogic() {
+        const tBody = document.getElementById('table-body');
+        tBody.addEventListener('dblclick', function(e) {
+            let cell = e.target;
+            if(cell.tagName === 'TD') {
+                markDirty();
+                let rs = parseInt(cell.getAttribute('rowspan')) || 1;
+                let colIdx = cell.getAttribute('data-col-index');
+                let tr = cell.parentElement;
+                let nextRow = tr.nextElementSibling;
+                while(nextRow) {
+                    let nextCell = nextRow.querySelector(`td[data-col-index="${colIdx}"]`);
+                    if(nextCell && nextCell.style.display !== 'none') {
+                        nextCell.style.display = 'none';
+                        let nextRs = parseInt(nextCell.getAttribute('rowspan')) || 1;
+                        cell.setAttribute('rowspan', rs + nextRs);
+                        break; 
+                    }
+                    nextRow = nextRow.nextElementSibling;
+                }
+            }
+        });
+
+        tBody.addEventListener('contextmenu', function(e) {
+            let cell = e.target;
+            if(cell.tagName === 'TD') {
+                let rs = parseInt(cell.getAttribute('rowspan')) || 1;
+                if(rs > 1) {
+                    markDirty();
+                    e.preventDefault(); 
+                    let colIdx = cell.getAttribute('data-col-index');
+                    let tr = cell.parentElement;
+                    cell.setAttribute('rowspan', rs - 1);
+                    let targetRow = tr;
+                    for(let i = 0; i < rs - 1; i++) { if(targetRow) targetRow = targetRow.nextElementSibling; }
+                    if(targetRow) {
+                        let hiddenCell = targetRow.querySelector(`td[data-col-index="${colIdx}"]`);
+                        if(hiddenCell) hiddenCell.style.display = '';
+                    }
+                }
+            }
+        });
+    }
+
+    function attachLiveCalculations() {
+        document.getElementById('table-body').addEventListener('focusout', function(e) {
+            if (e.target.classList.contains('p-rakba') || e.target.classList.contains('c-rakba')) {
+                let nodeVal = e.target.childNodes[0] ? e.target.childNodes[0].nodeValue.trim() : e.target.innerText.trim();
+                
+                if (e.target.classList.contains('p-rakba') && nodeVal.includes('/')) {
+                    let parts = nodeVal.split('/');
+                    if(parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] !== '0') {
+                        let row = e.target.closest('tr');
+                        let origRakba = parseFloat(row.getAttribute('data-orig-rakba')) || 0;
+                        let fractionVal = origRakba * (parseFloat(parts[0]) / parseFloat(parts[1]));
+                        e.target.innerText = fractionVal.toFixed(4);
+                        calculateTotals();
+                        return;
+                    }
+                }
+
+                let val = parseFloat(nodeVal);
+                if(!isNaN(val)) e.target.innerText = val.toFixed(4);
+                calculateTotals();
+            }
+        });
+
+        document.getElementById('table-body').addEventListener('input', function(e) {
+            markDirty();
+            if (e.target.classList.contains('p-rakba') || e.target.classList.contains('c-rakba')) {
+                let row = e.target.closest('tr');
+                if(e.target.classList.contains('p-rakba')) {
+                    let origKhasra = row.getAttribute('data-orig-khasra');
+                    let pKhasras = row.querySelectorAll('.p-khasra');
+                    let pRakbas = row.querySelectorAll('.p-rakba');
+                    let counter = 1;
+
+                    pRakbas.forEach((td, idx) => {
+                        let valStr = td.childNodes[0] ? td.childNodes[0].nodeValue : td.innerText;
+                        let val = parseFloat(valStr);
+                        if(!isNaN(val) && val > 0) {
+                            if(pKhasras[idx] && document.activeElement !== pKhasras[idx]) {
+                                pKhasras[idx].innerText = origKhasra + '/' + counter;
+                            }
+                            if(pKhasras[idx]) counter++; 
+                        } else {
+                            if(pKhasras[idx] && document.activeElement !== pKhasras[idx]) pKhasras[idx].innerText = '';
+                        }
+                    });
+                }
+                calculateTotals();
+            }
+        });
+        
+        document.getElementById('table-head').addEventListener('input', function(e) {
+            if(e.target.classList.contains('owner-header')) markDirty();
+        });
+    }
+
+    function calculateTotals() {
+        const tbody = document.getElementById('table-body');
+        const rows = tbody.querySelectorAll('tr');
+        const tfoot = document.getElementById('table-foot');
+        let currentCols = getCurrentCols();
+        
+        let currentKita = 0, currentRakba = 0.0, globalProposedRakba = 0.0;
+        let proposedTotals = Array(state.proposedSets).fill().map(() => ({kita: 0, rakba: 0.0}));
+
+        rows.forEach(row => {
+            let cRakbaCell = row.querySelector('.c-rakba');
+            let rVal = 0;
+            if(cRakbaCell) {
+                let textNodeVal = cRakbaCell.childNodes[0] ? cRakbaCell.childNodes[0].nodeValue : cRakbaCell.innerText;
+                rVal = parseFloat(textNodeVal) || 0;
+                if(!isNaN(rVal) && rVal > 0) { currentRakba += rVal; currentKita++; }
+            }
+            
+            let pRakbas = row.querySelectorAll('.p-rakba');
+            let rowPrakbaSum = 0;
+            pRakbas.forEach((td, idx) => {
+                let textNodeVal = td.childNodes[0] ? td.childNodes[0].nodeValue : td.innerText;
+                let val = parseFloat(textNodeVal) || 0;
+                if(!isNaN(val) && val > 0) { 
+                    proposedTotals[idx].rakba += val; 
+                    proposedTotals[idx].kita++; 
+                    globalProposedRakba += val;
+                    rowPrakbaSum += val;
+                }
+            });
+
+            if(cRakbaCell && rVal > 0) {
+                let diff = rVal - rowPrakbaSum;
+                let diffHtml = '';
+                if(Math.abs(diff) < 0.0001) { diffHtml = `<span class="row-diff" style="color:green;">(शेष: 0.0000)</span>`; row.classList.remove('error-row'); }
+                else if (diff > 0) { diffHtml = `<span class="row-diff" style="color:blue;">(शेष: ${diff.toFixed(4)})</span>`; row.classList.remove('error-row'); }
+                else { diffHtml = `<span class="row-diff" style="color:red;">(अधिक: ${Math.abs(diff).toFixed(4)})</span>`; row.classList.add('error-row'); }
+                
+                let existingDiff = cRakbaCell.querySelector('.row-diff');
+                if(existingDiff) existingDiff.remove();
+                cRakbaCell.insertAdjacentHTML('beforeend', diffHtml);
+            }
+        });
+
+        let gDiff = currentRakba - globalProposedRakba;
+        let gDiffHtml = '';
+        if(currentRakba > 0) {
+            if (Math.abs(gDiff) < 0.0001) gDiffHtml = `<br><span class="total-diff" style="color:green;">(शेष: 0.0000)</span>`;
+            else if (gDiff > 0) gDiffHtml = `<br><span class="total-diff" style="color:blue;">(शेष: ${gDiff.toFixed(4)})</span>`;
+            else gDiffHtml = `<br><span class="total-diff" style="color:red;">(अधिक: ${Math.abs(gDiff).toFixed(4)})</span>`;
+        }
+
+        let html = `<tr class="total-row">`;
+        let preKhasraCount = currentCols.findIndex(c => c.n.includes('खसरा'));
+        
+        html += `<td colspan="${preKhasraCount}">योग</td>`;
+        html += `<td>किता ${currentKita}</td>`;
+        html += `<td style="line-height: 1.2;">${currentRakba.toFixed(4)} ${gDiffHtml}</td>`;
+        for(let i = preKhasraCount + 2; i < currentCols.length; i++) html += `<td></td>`;
+
+        proposedTotals.forEach((pt, sIndex) => {
+            getProposedCols(sIndex).forEach(c => {
+                if (c.n.includes('खसरा')) html += `<td>किता ${pt.kita}</td>`;
+                else if (c.n.includes('रकवा')) html += `<td>${pt.rakba.toFixed(4)}</td>`;
+                else html += `<td></td>`;
+            });
+        });
+        
+        html += `</tr>`;
+        tfoot.innerHTML = html;
+    }
+
+    let dragCol = null, startX = 0, startW = 0, linkType = null;
+    function attachResizers() {
+        document.querySelectorAll('.resizer').forEach(r => {
+            r.addEventListener('mousedown', function(e) {
+                markDirty();
+                let colIndex = this.getAttribute('data-col');
+                dragCol = document.getElementById('table-colgroup').children[colIndex];
+                linkType = dragCol.getAttribute('data-link');
+                startX = e.pageX; startW = parseInt(dragCol.style.width);
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        });
+    }
+    function onMouseMove(e) {
+        if(dragCol) {
+            let newWidth = startW + (e.pageX - startX);
+            if(newWidth > 20) {
+                if(linkType) {
+                    document.querySelectorAll(`col[data-link="${linkType}"]`).forEach(c => c.style.width = newWidth + 'px');
+                    state.colsWidth[linkType] = newWidth;
+                } else {
+                    dragCol.style.width = newWidth + 'px';
+                    let colIndex = Array.from(dragCol.parentNode.children).indexOf(dragCol);
+                    state.colsWidth['col_'+colIndex] = newWidth;
+                }
+            }
+        }
+    }
+    function onMouseUp() { dragCol = null; linkType = null; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); }
+
+    return { 
+        init, changeFormat, changePaperSize, changeFont, toggleGramColumn, 
+        processData, openFile, saveFile, saveAsFile, createNewFile, 
+        exportToExcel, actionKhata, actionSet, markDirty 
+    };
+})();
+
+window.onload = App.init;
+</script>
+</body>
+</html>
