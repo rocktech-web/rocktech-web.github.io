@@ -170,6 +170,7 @@
 
             <div class="menu-category">राजस्व गणना</div>
             <button class="nav-btn" onclick="switchTab(event, 'batTab')">⚖️ Batwara Calc</button>
+            <button class="nav-btn" onclick="switchTab(event, 'batwaraProposal')">📑 Batwara Proposal</button>
             <button class="nav-btn" onclick="switchTab(event, 'fracTab')">🧮 Fraction Calc</button>
 
             <div class="menu-category">नक्शा एवं रेखांकन</div>
@@ -261,6 +262,12 @@
                 </div>
             </div>
 
+            <div id="batwaraProposal" class="tab-content">
+                <div style="width: 100%; height: 85vh; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: white;">
+                    <iframe src="https://rocktech-web.github.io/BatwaraProposal.html" style="width: 100%; height: 100%; border: none;" title="batwaraProposal"></iframe>
+                </div>
+            </div>
+            
             <div id="fracTab" class="tab-content">
                 <div class="card">
                     <div class="section-title">Fraction Tools</div>
@@ -516,5 +523,6 @@
     </script>
 </body>
 </html>
+
 
 
