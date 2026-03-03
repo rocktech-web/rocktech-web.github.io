@@ -103,7 +103,13 @@
         .nav-btn:hover { background: var(--primary-light); color: #fff; }
         .nav-btn.active { background: var(--primary-light); color: #fff; border-left-color: var(--accent); font-weight: 600; }
 
-        .main-wrapper { flex: 1; display: none; /* Login ke pehle hidden */ flex-direction: column; min-width: 0; }
+        .main-wrapper { 
+    flex: 1; 
+    display: none; /* Login ke pehle hidden */ 
+    flex-direction: column; 
+    min-width: 0; 
+    transition: all 20s ease; /* <--- इसे यहाँ जोड़ दिया गया है */
+}
         
         .top-header {
             height: var(--header-height); background: #fff; display: flex; align-items: center;
@@ -143,19 +149,31 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Mobile & Half Screen Adjustments */
-        @media (max-width: 992px) {
-            .sidebar { 
-                position: relative; /* 'fixed' हटा दिया गया है ताकि यह पेज के ऊपर न तैरे */
-                margin-left: -260px; /* साइडबार को छिपाने के लिए */
-                min-width: 260px; /* साइडबार सिकुड़े नहीं, इसका आकार फिक्स रहे */
-            }
-            .sidebar.show { 
-                margin-left: 0; /* खुलने पर यह मुख्य पेज को दाईं ओर धक्का देगा और डेटा रिसाइज़ होगा */
-            }
-            .toggle-btn { display: block; }
-            .grid { grid-template-columns: 1fr; } 
-        }
+/* --- डेस्कटॉप के लिए (जब चौड़ाई 993px से ज्यादा हो) --- */
+@media (min-width: 993px) {
+    .sidebar.collapsed {
+        /* display: none !important; को हटा दें और उसकी जगह यह लिखें: */
+        margin-left: -260px !important; 
+    }
+}
+
+/* --- मोबाइल के लिए (जब चौड़ाई 992px या उससे कम हो) --- */
+@media (max-width: 992px) {
+    .sidebar { 
+        position: relative; 
+        margin-left: -260px; /* डिफ़ॉल्ट रूप से छिपा हुआ */
+        min-width: 260px; 
+        transition: margin-left 0.3s ease;
+    }
+    
+    /* जब JS 'show' क्लास जोड़ देगा, तो साइडबार दिखेगा */
+    .sidebar.show { 
+        margin-left: 0; 
+    }
+
+    .toggle-btn { display: block; }
+    .grid { grid-template-columns: 1fr; } 
+}
     </style>
 </head>
 <body>
@@ -404,16 +422,18 @@
         }
 
         function toggleSidebar() { 
-            const sidebar = document.getElementById('sidebar');
-            // चेक करें कि स्क्रीन मोबाइल/हाफ है या फुल डेस्कटॉप
-            if (window.innerWidth <= 992) {
-                sidebar.classList.remove('collapsed'); // डेस्कटॉप क्लास हटा दें
-                sidebar.classList.toggle('show');      // मोबाइल क्लास चलाएं
-            } else {
-                sidebar.classList.remove('show');      // मोबाइल क्लास हटा दें
-                sidebar.classList.toggle('collapsed'); // डेस्कटॉप क्लास चलाएं
-            }
-        }
+    const sidebar = document.getElementById('sidebar');
+    
+    if (window.innerWidth <= 992) {
+        // मोबाइल के लिए: 'show' क्लास का उपयोग
+        sidebar.classList.remove('collapsed'); 
+        sidebar.classList.toggle('show');      
+    } else {
+        // डेस्कटॉप के लिए: 'collapsed' क्लास का उपयोग
+        sidebar.classList.remove('show');      
+        sidebar.classList.toggle('collapsed'); 
+    }
+}
 
         // --- GENERIC COPY ---
         function copyData(id) { document.getElementById(id).select(); document.execCommand('copy'); }
@@ -546,7 +566,3 @@
     </script>
 </body>
 </html>
-
-
-
-
