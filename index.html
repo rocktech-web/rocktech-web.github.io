@@ -156,7 +156,6 @@
         margin-left: -260px !important; 
     }
 }
-
 /* --- मोबाइल के लिए (जब चौड़ाई 992px या उससे कम हो) --- */
 @media (max-width: 992px) {
     .sidebar { 
@@ -235,17 +234,13 @@
                         <button class="btn" onclick="processLandData()">Extract Data</button>
                     </div>
                 </div>
-                <div class="grid">
-                    <div class="card">
-                        <div class="section-title">Owners & Shares <button class="btn btn-outline" style="font-size:12px; padding:5px 10px;" onclick="copyData('ownersOutput')">Copy</button></div>
-                        <textarea id="ownersOutput" rows="12" placeholder="Owner Names and Shares will appear here..."></textarea>
+                <div class="card">
+                    <div class="section-title">
+                        Extracted Data (खसरा एवं भूमिस्वामी विवरण) 
+                        <button class="btn btn-outline" style="font-size:12px; padding:5px 10px;" onclick="copyData('combinedOutput')">Copy All</button>
                     </div>
-                    <div class="card">
-                        <div class="section-title">Khasara & Area <button class="btn btn-outline" style="font-size:12px; padding:5px 10px;" onclick="copyData('khasaraOutput')">Copy</button></div>
-                        <textarea id="khasaraOutput" rows="12" placeholder="Village, Khata and Khasara details..."></textarea>
-                    </div>
+                    <textarea id="combinedOutput" rows="30" placeholder="सभी फाइलों का खसरा एवं भूमिस्वामी विवरण यहाँ एक साथ दिखाई देगा..."></textarea>
                 </div>
-            </div>
 
             <div id="batTab" class="tab-content">
                 <div class="card">
@@ -443,17 +438,16 @@
             navigator.clipboard.writeText(text).then(() => { alert("टेक्स्ट कॉपी कर लिया गया है!"); }).catch(err => { alert("कॉपी करने में त्रुटि: " + err); });
         }
 
-        // --- B1 EXTRACTOR LOGIC (MULTIPLE FILES SUPPORT) ---
+        // --- B1 EXTRACTOR LOGIC (COMBINED OUTPUT - MULTIPLE FILES) ---
         async function processLandData() {
             const files = document.getElementById('fileInput').files;
             if(files.length === 0) return alert("Select File(s) (.txt)");
 
-            // आउटपुट बॉक्स को खाली करें ताकि नया डेटा आ सके
-            document.getElementById('ownersOutput').value = "Processing...";
-            document.getElementById('khasaraOutput').value = "Processing...";
+            // आउटपुट बॉक्स को Processing स्टेट में सेट करें
+            const outputBox = document.getElementById('combinedOutput');
+            outputBox.value = "Processing Data...";
 
-            let allOwners = [];
-            let allKhasaras = [];
+            let allFilesData = [];
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -465,6 +459,7 @@
                 let khata = "अज्ञात"; 
                 if(lines.length > 20) { let rawKhata = lines[20]; let match = rawKhata.match(/\d+/); if(match) khata = match[0]; }
                 
+                // भूमिस्वामी (Owners) एक्सट्रैक्ट करें
                 let owners = []; let nameBuffer = ""; 
                 for(let j = 22; j < lines.length; j++) {
                     let line = lines[j].trim(); if(!line) continue;
@@ -475,6 +470,7 @@
                     } else if(line.includes("भूमि स्वामी") || line.length < 2) continue; else nameBuffer += line + " ";
                 }
 
+                // खसरा (Khasara) एक्सट्रैक्ट करें
                 let khasaras = []; let totalArea = 0.0;
                 for(let j = 0; j < lines.length; j++) {
                     if(lines[j].includes("(S)")) {
@@ -483,23 +479,27 @@
                     }
                 }
                 
-                // डेटा को फाइल के नाम के साथ एरे में जोड़ें
-                if (owners.length > 0) {
-                    allOwners.push(`--- [${file.name}] ---\n` + owners.join(", "));
-                }
+                // --- डेटा को एक साथ फॉरमेट करना ---
+                let fileOutput = `--- [फाइल: ${file.name}] ---\n`;
                 
+                // 1. पहले खसरा रकवा विवरण
                 let header = `ग्राम ${gram} स्थित भूमि खाता क्रमांक ${khata}, खसरा क्रमांक `; 
                 let list = khasaras.join(", "); 
                 let footer = `\nकिता ${khasaras.length} कुल रकवा ${totalArea.toFixed(4)}हे.`;
-                
                 if (khasaras.length > 0) {
-                    allKhasaras.push(`--- [${file.name}] ---\n` + header + list + footer);
+                    fileOutput += header + list + footer + "\n\n";
                 }
+
+                // 2. उसके बाद भूमिस्वामी विवरण
+                if (owners.length > 0) {
+                    fileOutput += `भूमिस्वामी विवरण:\n` + owners.join(", ") + "\n";
+                }
+                
+                allFilesData.push(fileOutput);
             }
 
-            // फाइनल आउटपुट को टेक्स्टएरिया में सेट करें
-            document.getElementById('ownersOutput').value = allOwners.join("\n\n");
-            document.getElementById('khasaraOutput').value = allKhasaras.join("\n\n");
+            // सभी फाइलों के डेटा को एक साथ दिखाएं (हर फाइल के बीच एक डिवाइडर लाइन के साथ)
+            outputBox.value = allFilesData.join("\n========================================\n\n");
         }
 
         // फाइल को रीड करने के लिए हेल्पर फंक्शन
@@ -602,4 +602,3 @@
     </script>
 </body>
 </html>
-
