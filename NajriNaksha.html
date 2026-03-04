@@ -13,120 +13,116 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         /* =========================================
-           PROFESSIONAL ENTERPRISE UI CSS
+           NAJRI NAKSHA - PREMIUM CORPORATE THEME
            ========================================= */
         :root { 
-            --bg-body: #f8fafc;
-            --bg-panel: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --border-light: #e2e8f0;
-            --border-dark: #cbd5e1;
+            --bg-body: #F1F5F9;       
+            --bg-panel: #FFFFFF;    
+            --border-light: #E2E8F0;  
+            --border-dark: #CBD5E1;   
             
-            /* Corporate Accents */
-            --primary: #2563eb; 
-            --primary-hover: #1d4ed8;
-            --secondary: #0f172a; 
-            --secondary-hover: #1e293b;
-            --success: #059669; 
-            --danger: #dc2626; 
+            --primary: #1E293B;       
+            --primary-light: #334155; 
             
-            /* Print Variables */
+            --accent: #0EA5E9;        
+            --accent-hover: #0284C7;  
+            --accent-light: #E0F2FE;  
+            
+            --text-main: #334155;     
+            --text-muted: #64748B;    
+            
+            --success: #10B981; 
+            --danger: #EF4444; 
+            
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+            
             --print-border: #000000;
         }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         body { 
             font-family: 'Poppins', sans-serif; 
             background-color: var(--bg-body); 
             color: var(--text-main);
-            margin: 0; 
-            padding: 15px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
+            margin: 0; padding: 15px 20px; 
+            display: flex; flex-direction: column; align-items: center; 
         }
 
         .header { text-align: center; margin-bottom: 10px; }
-        .header h1 { color: var(--secondary); margin-bottom: 2px; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;}
+        .header h1 { color: var(--primary); margin-bottom: 2px; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;}
         .header p { color: var(--text-muted); font-size: 13px; margin: 0; font-weight: 500;}
 
         /* --- TABS CSS --- */
         .view-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
         .view-tab { 
             padding: 8px 20px; font-weight: 600; font-size: 14px; border-radius: 6px; cursor: pointer;
-            background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; transition: 0.2s;
+            background: #FFFFFF; color: var(--text-muted); border: 1px solid var(--border-light); transition: 0.2s;
+            box-shadow: var(--shadow-sm);
         }
-        .view-tab.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 6px rgba(37,99,235,0.2); }
+        .view-tab.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
 
         /* Panels & Toolbars */
         .panel { 
-            background: var(--bg-panel); 
-            padding: 12px 15px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border-light);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
-            width: 100%; 
-            box-sizing: border-box;
-            display: flex; 
+            background: var(--bg-panel); padding: 12px 15px; border-radius: 12px; 
+            border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); 
+            width: 100%; box-sizing: border-box; display: flex; 
         }
 
         .btn { 
-            padding: 6px 12px; 
-            border: 1px solid var(--border-dark); 
-            border-radius: 6px; 
-            background: #f8fafc;
-            color: #334155;
-            font-weight: 600; 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 13px;
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            gap: 5px;
+            padding: 8px 14px; border: 1px solid var(--border-light); border-radius: 8px; 
+            background: #FFFFFF; color: var(--text-main); font-weight: 500; 
+            font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.2s ease; 
+            display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-sm);
         }
-        .btn:hover { background: #e2e8f0; }
+        .btn:hover { background: var(--bg-body); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
         
         .active-tool { 
-            background: #eff6ff !important; 
-            border-color: #3b82f6 !important; 
-            color: #1d4ed8 !important; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            background: var(--accent-light) !important; border-color: var(--accent) !important; 
+            color: var(--accent-hover) !important; font-weight: 600; box-shadow: inset 0 1px 2px rgba(14, 165, 233, 0.1);
         }
 
-        .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: white;}
+        .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: white; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
         
-        .btn-dark { background: var(--secondary); border-color: var(--secondary); color: white; }
-        .btn-dark:hover { background: var(--secondary-hover); border-color: var(--secondary-hover); color: white;}
+        .btn-dark { background: var(--primary-light); border-color: var(--primary-light); color: white; }
+        .btn-dark:hover { background: var(--primary); border-color: var(--primary); color: white; }
 
         .btn-success { background: var(--success); border-color: var(--success); color: white; }
-        .btn-danger { background: #fef2f2; border-color: var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: #fee2e2; }
+        .btn-danger { background: #FEF2F2; border-color: #FCA5A5; color: var(--danger); }
+        .btn-danger:hover { background: #FEE2E2; }
 
-        .control-group { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-muted); background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-light);}
-        .number-input { width: 45px; padding: 4px; border: 1px solid var(--border-dark); border-radius: 4px; font-family: 'Poppins', sans-serif; font-weight: 600; text-align: center; color: var(--text-main); font-size: 12px;}
-        .text-input { padding: 6px 8px; border: 1px solid var(--border-dark); border-radius: 4px; font-family: 'Poppins', sans-serif; font-weight: 500; font-size: 12px; width: 100%; box-sizing: border-box;}
+        .control-group { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-muted); background: var(--bg-body); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-light);}
+        .number-input { width: 45px; padding: 4px; border: 1px solid var(--border-dark); border-radius: 4px; font-family: inherit; font-weight: 600; text-align: center; color: var(--text-main); font-size: 12px;}
+        .text-input { padding: 8px 10px; border: 1px solid var(--border-dark); border-radius: 6px; font-family: inherit; font-weight: 500; font-size: 12px; width: 100%; box-sizing: border-box; outline: none;}
+        .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
 
-        .viewport { width: 160mm; height: 174mm; border: 2px solid var(--border-dark); background: #e2e8f0; overflow: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative; border-radius: 6px; margin-top: 5px;}
+        .viewport { width: 160mm; height: 174mm; border: 1px solid var(--border-dark); background: var(--border-light); overflow: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); position: relative; border-radius: 8px; margin-top: 5px;}
         .canvas-wrapper { width: 160mm; height: 174mm; background: white; transform-origin: top left; transition: transform 0.1s ease; position: relative; }
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
         
-        #instruction { color: var(--primary); font-weight: 600; text-align: center; font-size: 13px; background: #eff6ff; padding: 6px 15px; border-radius: 20px; border: 1px solid #bfdbfe; margin-bottom: 5px; width: 100%; box-sizing: border-box;}
+        #instruction { color: var(--accent-hover); font-weight: 600; text-align: center; font-size: 13px; background: var(--accent-light); padding: 8px 15px; border-radius: 8px; border: 1px solid #BAE6FD; margin-bottom: 5px; width: 100%; box-sizing: border-box;}
         
-        .floating-input-container { position: absolute; background: white; border: 1px solid var(--border-dark); border-radius: 6px; padding: 10px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 8px;}
-        .floating-textarea { font-family: 'Poppins', sans-serif; font-size: 13px; padding: 8px; font-weight: 500; outline: none; border: 1px solid var(--border-dark); border-radius: 4px; resize: both; min-width: 200px; min-height: 50px;}
-        #cadDistanceBox { display: none; position: absolute; background: var(--secondary); color: white; padding: 4px 10px; border-radius: 4px; font-weight: 600; pointer-events: none; z-index: 10; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
+        .floating-input-container { position: absolute; background: white; border: 1px solid var(--border-dark); border-radius: 8px; padding: 12px; z-index: 1000; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 8px;}
+        .floating-textarea { font-family: inherit; font-size: 13px; padding: 8px; font-weight: 500; outline: none; border: 1px solid var(--border-dark); border-radius: 6px; resize: both; min-width: 200px; min-height: 50px;}
+        .floating-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+        
+        #cadDistanceBox { display: none; position: absolute; background: var(--primary); color: white; padding: 4px 10px; border-radius: 4px; font-weight: 600; pointer-events: none; z-index: 10; font-size: 12px; box-shadow: var(--shadow-sm);}
 
         /* Inline Form Fields */
         .form-group { margin-bottom: 8px; }
-        .form-group label { display: block; font-weight: 600; color: var(--text-muted); margin-bottom: 3px; font-size: 12px;}
-        .form-group input, .form-group textarea { width: 100%; padding: 6px; border: 1px solid var(--border-dark); border-radius: 4px; font-family: inherit; font-size: 12px; box-sizing: border-box; background: #ffffff; transition: 0.2s;}
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);}
+        .form-group label { display: block; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; font-size: 12px;}
+        .form-group input, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; background: #ffffff; transition: 0.2s; outline: none;}
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light);}
 
-        .divider-v { width: 1px; height: 20px; background: var(--border-dark); margin: 0 8px; }
-        .divider-h { width: 100%; height: 1px; background: var(--border-dark); margin: 8px 0; }
+        .divider-v { width: 1px; height: 24px; background: var(--border-light); margin: 0 8px; }
+        .divider-h { width: 100%; height: 1px; background: var(--border-light); margin: 8px 0; }
 
         /* =========================================
            OFFICIAL A4 PRINT CSS 
