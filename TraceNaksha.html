@@ -7,11 +7,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
+        /* =========================================
+           TRACE NAKSHA - PREMIUM CORPORATE THEME
+           ========================================= */
         :root {
-            --primary: #1e3a8a; --accent: #ea580c; --bg-body: #f8fafc;
-            --border-color: #cbd5e1; --panel-bg: #ffffff;
-            --success: #16a34a; --danger: #dc2626; --text-main: #0f172a;
+            --bg-body: #F1F5F9;       
+            --panel-bg: #FFFFFF;    
+            --border-color: #E2E8F0;  
+            --border-dark: #CBD5E1;   
+            
+            --primary: #1E293B;       
+            --primary-light: #334155; 
+            
+            --accent: #0EA5E9;        
+            --accent-hover: #0284C7;  
+            --accent-light: #E0F2FE;  
+            
+            --text-main: #334155;     
+            --text-muted: #64748B;    
+            
+            --success: #10B981; 
+            --danger: #EF4444; 
+            
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
         }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         body {
             font-family: 'Poppins', sans-serif; background-color: var(--bg-body);
@@ -21,78 +47,92 @@
         }
 
         .header { text-align: center; margin-bottom: 10px; width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center;}
-        .header h2 { margin: 0; color: var(--primary); font-size: 22px; }
+        .header h2 { margin: 0; color: var(--primary); font-size: 22px; font-weight: 700; letter-spacing: -0.5px;}
 
         .view-tabs { display: flex; gap: 10px; }
         .view-tab { 
-            padding: 8px 16px; font-weight: 600; border-radius: 6px; cursor: pointer;
-            background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; transition: 0.2s;
+            padding: 8px 16px; font-weight: 600; border-radius: 8px; cursor: pointer; font-size: 13px;
+            background: var(--panel-bg); color: var(--text-muted); border: 1px solid var(--border-color); transition: 0.2s;
+            box-shadow: var(--shadow-sm);
         }
-        .view-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .view-tab.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
 
         .toolbar {
-            background: var(--panel-bg); padding: 10px 20px; border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px;
-            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1200px;
+            background: var(--panel-bg); padding: 10px 20px; border-radius: 12px;
+            box-shadow: var(--shadow-sm); margin-bottom: 15px; border: 1px solid var(--border-color);
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1200px;
         }
 
         .btn {
-            padding: 8px 15px; border: 1px solid var(--border-color); border-radius: 6px;
-            background: #f8fafc; color: var(--text-main); font-weight: 600; font-size: 13px;
+            padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 8px;
+            background: #FFFFFF; color: var(--text-main); font-weight: 500; font-size: 13px;
             cursor: pointer; transition: 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-sm);
         }
-        .btn:hover { background: #e2e8f0; }
-        .active-tool { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .btn:hover { background: var(--bg-body); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        
+        .active-tool { 
+            background: var(--accent-light) !important; border-color: var(--accent) !important; 
+            color: var(--accent-hover) !important; font-weight: 600; box-shadow: inset 0 1px 2px rgba(14, 165, 233, 0.1);
+        }
+        
         .btn-success { background: var(--success); color: white; border-color: var(--success); }
-        .btn-success:hover { background: #15803d; }
-        .btn-danger { color: var(--danger); border-color: var(--danger); background: #fef2f2; }
-        .btn-dark { background: #334155; color: white; border-color: #334155; }
-        .btn-dark:hover { background: #0f172a; color: white;}
-        .btn-highlight { background: #8b5cf6; color: white; border-color: #8b5cf6; } 
-        .btn-highlight:hover { background: #7c3aed; }
+        .btn-success:hover { background: #059669; color: white;}
+        .btn-danger { color: var(--danger); border-color: #FCA5A5; background: #FEF2F2; }
+        .btn-danger:hover { background: #FEE2E2; }
+        .btn-dark { background: var(--primary-light); color: white; border-color: var(--primary-light); }
+        .btn-dark:hover { background: var(--primary); color: white;}
+        .btn-highlight { background: var(--accent); color: white; border-color: var(--accent); } 
+        .btn-highlight:hover { background: var(--accent-hover); color: white;}
 
         .main-container {
             display: flex; gap: 15px; width: 100%; max-width: 1200px; height: calc(100vh - 140px);
         }
 
         .canvas-container {
-            flex: 2; background: white; border: 2px solid var(--border-color);
-            border-radius: 8px; overflow: hidden; position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            flex: 2; background: white; border: 1px solid var(--border-color);
+            border-radius: 12px; overflow: hidden; position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
         canvas { display: block; cursor: crosshair; touch-action: none; }
         
         .final-preview-container {
-            flex: 2; background: #e2e8f0; border: 2px solid var(--border-color);
-            border-radius: 8px; overflow-y: auto; display: none; flex-direction: column; align-items: center; padding: 20px 0;
+            flex: 2; background: var(--bg-body); border: 1px solid var(--border-color);
+            border-radius: 12px; overflow-y: auto; display: none; flex-direction: column; align-items: center; padding: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
         .physical-paper {
-            width: 190mm; height: 277mm; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            position: relative; border: 2px solid #ccc; box-sizing: border-box; flex-shrink: 0; margin-bottom: 20px;
+            width: 190mm; height: 277mm; background: white; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+            position: relative; border: 1px solid var(--border-dark); box-sizing: border-box; flex-shrink: 0; margin-bottom: 20px;
         }
 
         .zoom-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 10;}
-        .zoom-btn { background: rgba(255,255,255,0.9); border: 1px solid #ccc; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold;}
+        .zoom-btn { background: rgba(255,255,255,0.9); border: 1px solid var(--border-dark); border-radius: 6px; padding: 5px 12px; cursor: pointer; font-weight: bold; color: var(--text-main);}
+        .zoom-btn:hover { background: var(--bg-body); }
 
         .sidebar {
-            flex: 1; background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border-color);
+            flex: 1; background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border-color);
             padding: 15px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); min-width: 300px;
+            box-shadow: var(--shadow-sm); min-width: 300px;
         }
 
-        .section-title { font-size: 14px; font-weight: 700; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
+        .section-title { font-size: 13px; font-weight: 700; color: var(--primary); border-bottom: 1px solid var(--border-light); padding-bottom: 5px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
         .side-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-        .side-label { font-weight: 600; font-size: 12px; width: 50px; color: var(--accent); }
-        .side-input { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-weight: 600; }
-        select, input[type="range"], .form-input, textarea.form-input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; outline: none; box-sizing: border-box; }
-        textarea.form-input { resize: vertical; min-height: 50px; font-size: 11px; }
+        .side-label { font-weight: 600; font-size: 12px; width: 60px; color: var(--text-muted); }
+        .side-input { flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-weight: 500; font-size: 12px; outline: none; transition: 0.2s;}
+        .side-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+        
+        select, input[type="range"], .form-input, textarea.form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 12px; outline: none; box-sizing: border-box; transition: 0.2s; font-weight: 500; color: var(--text-main);}
+        select:focus, .form-input:focus, textarea.form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+        textarea.form-input { resize: vertical; min-height: 50px; }
 
-        .result-box { background: #f0fdfa; border: 1px solid #5eead4; padding: 12px; border-radius: 6px; }
-        .result-item { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
-        .result-val { font-weight: 700; font-family: monospace; font-size: 14px;}
+        .result-box { background: #F8FAFC; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; }
+        .result-item { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; font-weight: 500;}
+        .result-val { font-weight: 700; font-family: 'Courier New', Courier, monospace; font-size: 14px;}
 
-        .print-settings-box { background: #fff8f1; border: 1px solid #fed7aa; padding: 10px; border-radius: 6px; }
-        .scale-info-box { background: #f3e8ff; border: 1px solid #d8b4fe; padding: 10px; border-radius: 6px; display: none; margin-bottom: 5px;}
+        .print-settings-box { background: #FFFFFF; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; }
+        .scale-info-box { background: var(--accent-light); border: 1px solid #BAE6FD; padding: 10px; border-radius: 8px; display: none; margin-bottom: 5px;}
 
         #safePrintArea { display: none; }
 
