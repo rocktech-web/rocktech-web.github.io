@@ -231,7 +231,7 @@
                 <div class="card">
                     <div class="section-title">MP Land Records Extractor (Smart Logic)</div>
                     <div style="background:#f8f9fa; padding:15px; border-radius:8px; display:flex; gap:10px; align-items:center;">
-                        <input type="file" id="fileInput" accept=".txt" style="border:none;">
+                        <input type="file" id="fileInput" accept=".txt" multiple style="border:none;">
                         <button class="btn" onclick="processLandData()">Extract Data</button>
                     </div>
                 </div>
@@ -443,37 +443,73 @@
             navigator.clipboard.writeText(text).then(() => { alert("टेक्स्ट कॉपी कर लिया गया है!"); }).catch(err => { alert("कॉपी करने में त्रुटि: " + err); });
         }
 
-        // --- B1 EXTRACTOR LOGIC ---
-        function processLandData() {
-            const f = document.getElementById('fileInput').files[0];
-            if(!f) return alert("Select File (.txt)");
-            const r = new FileReader();
-            r.onload = e => {
-                const lines = e.target.result.split('\n'); let gram = "अज्ञात";
+        // --- B1 EXTRACTOR LOGIC (MULTIPLE FILES SUPPORT) ---
+        async function processLandData() {
+            const files = document.getElementById('fileInput').files;
+            if(files.length === 0) return alert("Select File(s) (.txt)");
+
+            // आउटपुट बॉक्स को खाली करें ताकि नया डेटा आ सके
+            document.getElementById('ownersOutput').value = "Processing...";
+            document.getElementById('khasaraOutput').value = "Processing...";
+
+            let allOwners = [];
+            let allKhasaras = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const text = await readFileAsync(file);
+                const lines = text.split('\n'); 
+                
+                let gram = "अज्ञात";
                 if(lines.length > 6) { let rawGram = lines[6]; if(rawGram.includes("ग्राम")) { gram = rawGram.split(":")[1].trim().split(/\s+/)[0]; } }
-                let khata = "अज्ञात"; if(lines.length > 20) { let rawKhata = lines[20]; let match = rawKhata.match(/\d+/); if(match) khata = match[0]; }
+                let khata = "अज्ञात"; 
+                if(lines.length > 20) { let rawKhata = lines[20]; let match = rawKhata.match(/\d+/); if(match) khata = match[0]; }
                 
                 let owners = []; let nameBuffer = ""; 
-                for(let i = 22; i < lines.length; i++) {
-                    let line = lines[i].trim(); if(!line) continue;
+                for(let j = 22; j < lines.length; j++) {
+                    let line = lines[j].trim(); if(!line) continue;
                     if(line.includes("पता")) {
                         if(nameBuffer) { let cleanName = nameBuffer.trim(); let share = "0/1";
-                            if(i + 1 < lines.length) { let shareLine = lines[i+1].trim(); share = shareLine.split(" ")[0]; }
-                            owners.push(`${cleanName} ${share}`); nameBuffer = ""; i++; }
+                            if(j + 1 < lines.length) { let shareLine = lines[j+1].trim(); share = shareLine.split(" ")[0]; }
+                            owners.push(`${cleanName} ${share}`); nameBuffer = ""; j++; }
                     } else if(line.includes("भूमि स्वामी") || line.length < 2) continue; else nameBuffer += line + " ";
                 }
 
                 let khasaras = []; let totalArea = 0.0;
-                for(let i=0; i<lines.length; i++) {
-                    if(lines[i].includes("(S)")) {
-                        let parts = lines[i].trim().split(/\s+/); let kno = parts[0]; let areaLine = lines[i+1] || "";
+                for(let j = 0; j < lines.length; j++) {
+                    if(lines[j].includes("(S)")) {
+                        let parts = lines[j].trim().split(/\s+/); let kno = parts[0]; let areaLine = lines[j+1] || "";
                         if (areaLine.includes("हेक्टेयर")) { let val = areaLine.replace("हेक्टेयर", "").trim(); khasaras.push(`${kno} रकवा ${val}हे.`); let vNum = parseFloat(val); if(!isNaN(vNum)) totalArea += vNum; }
                     }
                 }
-                document.getElementById('ownersOutput').value = owners.join(", ");
-                let header = `ग्राम ${gram} स्थित भूमि खाता क्रमांक ${khata}, खसरा क्रमांक `; let list = khasaras.join(", "); let footer = `\n\nकिता ${khasaras.length} कुल रकवा ${totalArea.toFixed(4)}हे.`;
-                document.getElementById('khasaraOutput').value = header + list + footer;
-            }; r.readAsText(f);
+                
+                // डेटा को फाइल के नाम के साथ एरे में जोड़ें
+                if (owners.length > 0) {
+                    allOwners.push(`--- [${file.name}] ---\n` + owners.join(", "));
+                }
+                
+                let header = `ग्राम ${gram} स्थित भूमि खाता क्रमांक ${khata}, खसरा क्रमांक `; 
+                let list = khasaras.join(", "); 
+                let footer = `\nकिता ${khasaras.length} कुल रकवा ${totalArea.toFixed(4)}हे.`;
+                
+                if (khasaras.length > 0) {
+                    allKhasaras.push(`--- [${file.name}] ---\n` + header + list + footer);
+                }
+            }
+
+            // फाइनल आउटपुट को टेक्स्टएरिया में सेट करें
+            document.getElementById('ownersOutput').value = allOwners.join("\n\n");
+            document.getElementById('khasaraOutput').value = allKhasaras.join("\n\n");
+        }
+
+        // फाइल को रीड करने के लिए हेल्पर फंक्शन
+        function readFileAsync(file) {
+            return new Promise((resolve, reject) => {
+                let reader = new FileReader();
+                reader.onload = () => { resolve(reader.result); };
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
         }
 
         // --- MATH & BATWARA LOGIC ---
@@ -566,3 +602,4 @@
     </script>
 </body>
 </html>
+
