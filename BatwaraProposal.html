@@ -89,7 +89,7 @@
         .error-row { background-color: #ffe6e6 !important; }
         .selected-cell { background-color: #fff3cd !important; outline: 2px solid #f39c12; z-index: 5; }
         
-        .row-diff { display: block; font-size: 11px; margin-top: 3px; user-select: none; pointer-events: none;}
+        .row-diff { display: block; font-size: 11px; margin-top: 4px; user-select: none; pointer-events: none;}
         .total-diff { font-size: 11px; }
         
         .resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; z-index: 10; }
@@ -124,9 +124,13 @@
         <button class="file-btn" onclick="App.saveAsFile()">💾 सेव ऐज़</button>
 
         <span style="border-left: 2px solid #ccc; height: 20px; margin: 0 5px;"></span>
+        <button onclick="App.undo()" style="background:#7f8c8d;" title="Undo (Ctrl+Z)">↩ Undo</button>
+        <button onclick="App.redo()" style="background:#7f8c8d;" title="Redo (Ctrl+Y)">↪ Redo</button>
+
+        <span style="border-left: 2px solid #ccc; height: 20px; margin: 0 5px;"></span>
 
         <select id="format-select" onchange="App.changeFormat()">
-            <option value="1">प्रारूप 1</option><option value="2">प्रारूप 2</option>
+            <option value="1">प्रारूप 1</option><option value="2" selected>प्रारूप 2</option>
             <option value="3">प्रारूप 3</option><option value="4">प्रारूप 4</option>
         </select>
         <select id="paper-select" onchange="App.changePaperSize()">
@@ -159,6 +163,12 @@
             <button onclick="App.actionKhata('move-down')" style="background:#f39c12;">⬇ नीचे खिसकाएं</button>
             <button onclick="App.actionKhata('del')" class="danger">🗑️ हटाएं</button>
         </div>
+        
+        <div class="action-group">
+            <span class="action-label" id="lbl-row" style="color:#8e44ad;">रो <b>(-)</b>:</span>
+            <button onclick="App.actionRow('split')" style="background:#9b59b6;">➗ स्प्लिट (Split)</button>
+        </div>
+
         <div class="action-group">
             <span class="action-label" id="lbl-set" style="color:#e67e22;">सेट <b>(-)</b>:</span>
             <button onclick="App.actionSet('add-left')">◀ बाएं जोड़ें</button>
@@ -170,9 +180,10 @@
     </div>
 
     <div class="controls-row">
-        <div style="flex: 1;"><textarea id="owner-text" placeholder="भूमि स्वामी का विवरण यहाँ पेस्ट करें..." oninput="App.markDirty()"></textarea></div>
-        <div style="flex: 1;"><textarea id="khasra-text" placeholder="खसरा एवं रकवा का विवरण यहाँ पेस्ट करें..." oninput="App.markDirty()"></textarea></div>
-        <button onclick="App.processData()" style="height: 45px; font-size: 14px;">डेटा जोड़ें ⚡</button>
+        <div style="flex: 1;">
+            <textarea id="combined-text" placeholder="B1 Extractor से प्राप्त 'Extracted Data (खसरा एवं भूमिस्वामी विवरण)' को यहाँ एक साथ पेस्ट करें..." oninput="App.markDirty()"></textarea>
+        </div>
+        <button onclick="App.processData()" style="height: 45px; font-size: 14px; padding: 0 20px; background: #e67e22;">डेटा जोड़ें ⚡</button>
     </div>
 </div>
 
@@ -193,14 +204,55 @@
 
 <script>
 const App = (function() {
-    let state = { format: '1', font: "'Nirmala UI', sans-serif", proposedSets: 1, hasGram: false, data: [], colsWidth: {}, headerOwners: [] };
+    let state = { format: '2', font: "'Nirmala UI', sans-serif", proposedSets: 1, hasGram: false, data: [], colsWidth: {}, headerOwners: [] };
     let fileHandle = null; 
     let currentFileName = "नई फ़ाइल";
     let activeKhata = null;
+    let activeKhasra = null; 
     let activeSet = null;
     let isDirty = false; 
+    
+    // मजबूत Undo/Redo सिस्टम
+    let historyStack = [];
+    let historyIndex = -1;
 
     const PAPER_DIMS = { 'A4': {w: 210, h: 297}, 'A3': {w: 297, h: 420}, 'A2': {w: 420, h: 594}, 'A1': {w: 594, h: 841} };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.target.isContentEditable || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+        if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+        if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+    });
+
+    function saveState() {
+        syncTableToState();
+        let str = JSON.stringify(state);
+        if (historyIndex >= 0 && historyStack[historyIndex] === str) return; 
+        
+        historyStack = historyStack.slice(0, historyIndex + 1);
+        historyStack.push(str);
+        historyIndex++;
+        
+        if(historyStack.length > 50) { historyStack.shift(); historyIndex--; }
+    }
+
+    function undo() {
+        if(document.activeElement) document.activeElement.blur(); 
+        if (historyIndex > 0) {
+            historyIndex--;
+            state = JSON.parse(historyStack[historyIndex]);
+            renderTable();
+        }
+    }
+
+    function redo() {
+        if(document.activeElement) document.activeElement.blur();
+        if (historyIndex < historyStack.length - 1) {
+            historyIndex++;
+            state = JSON.parse(historyStack[historyIndex]);
+            renderTable();
+        }
+    }
 
     function markDirty() {
         if (!isDirty) {
@@ -229,21 +281,8 @@ const App = (function() {
                 return;
             }
         }
-        state = { format: '1', font: "'Nirmala UI', sans-serif", proposedSets: 1, hasGram: false, data: [], colsWidth: {}, headerOwners: [] };
-        fileHandle = null;
-        activeKhata = null;
-        activeSet = null;
-        document.getElementById('village-name').innerText = '';
-        document.getElementById('format-select').value = '1';
-        document.getElementById('paper-select').value = 'A4';
-        document.getElementById('orientation-select').value = 'landscape';
-        document.getElementById('font-select').value = state.font;
-        document.getElementById('lbl-khata').innerHTML = `खाता <b>(-)</b>:`;
-        document.getElementById('lbl-set').innerHTML = `सेट <b>(-)</b>:`;
-        applyFont();
-        changePaperSize();
-        renderTable();
-        updateFileName("नई फ़ाइल");
+        window.onbeforeunload = null; 
+        window.location.reload();
     }
 
     function getCurrentCols() {
@@ -267,16 +306,22 @@ const App = (function() {
         attachRowMergeLogic();
         attachSelectionLogic();
         attachZoomAndPanLogic();
+        attachRowResizer(); 
         updateFileName("नई फ़ाइल");
         applyFont();
+        saveState(); 
 
         window.addEventListener('beforeunload', function (e) {
-            if (isDirty) {
-                e.preventDefault();
-                e.returnValue = ''; 
-            }
+            if (isDirty) { e.preventDefault(); e.returnValue = ''; }
         });
         document.getElementById('village-name').addEventListener('input', markDirty);
+        
+        document.addEventListener('focusout', function(e) {
+            if(e.target.isContentEditable) { saveState(); }
+        });
+        document.addEventListener('input', function(e) {
+            if(e.target.isContentEditable) { markDirty(); }
+        });
     }
 
     function attachZoomAndPanLogic() {
@@ -289,8 +334,7 @@ const App = (function() {
 
             if (e.ctrlKey) {
                 e.preventDefault(); 
-                if (e.deltaY < 0) currentZoom += 0.1; 
-                else currentZoom -= 0.1; 
+                if (e.deltaY < 0) currentZoom += 0.1; else currentZoom -= 0.1; 
                 currentZoom = Math.min(Math.max(0.4, currentZoom), 3); 
                 pageEl.style.zoom = currentZoom;
             } 
@@ -310,7 +354,14 @@ const App = (function() {
         markDirty();
         state.font = document.getElementById('font-select').value;
         applyFont();
-        syncTableToState();
+        saveState();
+    }
+
+    function getCleanText(td) {
+        let clone = td.cloneNode(true);
+        clone.querySelectorAll('.row-diff, .total-diff').forEach(e => e.remove());
+        let text = clone.textContent || clone.innerText || '';
+        return text.replace(/\(शेष[ः:]?\s*[\d\.]+\)/g, '').replace(/\(अधिक[ः:]?\s*[\d\.]+\)/g, '').trim();
     }
 
     function syncTableToState() {
@@ -322,12 +373,16 @@ const App = (function() {
 
         let rows = document.getElementById('table-body').querySelectorAll('tr');
         rows.forEach(tr => {
+            if(tr.classList.contains('subtotal-row')) return; 
+
             let khataIdx = tr.getAttribute('data-khata-idx');
             let khasraIdx = tr.getAttribute('data-khasra-idx');
             if (khataIdx === null || khasraIdx === null) return;
             let item = state.data[khataIdx];
             let khasra = item.khasras[khasraIdx];
             
+            khasra.h = tr.style.height ? parseFloat(tr.style.height) : null;
+
             khasra.c_ui = khasra.c_ui || {};
             khasra.p_ui = khasra.p_ui || [];
             if(!khasra.proposed) khasra.proposed = [];
@@ -335,12 +390,9 @@ const App = (function() {
             tr.querySelectorAll('td').forEach(td => {
                 let field = td.getAttribute('data-field');
                 let setIdx = td.getAttribute('data-set') || '';
-                
-                let cloneNode = td.cloneNode(true);
-                let diffSpans = cloneNode.querySelectorAll('.row-diff, .total-diff');
-                diffSpans.forEach(el => el.remove());
-                let val = cloneNode.innerText.trim();
+                if(!field) return;
 
+                let val = getCleanText(td); 
                 let isHidden = td.style.display === 'none';
                 let rs = td.getAttribute('rowspan') || 1;
                 let disp = td.style.display || '';
@@ -370,7 +422,7 @@ const App = (function() {
     }
 
     function attachSelectionLogic() {
-        document.getElementById('table-body').addEventListener('focusin', function(e) {
+        document.getElementById('table-body').addEventListener('mousedown', function(e) {
             let td = e.target.closest('td');
             if(!td) return;
             
@@ -379,12 +431,21 @@ const App = (function() {
 
             let tr = td.closest('tr');
             let khIdx = tr ? tr.getAttribute('data-khata-idx') : null;
+            let ksIdx = tr ? tr.getAttribute('data-khasra-idx') : null;
             let setIdx = td.getAttribute('data-set');
             
             if(khIdx !== null) {
                 activeKhata = parseInt(khIdx);
                 document.getElementById('lbl-khata').innerHTML = `खाता <b>(${activeKhata + 1})</b> :`;
             }
+            if(ksIdx !== null) {
+                activeKhasra = parseInt(ksIdx);
+                document.getElementById('lbl-row').innerHTML = `रो <b>(${activeKhasra + 1})</b> :`;
+            } else {
+                activeKhasra = null;
+                document.getElementById('lbl-row').innerHTML = `रो <b>(-)</b> :`;
+            }
+
             if(setIdx !== null && setIdx !== '') {
                 activeSet = parseInt(setIdx);
                 document.getElementById('lbl-set').innerHTML = `सेट <b>(${activeSet + 1})</b> :`;
@@ -399,6 +460,7 @@ const App = (function() {
         if(activeKhata === null) return alert("कृपया पहले टेबल में किसी 'खाते' के सेल पर क्लिक करें।");
         markDirty();
         syncTableToState();
+        
         let i = activeKhata;
         let emptyKhata = { khata: '', owners: '', khasras: [{ k:'', r:'', c_ui:{}, p_ui:[], proposed:[] }] };
         
@@ -427,12 +489,196 @@ const App = (function() {
             document.getElementById('lbl-khata').innerHTML = `खाता <b>(${activeKhata + 1})</b> :`;
         }
         renderTable();
+        saveState();
+    }
+
+    function actionRow(action) {
+        if(activeKhata === null || activeKhasra === null) return alert("कृपया पहले टेबल में किसी 'रो' पर क्लिक करें।");
+        
+        // नया बदलाव: स्प्लिट केवल प्रारूप 2 में ही काम करेगा
+        if (action === 'split' && state.format !== '2') {
+            return alert("स्प्लिट (Split) का विकल्प केवल 'प्रारूप 2' में ही उपलब्ध है। कृपया ऊपर से 'प्रारूप 2' चुनें।");
+        }
+
+        markDirty(); 
+        syncTableToState(); 
+        
+        let kh = state.data[activeKhata]; 
+        let ksIdx = activeKhasra; 
+        let currentKhasra = kh.khasras[ksIdx]; 
+        
+        if (action === 'split') {
+            let parts = prompt("इस चयनित कॉलम सेट को कितने भागों (Rows) में स्प्लिट करना चाहते हैं?", "2");
+            parts = parseInt(parts);
+            if(isNaN(parts) || parts <= 1) return;
+
+            let addedRows = parts - 1;
+            let c_fields = ['gram', 'sno', 'khata', 'khasra', 'rakba', 'owner']; 
+            let p_fields = ['p_khasra', 'p_rakba', 'p_owner']; 
+
+            let splitGroupId = currentKhasra.splitId || Date.now().toString();
+            currentKhasra.splitId = splitGroupId;
+
+            c_fields.forEach(f => {
+                let rootIdx = ksIdx;
+                while (rootIdx >= 0 && kh.khasras[rootIdx].c_ui && kh.khasras[rootIdx].c_ui[f] && kh.khasras[rootIdx].c_ui[f].disp === 'none') rootIdx--;
+                if (rootIdx >= 0) {
+                    let rootKs = kh.khasras[rootIdx];
+                    if(!rootKs.c_ui) rootKs.c_ui = {};
+                    let currentRS = parseInt(rootKs.c_ui[f] ? rootKs.c_ui[f].rs : 1);
+                    rootKs.c_ui[f] = { rs: currentRS + addedRows, disp: '', ta: (f==='owner'?'left':'center') };
+                }
+            });
+
+            for(let s = 0; s < state.proposedSets; s++) {
+                if (s !== activeSet) {
+                    p_fields.forEach(f => {
+                        let rootIdx = ksIdx;
+                        while (rootIdx >= 0 && kh.khasras[rootIdx].p_ui && kh.khasras[rootIdx].p_ui[s] && kh.khasras[rootIdx].p_ui[s][f] && kh.khasras[rootIdx].p_ui[s][f].disp === 'none') rootIdx--;
+                        if (rootIdx >= 0) {
+                            let rootKs = kh.khasras[rootIdx];
+                            if(!rootKs.p_ui) rootKs.p_ui = [];
+                            if(!rootKs.p_ui[s]) rootKs.p_ui[s] = {};
+                            let currentRS = parseInt(rootKs.p_ui[s][f] ? rootKs.p_ui[s][f].rs : 1);
+                            rootKs.p_ui[s][f] = { rs: currentRS + addedRows, disp: '', ta: (f==='p_owner'?'left':'center') };
+                        }
+                    });
+                }
+            }
+
+            let baseKhasra = currentKhasra.k || ""; 
+            
+            if(activeSet !== null) {
+                if(!currentKhasra.proposed[activeSet]) currentKhasra.proposed[activeSet] = {k:'', r:'', o:''};
+                currentKhasra.proposed[activeSet].k = ""; 
+                currentKhasra.proposed[activeSet].r = "";
+            }
+
+            for(let p = 1; p <= addedRows; p++) {
+                let newKs = {
+                    k: baseKhasra, 
+                    splitId: splitGroupId,
+                    r: currentKhasra.r,
+                    c_ui: {}, 
+                    p_ui: [], 
+                    proposed: []
+                };
+
+                c_fields.forEach(f => {
+                    newKs.c_ui[f] = { rs: 1, disp: 'none', ta: '' };
+                });
+
+                for(let s = 0; s < state.proposedSets; s++) {
+                    newKs.proposed.push({ k: '', r: '', o: '' });
+                    newKs.p_ui[s] = {};
+                    p_fields.forEach(f => {
+                        newKs.p_ui[s][f] = { rs: 1, disp: (s === activeSet ? '' : 'none'), ta: '' };
+                    });
+                }
+                kh.khasras.splice(ksIdx + p, 0, newKs);
+            }
+        } 
+        // डिलीट (del) वाला ब्लॉक यहाँ से हटा दिया गया है
+        
+        renderTable(); 
+        saveState(); 
+    }
+
+    // === यहाँ बदलाव किया गया है ===
+    // इसे App के return में एक्सपोज़ किया गया है ताकि HTML इसे कॉल कर सके।
+    function handleRakbaInput(khIdx, ksIdx, setIdx, rawRakbaValue) {
+        // 1. फालतू स्पेस या न्यू-लाइन हटा दें
+        let cleanValue = rawRakbaValue.replace(/\n/g, '').trim();
+        
+        let kh = state.data[khIdx];
+        let ks = kh.khasras[ksIdx];
+        
+        // 2. रकवा और हिस्से (Fraction) की स्मार्ट गणना करें
+        let formattedRakba = "";
+        
+        if (cleanValue !== "") {
+            // यदि यूज़र ने हिस्सा (जैसे 1/2 या 1/3) डाला है
+            if (cleanValue.includes('/')) {
+                let parts = cleanValue.split('/');
+                if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parseFloat(parts[1]) !== 0) {
+                    let origRakba = parseFloat(ks.r) || 0; // वर्तमान खसरे का मूल (कुल) रकवा
+                    let fractionVal = origRakba * (parseFloat(parts[0]) / parseFloat(parts[1]));
+                    formattedRakba = fractionVal.toFixed(4); // हिस्से को 4 डिजिट में बदलें
+                } else {
+                    formattedRakba = cleanValue; // यदि यूज़र ने गलत फॉर्मेट डाला है
+                }
+            } 
+            // यदि यूज़र ने सीधा नंबर (जैसे 0.02) डाला है
+            else {
+                let floatVal = parseFloat(cleanValue);
+                if (!isNaN(floatVal)) {
+                    formattedRakba = floatVal.toFixed(4);
+                } else {
+                    formattedRakba = cleanValue; 
+                }
+            }
+        }
+
+        // 3. फॉर्मेटेड रकवा को सेव करें
+        if (!ks.proposed[setIdx]) ks.proposed[setIdx] = { k: '', r: '', o: '' };
+        ks.proposed[setIdx].r = formattedRakba;
+
+        // बेस खसरा प्राप्त करें (जैसे 966/1/1...)
+        let baseKhasra = ks.k; 
+        if (!baseKhasra) {
+            renderTable();
+            saveState();
+            return;
+        }
+
+        let splitGroupId = ks.splitId;
+        
+        // यदि रो स्प्लिट है तो पूरा ग्रुप लें, अन्यथा केवल इसी सिंगल रो को लें
+        let groupToProcess = splitGroupId ? kh.khasras.filter(row => row.splitId === splitGroupId) : [ks];
+
+        let batankanCounter = 1;
+
+        // सभी प्रस्तावित सेट्स (कॉलम) में बाएं से दाएं जाएं
+        for (let s = 0; s < state.proposedSets; s++) {
+            
+            // प्रत्येक सेट के अंदर मौजूद रोज़ (ऊपर से नीचे) चेक करें
+            groupToProcess.forEach(row => {
+                if (!row.proposed[s]) row.proposed[s] = { k: '', r: '', o: '' };
+                let pData = row.proposed[s];
+
+                // यह चेक करें कि क्या यह सेल मर्ज होने के कारण छिपी (hidden) तो नहीं है?
+                let isHidden = false;
+                if (row.p_ui && row.p_ui[s] && row.p_ui[s]['p_rakba'] && row.p_ui[s]['p_rakba'].disp === 'none') {
+                    isHidden = true;
+                }
+
+                if (isHidden) {
+                    pData.k = ""; // छिपी हुई रो को खसरा नंबर नहीं देना है
+                    return;
+                }
+
+                let rVal = pData.r ? pData.r.toString().trim() : "";
+                let numericRakba = parseFloat(rVal);
+                
+                // यदि रकवा भरा हुआ है और शून्य (0.0000) से अधिक है, तो क्रम से बटांक दें
+                if (!isNaN(numericRakba) && numericRakba > 0) {
+                    pData.k = baseKhasra + "/" + batankanCounter;
+                    batankanCounter++;
+                } else {
+                    pData.k = ""; // यदि रकवा खाली या शून्य है, तो खसरा भी खाली कर दें
+                }
+            });
+        }
+
+        renderTable(); 
+        saveState();   
     }
 
     function actionSet(action) {
         if(activeSet === null) return alert("कृपया पहले 'प्रस्तावित विभाजन सूची' के किसी सेल पर क्लिक करें।");
         markDirty();
         syncTableToState();
+        
         let i = activeSet;
 
         if(action === 'add-left' || action === 'add-right') {
@@ -478,6 +724,7 @@ const App = (function() {
             document.getElementById('lbl-set').innerHTML = `सेट <b>(${activeSet + 1})</b> :`;
         }
         renderTable();
+        saveState();
     }
 
     function encryptData(obj) { return btoa(encodeURIComponent(JSON.stringify(obj))); }
@@ -487,7 +734,6 @@ const App = (function() {
         if (isDirty) {
             if (!confirm("आपके बदलाव सेव नहीं हुए हैं। क्या आप बिना सेव किए दूसरी फ़ाइल खोलना चाहते हैं?")) return;
         }
-        
         try {
             if (window.showOpenFilePicker) {
                 [fileHandle] = await window.showOpenFilePicker({ types: [{ description: 'Rock Batwara File', accept: {'application/rock': ['.rock','.json']} }] });
@@ -498,7 +744,9 @@ const App = (function() {
                 document.getElementById('village-name').innerText = state.village || '';
                 if(!state.font) state.font = "'Nirmala UI', sans-serif";
                 applyFont();
+                historyStack = []; historyIndex = -1;
                 renderTable();
+                saveState();
                 updateFileName(file.name);
             } else {
                 let input = document.createElement('input');
@@ -514,7 +762,9 @@ const App = (function() {
                         document.getElementById('village-name').innerText = state.village || '';
                         if(!state.font) state.font = "'Nirmala UI', sans-serif";
                         applyFont();
+                        historyStack = []; historyIndex = -1;
                         renderTable();
+                        saveState();
                         updateFileName(file.name);
                     };
                     reader.readAsText(file);
@@ -534,9 +784,7 @@ const App = (function() {
                 await writable.close();
                 clearDirty();
                 alert("फ़ाइल सफलतापूर्वक अपडेट (Save) हो गई।");
-            } else {
-                saveAsBlob();
-            }
+            } else { saveAsBlob(); }
         } catch (error) { console.error(error); }
     }
 
@@ -554,9 +802,7 @@ const App = (function() {
                 await writable.close();
                 updateFileName(fileHandle.name);
                 alert("नई फ़ाइल (Save As) सफलतापूर्वक सेव हो गई।");
-            } else {
-                saveAsBlob();
-            }
+            } else { saveAsBlob(); }
         } catch (error) { console.error(error); }
     }
 
@@ -579,34 +825,25 @@ const App = (function() {
     function exportToExcel() {
         syncTableToState();
         let tableClone = document.getElementById("batwara-table").cloneNode(true);
-        
-        // 1. COLUMN WIDTH STRICT FIX (एक्सेल पिक्सल नहीं, पॉइंट (pt) समझता है)
         let totalWidthPt = 0;
         let colgroup = tableClone.querySelector('colgroup');
         if(colgroup) {
             colgroup.querySelectorAll('col').forEach(c => {
                 let px = parseFloat(c.style.width.replace('px', ''));
                 if(!isNaN(px)) {
-                    let pt = Math.round(px * 0.75); // px to pt conversion
-                    c.setAttribute('width', pt);
-                    c.style.width = pt + 'pt';
-                    c.style.cssText += 'mso-width-source:userset;'; // चौड़ाई लॉक कमांड
+                    let pt = Math.round(px * 0.75);
+                    c.setAttribute('width', pt); c.style.width = pt + 'pt'; c.style.cssText += 'mso-width-source:userset;'; 
                     totalWidthPt += pt;
                 }
             });
         }
-
-        // टेबल की कुल चौड़ाई फिक्स करें
         tableClone.setAttribute('width', totalWidthPt);
-        tableClone.style.width = totalWidthPt + 'pt';
-        tableClone.style.tableLayout = 'fixed';
+        tableClone.style.width = totalWidthPt + 'pt'; tableClone.style.tableLayout = 'fixed';
         
-        // 2. CLEANUP
         tableClone.querySelectorAll('td[style*="display: none"], td[style*="display:none"]').forEach(cell => cell.remove());
         tableClone.querySelectorAll('.row-diff, .total-diff').forEach(el => el.remove());
         tableClone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
 
-        // 3. CELL FORMATTING
         tableClone.setAttribute('border', '1');
         tableClone.style.borderCollapse = 'collapse';
         tableClone.style.fontFamily = state.font ? state.font.split(',')[0].replace(/'/g, '') : 'Arial';
@@ -615,10 +852,7 @@ const App = (function() {
         tableClone.querySelectorAll('td, th').forEach(cell => {
             cell.style.verticalAlign = 'middle';
             if (!cell.style.textAlign) cell.style.textAlign = 'center';
-            
-            let text = cell.innerText.trim();
-            let field = cell.getAttribute('data-field');
-            
+            let text = cell.innerText.trim(); let field = cell.getAttribute('data-field');
             if (/^\(\d+\)$/.test(text) || field === 'khasra' || field === 'p_khasra' || text.match(/^\d+[\/\d]+$/)) {
                 cell.setAttribute('style', (cell.getAttribute('style') || '') + '; mso-number-format:"\\@";');
             }
@@ -627,56 +861,31 @@ const App = (function() {
             }
         });
 
-        // 4. TITLE ROW
         let vName = document.getElementById("village-name").innerText.trim();
         let thead = tableClone.querySelector('thead');
-        let headerTr = document.createElement('tr');
-        let headerTh = document.createElement('th');
+        let headerTr = document.createElement('tr'); let headerTh = document.createElement('th');
         let totalCols = colgroup ? colgroup.querySelectorAll('col').length : 20;
-        headerTh.setAttribute('colspan', totalCols); 
-        headerTh.innerText = "बटवारा प्रस्ताव (ग्राम- " + vName + ")";
-        headerTh.style.fontSize = "16pt";
-        headerTh.style.fontWeight = "bold";
-        headerTh.style.textAlign = "center";
-        headerTh.style.border = "none";
-        headerTh.style.height = "40pt";
-        headerTr.appendChild(headerTh);
-        thead.insertBefore(headerTr, thead.firstChild);
+        headerTh.setAttribute('colspan', totalCols); headerTh.innerText = "बटवारा प्रस्ताव (ग्राम- " + vName + ")";
+        headerTh.style.fontSize = "16pt"; headerTh.style.fontWeight = "bold"; headerTh.style.textAlign = "center";
+        headerTh.style.border = "none"; headerTh.style.height = "40pt";
+        headerTr.appendChild(headerTh); thead.insertBefore(headerTr, thead.firstChild);
 
-        // 5. MODERN CSS PAGE SETUP (Office 2019+ के लिए)
-        let htmlContent = tableClone.outerHTML;
         let isLandscape = document.getElementById('orientation-select').value === 'landscape';
         let orientStr = isLandscape ? 'landscape' : 'portrait';
-        
         let excelCSS = "@page { margin: 0.3937in; mso-header-margin: 0.2in; mso-footer-margin: 0.2in; mso-page-orientation: " + orientStr + "; } " +
                        "table { border-collapse: collapse; table-layout: fixed; } " +
                        "th, td { border: .5pt solid windowtext; vertical-align: middle; word-wrap: break-word; } " +
-                       ".header-bg { background-color: #f2f2f2; font-weight: bold; } " +
-                       ".total-row { background-color: #e6e6e6; font-weight: bold; }";
+                       ".header-bg { background-color: #f2f2f2; font-weight: bold; } .total-row { background-color: #e6e6e6; font-weight: bold; }";
 
-        // सुरक्षित HTML निर्माण (String Splitting) ताकि कोड पेज पर न छपे
         let fullHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
-        '<head>' +
-            '<meta charset="UTF-8">' +
-            '<style>' + excelCSS + '<' + '/style>' +
-        '<' + '/head>' +
-        '<body>' +
-            htmlContent +
-        '<' + '/body>' +
-        '<' + '/html>';
-        
+        '<head><meta charset="UTF-8"><style>' + excelCSS + '<' + '/style><' + '/head><body>' + tableClone.outerHTML + '<' + '/body><' + '/html>';
         let blob = new Blob([fullHtml], {type: "application/vnd.ms-excel;charset=utf-8"});
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = "Batwara_" + (vName || "Project") + ".xls";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        let url = URL.createObjectURL(blob); let a = document.createElement("a");
+        a.href = url; a.download = "Batwara_" + (vName || "Project") + ".xls";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
-    function toggleGramColumn() { markDirty(); syncTableToState(); state.hasGram = !state.hasGram; renderTable(); }
+    function toggleGramColumn() { markDirty(); state.hasGram = !state.hasGram; renderTable(); saveState(); }
     
     function changePaperSize() { 
         markDirty();
@@ -685,40 +894,56 @@ const App = (function() {
         const root = document.documentElement;
         if(orient === 'landscape') { root.style.setProperty('--page-width', PAPER_DIMS[size].h + 'mm'); root.style.setProperty('--page-height', PAPER_DIMS[size].w + 'mm'); } 
         else { root.style.setProperty('--page-width', PAPER_DIMS[size].w + 'mm'); root.style.setProperty('--page-height', PAPER_DIMS[size].h + 'mm'); }
+        saveState();
     }
     
-    function changeFormat() { markDirty(); syncTableToState(); state.format = document.getElementById('format-select').value; renderTable(); }
+    function changeFormat() { markDirty(); state.format = document.getElementById('format-select').value; renderTable(); saveState(); }
 
     function processData() {
         markDirty();
         syncTableToState();
-        const ownerRaw = document.getElementById('owner-text').value;
-        const khasraRaw = document.getElementById('khasra-text').value;
-        let villageMatch = khasraRaw.match(/ग्राम (.*?) स्थित/);
-        if(villageMatch) { document.getElementById('village-name').innerText = villageMatch[1].trim(); }
-        if(!khasraRaw && !ownerRaw) { state.data.push({ khata: '', owners: '', khasras: [{k: '', r: ''}] }); renderTable(); return; }
+        
+        const rawData = document.getElementById('combined-text').value.trim();
+        if(!rawData) return; 
 
-        const khataMatch = khasraRaw.match(/खाता क्रमांक (\d+)/);
-        const khata = khataMatch ? khataMatch[1] : '';
-        const khasraRegex = /(\d+[\/\d]*)\s*रकवा\s*([\d\.]+)/g;
-        let khasras = [];
-        let match;
-        while ((match = khasraRegex.exec(khasraRaw)) !== null) { khasras.push({ k: match[1], r: parseFloat(match[2]).toFixed(4) }); }
-        if(khasras.length === 0) khasras.push({k: '', r: ''});
-        
-        let newData = { khata: khata, owners: ownerRaw, khasras: khasras };
-        if (activeKhata !== null) { state.data.splice(activeKhata + 1, 0, newData); } 
-        else { state.data.push(newData); }
-        
-        document.getElementById('owner-text').value = ''; document.getElementById('khasra-text').value = '';
+        if (state.data.length === 1 && state.data[0].khata === '' && state.data[0].khasras[0].k === '') {
+            state.data = [];
+        }
+
+        const blocks = rawData.split(/========================================/);
+        let firstVillage = null;
+        let addedCount = 0;
+
+        blocks.forEach(block => {
+            let text = block.trim();
+            if(!text) return; 
+            let villageMatch = text.match(/ग्राम (.*?) स्थित/);
+            if(villageMatch && !firstVillage) firstVillage = villageMatch[1].trim(); 
+            let khataMatch = text.match(/खाता क्रमांक (\d+)/);
+            let khata = khataMatch ? khataMatch[1] : '';
+            const khasraRegex = /(\d+[\/\d]*)\s*रकवा\s*([\d\.]+)/g;
+            let khasras = []; let match;
+            while ((match = khasraRegex.exec(text)) !== null) khasras.push({ k: match[1], r: parseFloat(match[2]).toFixed(4) }); 
+            if(khasras.length === 0) khasras.push({k: '', r: ''});
+            let owners = ''; let ownerIndex = text.indexOf('भूमिस्वामी विवरण:');
+            if(ownerIndex !== -1) owners = text.substring(ownerIndex + 17).trim(); 
+            let newData = { khata: khata, owners: owners, khasras: khasras };
+            
+            if (activeKhata !== null && blocks.length === 1) state.data.splice(activeKhata + 1, 0, newData); 
+            else state.data.push(newData); 
+            addedCount++;
+        });
+
+        if(firstVillage) document.getElementById('village-name').innerText = firstVillage;
+        document.getElementById('combined-text').value = '';
         renderTable();
+        saveState();
     }
 
     function renderTable() { buildColgroup(); buildHeader(); buildBody(); calculateTotals(); attachResizers(); }
 
     function buildColgroup() {
-        const colgroup = document.getElementById('table-colgroup');
-        colgroup.innerHTML = '';
+        const colgroup = document.getElementById('table-colgroup'); colgroup.innerHTML = '';
         let allCols = [...getCurrentCols()];
         for(let s=0; s<state.proposedSets; s++) allCols = allCols.concat(getProposedCols(s));
         allCols.forEach((col, index) => {
@@ -726,28 +951,20 @@ const App = (function() {
             if(col.link) c.setAttribute('data-link', col.link); 
             let widthKey = col.link ? col.link : 'col_'+index; 
             if(!state.colsWidth[widthKey]) state.colsWidth[widthKey] = col.w;
-            c.style.width = state.colsWidth[widthKey] + 'px';
-            colgroup.appendChild(c);
+            c.style.width = state.colsWidth[widthKey] + 'px'; colgroup.appendChild(c);
         });
     }
 
     function buildHeader() {
         const thead = document.getElementById('table-head');
-        let currentCols = getCurrentCols();
-        let html = '';
-        let totalProposedCols = 0;
+        let currentCols = getCurrentCols(); let html = ''; let totalProposedCols = 0;
         for(let s=0; s<state.proposedSets; s++) totalProposedCols += getProposedCols(s).length;
-
         html += `<tr><th colspan="${currentCols.length}" class="header-bg">वर्तमान अभिलेखीय स्थिति</th><th colspan="${totalProposedCols}" class="header-bg">प्रस्तावित विभाजन सूची</th></tr><tr>`;
-
         let hasOwnerHeader = false;
         for(let s=0; s<state.proposedSets; s++) { if(getProposedCols(s).length === 2) hasOwnerHeader = true; }
-
         let colIndexTracker = 0;
-
         if (hasOwnerHeader) {
             currentCols.forEach((c) => { html += `<th rowspan="2">${c.n}<div class="resizer" data-col="${colIndexTracker++}"></div></th>`; });
-            
             let tempColTracker = colIndexTracker;
             for(let s=0; s<state.proposedSets; s++) {
                 let pCols = getProposedCols(s);
@@ -760,7 +977,6 @@ const App = (function() {
                 }
             }
             html += `</tr><tr>`;
-
             let bottomColTracker = currentCols.length;
             for(let s=0; s<state.proposedSets; s++) {
                 let pCols = getProposedCols(s);
@@ -773,24 +989,20 @@ const App = (function() {
             for(let s=0; s<state.proposedSets; s++) { getProposedCols(s).forEach(c => { html += `<th>${c.n}<div class="resizer" data-col="${colIndexTracker++}"></div></th>`; }); }
             html += `</tr>`;
         }
-
         let totalCols = currentCols.length + totalProposedCols;
         html += `<tr class="header-bg">`;
-        for(let i = 1; i <= totalCols; i++) { html += `<td>(${i})</td>`; }
-        html += `</tr>`;
-        thead.innerHTML = html;
+        for(let i = 1; i <= totalCols; i++) html += `<td>(${i})</td>`; 
+        html += `</tr>`; thead.innerHTML = html;
     }
 
     function buildBody() {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '';
-        
+        const tbody = document.getElementById('table-body'); tbody.innerHTML = '';
         function getUI(khasraObj, field, setIdx, defaultHide, defaultRS) {
             let uiObj = (setIdx === '') ? (khasraObj.c_ui && khasraObj.c_ui[field]) : (khasraObj.p_ui && khasraObj.p_ui[setIdx] && khasraObj.p_ui[setIdx][field]);
-            let disp = uiObj ? uiObj.disp : (defaultHide ? 'none' : '');
-            let rs = uiObj ? uiObj.rs : defaultRS;
-            let ta = uiObj ? uiObj.ta : (field.includes('owner') ? 'left' : 'center');
-            let style = `text-align:${ta};`;
+            let disp = uiObj && uiObj.disp !== undefined ? uiObj.disp : (defaultHide ? 'none' : '');
+            let rs = uiObj && uiObj.rs !== undefined ? uiObj.rs : defaultRS;
+            let ta = uiObj && uiObj.ta !== undefined ? uiObj.ta : (field.includes('owner') ? 'left' : 'center');
+            let hStyle = khasraObj.h ? `height:${khasraObj.h}px;` : ''; let style = `text-align:${ta}; ${hStyle}`;
             if (disp) style += ` display:${disp};`;
             return { style, rsAttr: rs > 1 ? `rowspan="${rs}"` : '' };
         }
@@ -801,13 +1013,12 @@ const App = (function() {
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-khata-idx', index); tr.setAttribute('data-khasra-idx', kIndex);
                 tr.setAttribute('data-orig-khasra', khasra.k); tr.setAttribute('data-orig-rakba', khasra.r);
-                
+                if (khasra.h) tr.style.height = khasra.h + 'px'; 
                 let colIdx = 0;
                 if(state.hasGram) {
                     let ui = getUI(khasra, 'gram', '', kIndex !== 0, rowCount);
                     tr.innerHTML += `<td contenteditable="true" data-field="gram" data-set="" data-col-index="${colIdx++}" ${ui.rsAttr} style="${ui.style}">${item.gram || ''}</td>`;
                 }
-                
                 let uiSno = getUI(khasra, 'sno', '', kIndex !== 0, rowCount);
                 tr.innerHTML += `<td contenteditable="true" data-field="sno" data-set="" data-col-index="${colIdx++}" ${uiSno.rsAttr} style="${uiSno.style}">${index + 1}</td>`;
                 
@@ -823,18 +1034,53 @@ const App = (function() {
                 let uiOwner = getUI(khasra, 'owner', '', kIndex !== 0, rowCount);
                 tr.innerHTML += `<td contenteditable="true" data-field="owner" data-set="" data-col-index="${colIdx++}" ${uiOwner.rsAttr} style="${uiOwner.style}">${item.owners || ''}</td>`;
 
-                for(let s=0; s<state.proposedSets; s++) {
-                    let pSet = (khasra.proposed && khasra.proposed[s]) ? khasra.proposed[s] : {k:'', r:'', o:''};
+                for (let s = 0; s < state.proposedSets; s++) {
+                    let pSet = (khasra.proposed && khasra.proposed[s]) ? khasra.proposed[s] : { k: '', r: '', o: '' };
+                    
                     getProposedCols(s).forEach(c => {
-                        let field = c.f;
+                        let field = c.f; 
                         let val = field === 'p_owner' ? (pSet.o || '') : (field === 'p_rakba' ? (pSet.r || '') : (pSet.k || ''));
                         let isOwnerCol = field === 'p_owner';
                         let uiProp = getUI(khasra, field, s, isOwnerCol && kIndex !== 0, isOwnerCol ? rowCount : 1);
-                        tr.innerHTML += `<td contenteditable="true" data-field="${field}" data-set="${s}" data-col-index="${colIdx++}" class="${c.cls || ''}" ${uiProp.rsAttr} style="${uiProp.style}">${val}</td>`;
+                        
+                        // === यहाँ बदलाव किया गया है: onblur App.handleRakbaInput को कॉल करेगा ===
+                        if (field === 'p_rakba') {
+                            tr.innerHTML += `<td contenteditable="true" 
+                                                data-field="${field}" 
+                                                data-set="${s}" 
+                                                data-col-index="${colIdx++}" 
+                                                class="${c.cls || ''} p-rakba" 
+                                                ${uiProp.rsAttr} 
+                                                style="${uiProp.style}"
+                                                onblur="App.handleRakbaInput(${index}, ${kIndex}, ${s}, this.innerText)">${val}</td>`;
+                        } else {
+                            let extraCls = field === 'p_khasra' ? ' p-khasra' : '';
+                            tr.innerHTML += `<td contenteditable="true" 
+                                                data-field="${field}" 
+                                                data-set="${s}" 
+                                                data-col-index="${colIdx++}" 
+                                                class="${c.cls || ''}${extraCls}" 
+                                                ${uiProp.rsAttr} 
+                                                style="${uiProp.style}">${val}</td>`;
+                        }
                     });
                 }
                 tbody.appendChild(tr);
             });
+
+            const subTr = document.createElement('tr'); subTr.className = 'subtotal-row'; subTr.style.backgroundColor = '#eef2f5'; subTr.style.fontWeight = 'bold';
+            let currentCols = getCurrentCols(); let preKhasraCount = currentCols.findIndex(c => c.f === 'khasra');
+            let html = `<td colspan="${preKhasraCount}" style="text-align:right; padding-right:15px; color:#2c3e50;">खाता ${index + 1} का योग:</td>`;
+            html += `<td class="sub-kita" style="color:#2c3e50;"></td>`; html += `<td class="sub-rakba" style="color:#2c3e50;"></td>`; 
+            for(let i = preKhasraCount + 2; i < currentCols.length; i++) html += `<td></td>`;
+            for(let s=0; s<state.proposedSets; s++) {
+                getProposedCols(s).forEach(c => {
+                    if (c.f === 'p_khasra') html += `<td class="sub-p-kita-${s}" style="color:#2c3e50;"></td>`;
+                    else if (c.f === 'p_rakba') html += `<td class="sub-p-rakba-${s}" style="color:#2c3e50;"></td>`;
+                    else html += `<td></td>`;
+                });
+            }
+            subTr.innerHTML = html; tbody.appendChild(subTr);
         });
     }
 
@@ -844,20 +1090,18 @@ const App = (function() {
             let cell = e.target;
             if(cell.tagName === 'TD') {
                 markDirty();
-                let rs = parseInt(cell.getAttribute('rowspan')) || 1;
-                let colIdx = cell.getAttribute('data-col-index');
-                let tr = cell.parentElement;
-                let nextRow = tr.nextElementSibling;
+                let rs = parseInt(cell.getAttribute('rowspan')) || 1; let colIdx = cell.getAttribute('data-col-index');
+                let tr = cell.parentElement; let nextRow = tr.nextElementSibling;
                 while(nextRow) {
                     let nextCell = nextRow.querySelector(`td[data-col-index="${colIdx}"]`);
                     if(nextCell && nextCell.style.display !== 'none') {
                         nextCell.style.display = 'none';
                         let nextRs = parseInt(nextCell.getAttribute('rowspan')) || 1;
-                        cell.setAttribute('rowspan', rs + nextRs);
-                        break; 
+                        cell.setAttribute('rowspan', rs + nextRs); break; 
                     }
                     nextRow = nextRow.nextElementSibling;
                 }
+                saveState();
             }
         });
 
@@ -866,17 +1110,12 @@ const App = (function() {
             if(cell.tagName === 'TD') {
                 let rs = parseInt(cell.getAttribute('rowspan')) || 1;
                 if(rs > 1) {
-                    markDirty();
-                    e.preventDefault(); 
-                    let colIdx = cell.getAttribute('data-col-index');
-                    let tr = cell.parentElement;
-                    cell.setAttribute('rowspan', rs - 1);
-                    let targetRow = tr;
+                    markDirty(); e.preventDefault(); 
+                    let colIdx = cell.getAttribute('data-col-index'); let tr = cell.parentElement;
+                    cell.setAttribute('rowspan', rs - 1); let targetRow = tr;
                     for(let i = 0; i < rs - 1; i++) { if(targetRow) targetRow = targetRow.nextElementSibling; }
-                    if(targetRow) {
-                        let hiddenCell = targetRow.querySelector(`td[data-col-index="${colIdx}"]`);
-                        if(hiddenCell) hiddenCell.style.display = '';
-                    }
+                    if(targetRow) { let hiddenCell = targetRow.querySelector(`td[data-col-index="${colIdx}"]`); if(hiddenCell) hiddenCell.style.display = ''; }
+                    saveState();
                 }
             }
         });
@@ -885,128 +1124,132 @@ const App = (function() {
     function attachLiveCalculations() {
         document.getElementById('table-body').addEventListener('focusout', function(e) {
             if (e.target.classList.contains('p-rakba') || e.target.classList.contains('c-rakba')) {
-                let nodeVal = e.target.childNodes[0] ? e.target.childNodes[0].nodeValue.trim() : e.target.innerText.trim();
-                
+                let nodeVal = getCleanText(e.target);
                 if (e.target.classList.contains('p-rakba') && nodeVal.includes('/')) {
                     let parts = nodeVal.split('/');
                     if(parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] !== '0') {
-                        let row = e.target.closest('tr');
-                        let origRakba = parseFloat(row.getAttribute('data-orig-rakba')) || 0;
+                        let row = e.target.closest('tr'); let origRakba = parseFloat(row.getAttribute('data-orig-rakba')) || 0;
                         let fractionVal = origRakba * (parseFloat(parts[0]) / parseFloat(parts[1]));
-                        e.target.innerText = fractionVal.toFixed(4);
-                        calculateTotals();
-                        return;
+                        e.target.innerText = fractionVal.toFixed(4); calculateTotals(); saveState(); return;
                     }
                 }
-
                 let val = parseFloat(nodeVal);
                 if(!isNaN(val)) e.target.innerText = val.toFixed(4);
                 calculateTotals();
             }
         });
 
+        // इसे रोक दिया गया है ताकि ये नए लॉजिक के साथ क्लैश न करे
+        /*
         document.getElementById('table-body').addEventListener('input', function(e) {
             markDirty();
             if (e.target.classList.contains('p-rakba') || e.target.classList.contains('c-rakba')) {
-                let row = e.target.closest('tr');
-                if(e.target.classList.contains('p-rakba')) {
-                    let origKhasra = row.getAttribute('data-orig-khasra');
-                    let pKhasras = row.querySelectorAll('.p-khasra');
-                    let pRakbas = row.querySelectorAll('.p-rakba');
-                    let counter = 1;
-
-                    pRakbas.forEach((td, idx) => {
-                        let valStr = td.childNodes[0] ? td.childNodes[0].nodeValue : td.innerText;
-                        let val = parseFloat(valStr);
-                        if(!isNaN(val) && val > 0) {
-                            if(pKhasras[idx] && document.activeElement !== pKhasras[idx]) {
-                                pKhasras[idx].innerText = origKhasra + '/' + counter;
-                            }
-                            if(pKhasras[idx]) counter++; 
-                        } else {
-                            if(pKhasras[idx] && document.activeElement !== pKhasras[idx]) pKhasras[idx].innerText = '';
-                        }
-                    });
-                }
-                calculateTotals();
+                // ... पुराना ऑटो खसरा लॉजिक ...
             }
         });
-        
-        document.getElementById('table-head').addEventListener('input', function(e) {
-            if(e.target.classList.contains('owner-header')) markDirty();
-        });
+        */
     }
 
     function calculateTotals() {
         const tbody = document.getElementById('table-body');
-        const rows = tbody.querySelectorAll('tr');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
         const tfoot = document.getElementById('table-foot');
         let currentCols = getCurrentCols();
         
-        let currentKita = 0, currentRakba = 0.0, globalProposedRakba = 0.0;
-        let proposedTotals = Array(state.proposedSets).fill().map(() => ({kita: 0, rakba: 0.0}));
+        let khataKita = 0, khataRakba = 0.0, khataProposedRakba = 0.0;
+        let khataProposedTotals = Array(state.proposedSets).fill().map(() => ({kita: 0, rakba: 0.0}));
 
-        rows.forEach(row => {
-            let cRakbaCell = row.querySelector('.c-rakba');
-            let rVal = 0;
-            if(cRakbaCell) {
-                let textNodeVal = cRakbaCell.childNodes[0] ? cRakbaCell.childNodes[0].nodeValue : cRakbaCell.innerText;
-                rVal = parseFloat(textNodeVal) || 0;
-                if(!isNaN(rVal) && rVal > 0) { currentRakba += rVal; currentKita++; }
-            }
-            
-            let pRakbas = row.querySelectorAll('.p-rakba');
-            let rowPrakbaSum = 0;
-            pRakbas.forEach((td, idx) => {
-                let textNodeVal = td.childNodes[0] ? td.childNodes[0].nodeValue : td.innerText;
-                let val = parseFloat(textNodeVal) || 0;
-                if(!isNaN(val) && val > 0) { 
-                    proposedTotals[idx].rakba += val; 
-                    proposedTotals[idx].kita++; 
-                    globalProposedRakba += val;
-                    rowPrakbaSum += val;
-                }
-            });
+        let grandKita = 0, grandRakba = 0.0, grandGlobalProposedRakba = 0.0;
+        let grandProposedTotals = Array(state.proposedSets).fill().map(() => ({kita: 0, rakba: 0.0}));
 
-            if(cRakbaCell && rVal > 0) {
-                let diff = rVal - rowPrakbaSum;
-                let diffHtml = '';
-                if(Math.abs(diff) < 0.0001) { diffHtml = `<span class="row-diff" style="color:green;">(शेष: 0.0000)</span>`; row.classList.remove('error-row'); }
-                else if (diff > 0) { diffHtml = `<span class="row-diff" style="color:blue;">(शेष: ${diff.toFixed(4)})</span>`; row.classList.remove('error-row'); }
-                else { diffHtml = `<span class="row-diff" style="color:red;">(अधिक: ${Math.abs(diff).toFixed(4)})</span>`; row.classList.add('error-row'); }
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            if (row.classList.contains('subtotal-row')) {
+                row.querySelector('.sub-kita').innerText = `किता ${khataKita}`;
                 
-                let existingDiff = cRakbaCell.querySelector('.row-diff');
-                if(existingDiff) existingDiff.remove();
-                cRakbaCell.insertAdjacentHTML('beforeend', diffHtml);
+                // === सुधार 1: खाते के योग में सटीक 4 डिजिट का अंतर ===
+                let gDiff = Number((khataRakba - khataProposedRakba).toFixed(4)); 
+                let gDiffHtml = '';
+                if(khataRakba > 0) {
+                    if (gDiff === 0) gDiffHtml = `<span class="total-diff" style="color:green; display:block; margin-top:4px;">(शेष: 0.0000)</span>`;
+                    else if (gDiff > 0) gDiffHtml = `<span class="total-diff" style="color:blue; display:block; margin-top:4px;">(शेष: ${gDiff.toFixed(4)})</span>`;
+                    else gDiffHtml = `<span class="total-diff" style="color:red; display:block; margin-top:4px;">(अधिक: ${Math.abs(gDiff).toFixed(4)})</span>`;
+                }
+                row.querySelector('.sub-rakba').innerHTML = `${khataRakba.toFixed(4)} ${gDiffHtml}`;
+                khataProposedTotals.forEach((pt, sIndex) => {
+                    let kCell = row.querySelector(`.sub-p-kita-${sIndex}`); if(kCell) kCell.innerText = `किता ${pt.kita}`;
+                    let rCell = row.querySelector(`.sub-p-rakba-${sIndex}`); if(rCell) rCell.innerText = pt.rakba.toFixed(4);
+                });
+                khataKita = 0; khataRakba = 0.0; khataProposedRakba = 0.0;
+                khataProposedTotals = Array(state.proposedSets).fill().map(() => ({kita: 0, rakba: 0.0}));
+                continue; 
             }
-        });
 
-        let gDiff = currentRakba - globalProposedRakba;
-        let gDiffHtml = '';
-        if(currentRakba > 0) {
-            if (Math.abs(gDiff) < 0.0001) gDiffHtml = `<br><span class="total-diff" style="color:green;">(शेष: 0.0000)</span>`;
-            else if (gDiff > 0) gDiffHtml = `<br><span class="total-diff" style="color:blue;">(शेष: ${gDiff.toFixed(4)})</span>`;
-            else gDiffHtml = `<br><span class="total-diff" style="color:red;">(अधिक: ${Math.abs(gDiff).toFixed(4)})</span>`;
+            let cRakbaCell = row.querySelector('.c-rakba');
+            if (cRakbaCell && cRakbaCell.style.display !== 'none') {
+                let rs = parseInt(cRakbaCell.getAttribute('rowspan')) || 1;
+                let rVal = parseFloat(getCleanText(cRakbaCell)) || 0;
+                
+                if (!isNaN(rVal) && rVal > 0) { khataRakba += rVal; khataKita++; grandRakba += rVal; grandKita++; }
+
+                let groupProposedSums = Array(state.proposedSets).fill(0);
+                for (let j = 0; j < rs; j++) {
+                    if (i + j < rows.length) {
+                        let subRow = rows[i + j];
+                        let pRakbas = subRow.querySelectorAll('.p-rakba');
+                        pRakbas.forEach((td, idx) => {
+                            if (td.style.display !== 'none') {
+                                let val = parseFloat(getCleanText(td)) || 0;
+                                if (!isNaN(val) && val > 0) {
+                                    groupProposedSums[idx] += val;
+                                    khataProposedTotals[idx].rakba += val; khataProposedTotals[idx].kita++; khataProposedRakba += val;
+                                    grandProposedTotals[idx].rakba += val; grandProposedTotals[idx].kita++; grandGlobalProposedRakba += val;
+                                }
+                            }
+                        });
+                    }
+                }
+
+                if (rVal > 0) {
+                    let totalGroupProposedSum = groupProposedSums.reduce((a, b) => a + b, 0);
+                    
+                    // === सुधार 2: प्रत्येक रो में सटीक 4 डिजिट का अंतर ===
+                    let diff = Number((rVal - totalGroupProposedSum).toFixed(4)); 
+                    let diffHtml = '';
+                    if(diff === 0) { diffHtml = `<span class="row-diff" style="color:green; display:block; margin-top:4px;">(शेष: 0.0000)</span>`; row.classList.remove('error-row'); }
+                    else if (diff > 0) { diffHtml = `<span class="row-diff" style="color:blue; display:block; margin-top:4px;">(शेष: ${diff.toFixed(4)})</span>`; row.classList.remove('error-row'); }
+                    else { diffHtml = `<span class="row-diff" style="color:red; display:block; margin-top:4px;">(अधिक: ${Math.abs(diff).toFixed(4)})</span>`; row.classList.add('error-row'); }
+                    
+                    cRakbaCell.querySelectorAll('.row-diff').forEach(e => e.remove());
+                    cRakbaCell.insertAdjacentHTML('beforeend', diffHtml);
+                }
+            }
         }
 
-        let html = `<tr class="total-row">`;
-        let preKhasraCount = currentCols.findIndex(c => c.n.includes('खसरा'));
-        
-        html += `<td colspan="${preKhasraCount}">योग</td>`;
-        html += `<td>किता ${currentKita}</td>`;
-        html += `<td style="line-height: 1.2;">${currentRakba.toFixed(4)} ${gDiffHtml}</td>`;
-        for(let i = preKhasraCount + 2; i < currentCols.length; i++) html += `<td></td>`;
-
-        proposedTotals.forEach((pt, sIndex) => {
-            getProposedCols(sIndex).forEach(c => {
-                if (c.n.includes('खसरा')) html += `<td>किता ${pt.kita}</td>`;
-                else if (c.n.includes('रकवा')) html += `<td>${pt.rakba.toFixed(4)}</td>`;
-                else html += `<td></td>`;
+        if (state.data.length > 1) {
+            
+            // === सुधार 3: महायोग (Grand Total) में सटीक 4 डिजिट का अंतर ===
+            let gDiff = Number((grandRakba - grandGlobalProposedRakba).toFixed(4)); 
+            let gDiffHtml = '';
+            if(grandRakba > 0) {
+                if (gDiff === 0) gDiffHtml = `<span class="total-diff" style="color:green; display:block; margin-top:4px;">(शेष: 0.0000)</span>`;
+                else if (gDiff > 0) gDiffHtml = `<span class="total-diff" style="color:blue; display:block; margin-top:4px;">(शेष: ${gDiff.toFixed(4)})</span>`;
+                else gDiffHtml = `<span class="total-diff" style="color:red; display:block; margin-top:4px;">(अधिक: ${Math.abs(gDiff).toFixed(4)})</span>`;
+            }
+            let html = `<tr class="total-row" style="background:#d1d8e0; font-size: 14px;">`;
+            let preKhasraCount = currentCols.findIndex(c => c.f === 'khasra');
+            html += `<td colspan="${preKhasraCount}" style="text-align:right; padding-right:15px;">महायोग (Grand Total)</td>`;
+            html += `<td>किता ${grandKita}</td>`; html += `<td style="line-height: 1.2;">${grandRakba.toFixed(4)} ${gDiffHtml}</td>`;
+            for(let i = preKhasraCount + 2; i < currentCols.length; i++) html += `<td></td>`;
+            grandProposedTotals.forEach((pt, sIndex) => {
+                getProposedCols(sIndex).forEach(c => {
+                    if (c.f === 'p_khasra') html += `<td>किता ${pt.kita}</td>`;
+                    else if (c.f === 'p_rakba') html += `<td>${pt.rakba.toFixed(4)}</td>`;
+                    else html += `<td></td>`;
+                });
             });
-        });
-        
-        html += `</tr>`;
-        tfoot.innerHTML = html;
+            html += `</tr>`; tfoot.innerHTML = html;
+        } else { tfoot.innerHTML = ''; }
     }
 
     let dragCol = null, startX = 0, startW = 0, linkType = null;
@@ -1014,36 +1257,70 @@ const App = (function() {
         document.querySelectorAll('.resizer').forEach(r => {
             r.addEventListener('mousedown', function(e) {
                 markDirty();
-                let colIndex = this.getAttribute('data-col');
-                dragCol = document.getElementById('table-colgroup').children[colIndex];
-                linkType = dragCol.getAttribute('data-link');
-                startX = e.pageX; startW = parseInt(dragCol.style.width);
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
+                let colIndex = this.getAttribute('data-col'); dragCol = document.getElementById('table-colgroup').children[colIndex];
+                linkType = dragCol.getAttribute('data-link'); startX = e.pageX; startW = parseInt(dragCol.style.width);
+                document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onMouseUp);
             });
         });
     }
+
     function onMouseMove(e) {
         if(dragCol) {
             let newWidth = startW + (e.pageX - startX);
             if(newWidth > 20) {
-                if(linkType) {
-                    document.querySelectorAll(`col[data-link="${linkType}"]`).forEach(c => c.style.width = newWidth + 'px');
-                    state.colsWidth[linkType] = newWidth;
-                } else {
-                    dragCol.style.width = newWidth + 'px';
-                    let colIndex = Array.from(dragCol.parentNode.children).indexOf(dragCol);
-                    state.colsWidth['col_'+colIndex] = newWidth;
-                }
+                if(linkType) { document.querySelectorAll(`col[data-link="${linkType}"]`).forEach(c => c.style.width = newWidth + 'px'); state.colsWidth[linkType] = newWidth; } 
+                else { dragCol.style.width = newWidth + 'px'; let colIndex = Array.from(dragCol.parentNode.children).indexOf(dragCol); state.colsWidth['col_'+colIndex] = newWidth; }
             }
         }
     }
-    function onMouseUp() { dragCol = null; linkType = null; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); }
+    
+    function onMouseUp() { 
+        if(dragCol) saveState();
+        dragCol = null; linkType = null; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); 
+    }
+
+    function attachRowResizer() {
+        const tbody = document.getElementById('table-body');
+        let isResizingRow = false; let currentDragRow = null; let startY = 0; let startH = 0;
+
+        document.addEventListener('mousemove', function(e) {
+            if(isResizingRow && currentDragRow) {
+                let newHeight = startH + (e.pageY - startY);
+                if(newHeight > 25) { currentDragRow.style.height = newHeight + 'px'; }
+                e.preventDefault(); 
+            } else {
+                let target = e.target.closest('td');
+                if(target && tbody.contains(target)) {
+                    let rect = target.getBoundingClientRect();
+                    if (e.clientY >= rect.bottom - 6 && e.clientY <= rect.bottom + 2) target.style.cursor = 'row-resize';
+                    else target.style.cursor = ''; 
+                }
+            }
+        });
+
+        document.addEventListener('mousedown', function(e) {
+            let target = e.target.closest('td');
+            if(target && tbody.contains(target)) {
+                let rect = target.getBoundingClientRect();
+                if (e.clientY >= rect.bottom - 6 && e.clientY <= rect.bottom + 2) {
+                    isResizingRow = true; currentDragRow = target.parentElement;
+                    startY = e.pageY; startH = currentDragRow.getBoundingClientRect().height;
+                    markDirty(); e.preventDefault(); 
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            if(isResizingRow) { isResizingRow = false; currentDragRow = null; saveState(); }
+        });
+    }
 
     return { 
         init, changeFormat, changePaperSize, changeFont, toggleGramColumn, 
         processData, openFile, saveFile, saveAsFile, createNewFile, 
-        exportToExcel, actionKhata, actionSet, markDirty 
+        exportToExcel, actionKhata, actionSet, actionRow, markDirty,
+        undo, redo, handleRakbaInput 
+        // ^^^ यहाँ handleRakbaInput को एक्सपोर्ट किया गया है
     };
 })();
 
