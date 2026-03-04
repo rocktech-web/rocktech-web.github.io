@@ -5,111 +5,170 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>स्मार्ट फर्द बटवारा निर्माण</title>
     <style>
+        /* =========================================
+           GLOBAL VARIABLES & PREMIUM CORPORATE THEME
+           ========================================= */
         :root {
-            --bg-color: #f0f2f5;
-            --primary: #2c3e50;
+            /* Theme Colors (Matched with PLM Suite) */
+            --bg-body: #F1F5F9;       /* Soft Slate 50 */
+            --bg-surface: #FFFFFF;    /* Pure White */
+            --border-color: #E2E8F0;  /* Slate 200 */
+            
+            --primary: #1E293B;       /* Deep Navy / Slate 800 */
+            --primary-light: #334155; /* Slate 700 */
+            
+            --accent: #0EA5E9;        /* Sky Blue 500 */
+            --accent-hover: #0284C7;  /* Sky Blue 600 */
+            --accent-light: #E0F2FE;  /* Sky Blue 50 */
+            
+            --text-main: #334155;     /* Slate 700 */
+            --text-muted: #64748B;    /* Slate 500 */
+            
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+            
             --page-width: 297mm; 
             --page-height: 210mm;
+            --transition: all 0.2s ease;
         }
         
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
         html, body { 
-            font-family: 'Arial', sans-serif; 
-            background: var(--bg-color); 
-            margin: 0; 
-            padding: 0; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
+            font-family: 'Poppins', 'Segoe UI', sans-serif; 
+            background: var(--bg-body); 
+            margin: 0; padding: 0; 
+            height: 100vh; display: flex; flex-direction: column; 
+            overflow: hidden; color: var(--text-main);
         }
         
+        /* =========================================
+           TOP CONTROL PANEL
+           ========================================= */
         .top-container { 
-            flex-shrink: 0; 
-            background: white; 
-            padding: 15px 25px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
-            z-index: 1000; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
+            flex-shrink: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            padding: 15px 25px; box-shadow: var(--shadow-md); z-index: 1000; 
+            display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid var(--border-color);
         }
         
-        .controls-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .controls-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         
-        .action-bar { background: #e8f4f8; padding: 8px 12px; border-radius: 6px; display: flex; gap: 15px; border: 1px solid #bce0ec; align-items: center; flex-wrap: wrap;}
-        .action-group { display: flex; gap: 4px; align-items: center; border-right: 2px solid #ccc; padding-right: 15px; }
+        /* Action Bar (Highlighted Area) */
+        .action-bar { 
+            background: var(--bg-body); padding: 10px 15px; border-radius: 8px; 
+            display: flex; gap: 15px; border: 1px solid var(--border-color); 
+            align-items: center; flex-wrap: wrap; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .action-group { display: flex; gap: 6px; align-items: center; border-right: 2px solid var(--border-color); padding-right: 15px; }
         .action-group:last-child { border-right: none; }
-        .action-label { font-size: 13px; font-weight: bold; color: #2c3e50; }
+        .action-label { font-size: 13px; font-weight: 600; color: var(--primary); }
 
-        .top-container textarea { width: 100%; height: 45px; padding: 8px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; }
-        button { padding: 6px 10px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s;}
-        button:hover { background: #1a252f; }
-        button.danger { background: #e74c3c; }
-        button.success { background: #27ae60; }
-        button.file-btn { background: #8e44ad; }
-        button.excel-btn { background: #217346; } 
-        select { padding: 6px; border: 1px solid #ccc; font-size: 12px; border-radius: 4px; }
+        /* Inputs & Textareas */
+        .top-container textarea { 
+            width: 100%; height: 45px; padding: 10px 14px; border: 1px solid var(--border-color); 
+            border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text-main);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: var(--transition); outline: none; box-sizing: border-box;
+        }
+        .top-container textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
 
-        #current-file-name { font-size: 12px; background: #f39c12; color: #fff; padding: 6px 12px; border-radius: 4px; font-weight: bold; display: inline-block; margin-left: auto;}
-        .unsaved { background: #e74c3c !important; }
+        select { 
+            padding: 8px 12px; border: 1px solid var(--border-color); font-size: 13px; 
+            border-radius: 8px; outline: none; background: #FFFFFF; color: var(--text-main);
+            transition: var(--transition); font-weight: 500; cursor: pointer;
+        }
+        select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
 
+        /* Buttons */
+        button { 
+            padding: 8px 14px; background: var(--primary-light); color: white; 
+            border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;
+            transition: var(--transition); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 4px;
+        }
+        button:hover { background: var(--primary); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        button:active { transform: translateY(0); }
+        
+        button.danger { background: #EF4444; } button.danger:hover { background: #DC2626; }
+        button.success { background: #10B981; } button.success:hover { background: #059669; }
+        button.file-btn { background: var(--accent); } button.file-btn:hover { background: var(--accent-hover); }
+        button.excel-btn { background: #059669; } button.excel-btn:hover { background: #047857; } 
+
+        #current-file-name { 
+            font-size: 12px; background: var(--accent-light); color: var(--accent-hover); 
+            padding: 6px 12px; border-radius: 6px; font-weight: 600; display: inline-block; 
+            margin-left: auto; border: 1px solid #BAE6FD; font-family: 'Courier New', monospace;
+        }
+        .unsaved { background: #FEF2F2 !important; color: #EF4444 !important; border-color: #FCA5A5 !important; }
+
+        /* =========================================
+           CANVAS & PAGE LAYOUT
+           ========================================= */
         .canvas-wrapper {
-            flex-grow: 1; 
-            width: 100%;
-            overflow: auto; 
-            background: var(--bg-color);
-            padding: 30px 20px;
-            box-sizing: border-box;
-            text-align: center; 
+            flex-grow: 1; width: 100%; overflow: auto; background: var(--bg-body);
+            padding: 30px 20px; box-sizing: border-box; text-align: center; 
         }
 
         .page {
-            background: white; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            padding: 10mm; 
-            position: relative; 
-            box-sizing: border-box; 
-            width: var(--page-width); 
-            min-height: var(--page-height);
-            display: inline-block; 
-            text-align: left; 
-            margin: 0 auto; 
-            transition: width 0.3s ease;
+            background: var(--bg-surface); box-shadow: var(--shadow-md);
+            padding: 15mm; position: relative; box-sizing: border-box; 
+            width: var(--page-width); min-height: var(--page-height);
+            display: inline-block; text-align: left; margin: 0 auto; 
+            transition: width 0.3s ease; border: 1px solid var(--border-color); border-radius: 4px;
         }
 
-        .office-heading { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 10px; width: 100%; display: block; }
-        .village-input { border-bottom: 1px dashed #000; display: inline-block; min-width: 100px; padding: 0 5px; outline: none; }
+        .office-heading { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 15px; width: 100%; display: block; color: #000; }
+        .village-input { border-bottom: 1px dashed #000; display: inline-block; min-width: 120px; padding: 0 5px; outline: none; font-weight: bold; }
         .village-input:empty:before { content: '...................'; color: #aaa; font-weight: normal; }
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
-        th, td { border: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; position: relative; word-wrap: break-word; }
-        .header-bg { font-weight: bold; background-color: #f9f9f9; }
-        .total-row { font-weight: bold; background-color: #eaeaea; }
-        .owner-header { background-color: #e8f4f8 !important; color: #000; }
-        .error-row { background-color: #ffe6e6 !important; }
-        .selected-cell { background-color: #fff3cd !important; outline: 2px solid #f39c12; z-index: 5; }
+        /* =========================================
+           TABLE DESIGN (HIGH READABILITY)
+           ========================================= */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; color: #000; }
+        th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; vertical-align: middle; position: relative; word-wrap: break-word; }
         
-        .row-diff { display: block; font-size: 11px; margin-top: 4px; user-select: none; pointer-events: none;}
-        .total-diff { font-size: 11px; }
+        .header-bg { font-weight: bold; background-color: var(--bg-body); color: #000; }
+        .total-row { font-weight: bold; background-color: #E2E8F0; } /* Slate 200 for strong totals */
+        .owner-header { background-color: var(--accent-light) !important; color: #000; }
         
-        .resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; z-index: 10; }
-        .resizer:hover { background: #3498db; }
+        .error-row { background-color: #FEF2F2 !important; } /* Soft red for errors */
+        .selected-cell { background-color: #FFFBEB !important; outline: 2px solid #F59E0B; z-index: 5; } /* Soft yellow focus */
+        
+        .row-diff { display: block; font-size: 11px; margin-top: 4px; user-select: none; pointer-events: none; font-family: monospace; font-weight: 600; }
+        .total-diff { font-size: 11px; font-family: monospace; font-weight: 600; }
+        
+        .resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; z-index: 10; transition: background 0.2s; }
+        .resizer:hover { background: var(--accent); }
 
-        .bottom-note { margin-top: 15px; font-size: 13px; font-weight: bold; width: 100%; text-align: center; border: none; outline: none; background: transparent; font-family: inherit; display: block; padding: 5px; }
+        .bottom-note { 
+            margin-top: 20px; font-size: 14px; font-weight: bold; width: 100%; 
+            text-align: center; border: none; outline: none; background: transparent; 
+            font-family: inherit; display: block; padding: 5px; color: #000;
+        }
 
+        /* =========================================
+           PRINT MEDIA QUERIES (CLEAN NO-THEME PRINT)
+           ========================================= */
         @media print {
-            html, body { overflow: visible !important; width: auto !important; height: auto !important; margin: 0; padding: 0; display: block !important; }
+            html, body { overflow: visible !important; width: auto !important; height: auto !important; margin: 0; padding: 0; display: block !important; background: white !important; }
             .top-container { display: none !important; }
-            .canvas-wrapper { display: block !important; overflow: visible !important; height: auto !important; padding: 0 !important; margin: 0 !important; text-align: left !important; }
+            .canvas-wrapper { display: block !important; overflow: visible !important; height: auto !important; padding: 0 !important; margin: 0 !important; text-align: left !important; background: white !important; }
             
-            .page { margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; page-break-inside: avoid; display: block !important; zoom: 1 !important; }
+            .page { margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; page-break-inside: avoid; display: block !important; zoom: 1 !important; border-radius: 0; }
             ::-webkit-scrollbar { display: none !important; }
-            * { scrollbar-width: none !important; }
+            * { scrollbar-width: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
             table, th, td { border: 1px solid #000 !important; }
+            .header-bg { background-color: #f2f2f2 !important; }
+            .total-row { background-color: #e6e6e6 !important; }
+            .owner-header { background-color: #e8f4f8 !important; }
+            
             .resizer, .row-diff, .total-diff { display: none !important; }
             .selected-cell { background-color: transparent !important; outline: none !important; }
             tfoot { display: table-row-group; } 
+            
             @page { size: auto; margin: 10mm; @bottom-center { content: "Page " counter(page) " to " counter(pages); } } 
         }
     </style>
