@@ -13,256 +13,223 @@
 
     <style>
         /* =========================================
-           GLOBAL VARIABLES & PREMIUM CORPORATE THEME
+           GLOBAL VARIABLES & DESKTOP SOFTWARE THEME
            ========================================= */
         :root {
-            /* Ultra-Professional & Eye-Friendly Palette */
-            --bg-body: #F1F5F9;       /* Soft Slate 50 - Cool and non-glaring */
-            --bg-surface: #FFFFFF;    /* Pure White for clean content cards */
-            --border-color: #E2E8F0;  /* Slate 200 - Very subtle borders */
+            --bg-app: #e2e8f0;        
+            --bg-panel: #FFFFFF;      
+            --bg-sidebar: #1E293B;    
+            --border-light: #E2E8F0;  
+            --border-dark: #CBD5E1;   
             
-            --primary: #1E293B;       /* Slate 800 - Deep, rich navy for sidebar and text */
-            --primary-light: #334155; /* Slate 700 - Slightly softer for secondary elements */
+            --primary: #0f172a;       
+            --primary-light: #334155; 
             
-            --accent: #0EA5E9;        /* Sky Blue 500 - Modern, trusted, high-visibility */
-            --accent-hover: #0284C7;  /* Sky Blue 600 - Deeper blue for hovers */
-            --accent-light: #E0F2FE;  /* Sky Blue 50 - For soft highlights/focus */
+            --accent: #0EA5E9;        
+            --accent-hover: #0284C7;  
+            --accent-light: #E0F2FE;  
             
-            --text-main: #334155;     /* Slate 700 - Highly readable, less harsh than black */
-            --text-muted: #64748B;    /* Slate 500 - For secondary text */
+            --text-main: #334155;     
+            --text-muted: #64748B;    
+            --text-sidebar: #94A3B8;
             
-            --sidebar-width: 280px;
-            --header-height: 70px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.1);
-            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
-            --shadow-hover: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+            --sidebar-width: 240px;
+            --header-height: 45px;
+            --transition: all 0.2s ease;
         }
 
-        /* Custom Scrollbar - Sleek & Modern */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         body {
-            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0; padding: 0;
-            background-color: var(--bg-body);
+            background-color: var(--bg-app);
             display: flex; height: 100vh; overflow: hidden;
             color: var(--text-main);
             -webkit-font-smoothing: antialiased;
         }
 
         /* =========================================
-           LOGIN OVERLAY (PREMIUM GRADIENT)
+           LOGIN OVERLAY 
            ========================================= */
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shakeError {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
         #loginOverlay {
             position: fixed; inset: 0; z-index: 9999;
-            /* Modern Tech Gradient: Deep Navy to Ocean Blue */
             background: linear-gradient(-45deg, #0F172A, #1E293B, #0284C7, #0EA5E9);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
             display: flex; justify-content: center; align-items: center;
         }
 
         .login-card {
-            background: #FFFFFF;
-            padding: 45px 40px 35px; border-radius: 16px;
-            width: 380px; text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            box-sizing: border-box;
+            background: #FFFFFF; padding: 40px 35px 30px; border-radius: 8px;
+            width: 360px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUpFade 0.5s ease forwards; box-sizing: border-box; border: 1px solid var(--border-dark);
         }
 
-        .login-header { margin-bottom: 35px; }
-        .login-title { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; }
+        .login-header { margin-bottom: 30px; }
+        .login-title { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2; }
         .login-title .plm-text { color: var(--primary); }
         .login-title .suite-text { color: var(--accent); }
-        .login-subtitle { margin: 6px 0 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+        .login-subtitle { margin: 4px 0 0; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-        .input-group { margin-bottom: 20px; position: relative; }
+        .input-group { margin-bottom: 15px; }
         .input-group input {
-            width: 100%; padding: 14px 18px; border: 2px solid var(--border-color);
-            border-radius: 10px; font-size: 15px; font-family: inherit;
-            color: var(--text-main); transition: var(--transition);
-            box-sizing: border-box; background: #F8FAFC; outline: none;
+            width: 100%; padding: 12px 15px; border: 1px solid var(--border-dark);
+            border-radius: 4px; font-size: 13px; font-family: inherit; font-weight: 500;
+            color: var(--text-main); transition: var(--transition); box-sizing: border-box; background: #F8FAFC; outline: none;
         }
-        .input-group input:focus {
-            border-color: var(--accent); background: var(--bg-surface);
-            box-shadow: 0 0 0 4px var(--accent-light); transform: translateY(-1px);
-        }
+        .input-group input:focus { border-color: var(--accent); background: var(--bg-panel); box-shadow: 0 0 0 3px var(--accent-light); }
 
         .login-btn {
-            width: 100%; padding: 15px; background: var(--accent);
-            color: white; border: none; border-radius: 10px;
-            font-size: 15px; font-weight: 600; letter-spacing: 1px;
-            cursor: pointer; transition: var(--transition); margin-top: 10px;
-            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);
+            width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 4px;
+            font-size: 14px; font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: var(--transition); margin-top: 10px;
         }
-        .login-btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.4); }
-        .login-btn:active { transform: translateY(0); }
+        .login-btn:hover { background: var(--accent-hover); }
 
-        .login-error { color: #EF4444; display: none; margin-top: 15px; font-size: 13px; font-weight: 500; background: #FEF2F2; padding: 10px; border-radius: 8px; border: 1px solid #FCA5A5; }
-        .login-error.show { display: block; animation: shakeError 0.4s ease forwards; }
+        .login-error { color: #EF4444; display: none; margin-top: 15px; font-size: 12px; font-weight: 600; background: #FEF2F2; padding: 8px; border-radius: 4px; border: 1px solid #FCA5A5; }
+        .login-error.show { display: block; }
 
         .login-footer {
             display: flex; justify-content: space-between; align-items: center;
-            margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);
-            font-size: 0.8rem; color: var(--text-muted); font-weight: 500;
+            margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-light);
+            font-size: 0.75rem; color: var(--text-muted); font-weight: 600;
         }
-        .version-info { font-family: 'Courier New', monospace; font-size: 0.8rem; background: var(--bg-body); padding: 4px 8px; border-radius: 6px; color: var(--primary); font-weight: 600; }
+        .version-info { font-family: monospace; font-size: 0.8rem; color: var(--primary); }
 
         /* =========================================
-           SIDEBAR & LAYOUT
+           SIDEBAR (PROJECT EXPLORER)
            ========================================= */
         .sidebar {
-            width: var(--sidebar-width);
-            background: var(--primary); /* Deep Slate */
-            color: #fff; display: none; flex-direction: column;
-            transition: var(--transition); z-index: 1000;
-            box-shadow: var(--shadow-md);
+            width: var(--sidebar-width); background: var(--bg-sidebar); color: #fff; 
+            display: none; flex-direction: column; transition: width 0.2s ease, transform 0.2s ease; 
+            z-index: 1000; flex-shrink: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
 
         .sidebar-header {
-            height: var(--header-height); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 0 20px;
-            background: rgba(0, 0, 0, 0.15); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            height: var(--header-height); display: flex; align-items: center; padding: 0 15px;
+            background: #0f172a; border-bottom: 1px solid #334155; box-sizing: border-box;
         }
-        .sidebar-title { font-size: 1.3rem; font-weight: 800; letter-spacing: 1px; color: #FFFFFF; }
+        .sidebar-title { font-size: 14px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.5px; }
         .sidebar-title span { color: var(--accent); }
-        .sidebar-subtitle { font-size: 10px; color: #94A3B8; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .sidebar-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
-        .menu-category { padding: 15px 25px 8px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748B; font-weight: 700; }
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 10px 0; }
+        .menu-category { padding: 12px 15px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-sidebar); font-weight: 700; }
         
         .nav-btn {
-            width: calc(100% - 30px); margin: 4px 15px; background: transparent; border: none; color: #CBD5E1; 
-            padding: 12px 15px; border-radius: 8px; text-align: left; font-size: 0.9rem; font-weight: 500;
+            width: 100%; background: transparent; border: none; color: #CBD5E1; 
+            padding: 8px 15px 8px 25px; text-align: left; font-size: 13px; font-weight: 500;
             font-family: inherit; cursor: pointer; transition: var(--transition);
-            display: flex; align-items: center; gap: 12px;
+            display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; box-sizing: border-box;
         }
-        .nav-btn:hover { background: rgba(255, 255, 255, 0.05); color: #FFFFFF; }
-        .nav-btn.active { background: var(--accent); color: #FFFFFF; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
+        .nav-btn:hover { background: #334155; color: #FFFFFF; }
+        .nav-btn.active { background: #334155; color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--accent); }
 
         /* =========================================
-           MAIN WRAPPER & HEADER
+           MAIN WRAPPER & TOP HEADER
            ========================================= */
-        .main-wrapper { flex: 1; display: none; flex-direction: column; min-width: 0; transition: margin-left 0.3s ease; }
+        .main-wrapper { flex: 1; display: none; flex-direction: column; min-width: 0; background: var(--bg-app); position: relative;}
         
         .top-header {
-            height: var(--header-height); background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px);
-            display: flex; align-items: center; padding: 0 30px; box-shadow: var(--shadow-sm);
-            z-index: 900; justify-content: space-between; border-bottom: 1px solid var(--border-color);
+            height: var(--header-height); background: var(--bg-panel); 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; 
+            border-bottom: 1px solid var(--border-dark); z-index: 900; flex-shrink: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .toggle-btn { background: var(--bg-body); border: none; font-size: 1.2rem; width: 40px; height: 40px; border-radius: 8px; color: var(--primary); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: var(--transition); }
-        .toggle-btn:hover { background: var(--border-color); }
         
-        .header-phone { font-weight: 600; color: var(--primary); font-family: 'Courier New', monospace; font-size: 1rem; background: var(--bg-body); padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); }
+        .menu-left { display: flex; align-items: center; gap: 10px; }
+        .toggle-btn { background: transparent; border: none; font-size: 18px; width: 30px; height: 30px; border-radius: 4px; color: var(--primary); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: var(--transition); }
+        .toggle-btn:hover { background: var(--border-light); }
+        .system-mode { font-size: 13px; font-weight: 600; color: var(--primary); }
+
+        .menu-right { display: flex; align-items: center; gap: 15px; }
+        .header-phone { font-weight: 600; color: var(--text-muted); font-size: 12px; font-family: monospace;}
 
         .btn-logout {
-            background: #FFFFFF; color: #EF4444; border: 1px solid #FCA5A5; padding: 8px 16px;
-            border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; font-size: 13px;
-            transition: var(--transition); display: flex; align-items: center; gap: 6px;
+            background: #FEF2F2; color: #EF4444; border: 1px solid #FCA5A5; padding: 4px 10px;
+            border-radius: 4px; cursor: pointer; font-weight: 600; font-family: inherit; font-size: 12px;
+            transition: var(--transition); display: flex; align-items: center; gap: 5px;
         }
-        .btn-logout:hover { background: #FEF2F2; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-
-        .content-area { flex: 1; padding: 30px; overflow-y: auto; background-color: var(--bg-body); }
+        .btn-logout:hover { background: #FEE2E2; }
 
         /* =========================================
-           CARDS & FORMS (CLEAN & PROFESSIONAL)
+           CONTENT AREA (WORKSPACE)
            ========================================= */
-        .tab-content { display: none; animation: slideUpFade 0.3s ease-out; }
-        .tab-content.active { display: block; }
+        .content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;}
         
+        /* Tab Management */
+        .tab-content { display: none; height: 100%; width: 100%; animation: slideUpFade 0.3s ease-out; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        
+        /* Iframe tools (Edge-to-Edge CAD feel) */
+        .full-screen-iframe { flex: 1; width: 100%; height: 100%; border: none; background: #fff; display: block; }
+        
+        /* Utility tools (Scrollable padded layout) */
+        .utility-tab { padding: 25px; overflow-y: auto; box-sizing: border-box; background: var(--bg-app); }
+
+        /* =========================================
+           UTILITY CARDS & FORMS (CAD STYLE)
+           ========================================= */
         .card { 
-            background: var(--bg-surface); padding: 25px; border-radius: 16px; 
-            box-shadow: var(--shadow-sm); margin-bottom: 25px; border: 1px solid var(--border-color);
-            transition: var(--transition);
+            background: var(--bg-panel); padding: 20px; border-radius: 6px; 
+            border: 1px solid var(--border-dark); margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        .card:hover { box-shadow: var(--shadow-md); }
 
         .section-title { 
-            font-size: 1.2rem; font-weight: 600; color: var(--primary); margin: 0 0 20px 0; 
-            /* space-between की जगह flex-start कर दिया गया है */
+            font-size: 14px; font-weight: 700; color: var(--primary); margin: 0 0 15px 0; 
             display: flex; justify-content: flex-start; align-items: center; 
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        
         .section-title::before {
-            content: ''; display: inline-block; width: 4px; height: 20px;
-            background: var(--accent); border-radius: 4px; margin-right: 10px; vertical-align: middle;
+            content: ''; display: inline-block; width: 4px; height: 16px;
+            background: var(--accent); border-radius: 2px; margin-right: 8px;
         }
+        .section-title button { margin-left: auto; }
 
-        /* यह नया कोड हेडिंग के अंदर मौजूद बटनों को एकदम दायीं ओर (Right) सेट कर देगा */
-        .section-title button {
-            margin-left: auto;
-        }
-
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
         textarea, input[type="text"], input[type="number"], input[type="file"] {
-            width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; 
-            font-family: inherit; font-size: 14px; box-sizing: border-box; background: #FFFFFF;
-            color: var(--text-main); transition: var(--transition); outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border-dark); border-radius: 4px; 
+            font-family: inherit; font-size: 13px; box-sizing: border-box; background: #FFFFFF;
+            color: var(--text-main); transition: var(--transition); outline: none;
         }
-        textarea:focus, input[type="text"]:focus, input[type="number"]:focus { 
-            border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); 
-        }
+        textarea:focus, input[type="text"]:focus, input[type="number"]:focus { border-color: var(--accent); }
         
         button.btn { 
-            background: var(--accent); color: white; 
-            border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; 
-            font-weight: 500; font-family: inherit; transition: var(--transition); 
-            box-shadow: var(--shadow-sm);
+            background: var(--accent); color: white; border: 1px solid var(--accent); 
+            padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px;
+            font-weight: 600; font-family: inherit; transition: var(--transition); 
         }
-        button.btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        button.btn:active { transform: translateY(0); }
-        
-        button.btn-outline { background: #FFFFFF; border: 1px solid var(--border-color); color: var(--text-main); box-shadow: none; font-weight: 500; }
-        button.btn-outline:hover { background: var(--bg-body); border-color: #CBD5E1; color: var(--primary); }
+        button.btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        button.btn-outline { background: #FFFFFF; border: 1px solid var(--border-dark); color: var(--text-main); }
+        button.btn-outline:hover { background: var(--border-light); }
 
         /* =========================================
-           TABLES (HIGH READABILITY & NO OVERLAP)
+           TABLES
            ========================================= */
-        .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
-        table { width: 100%; border-collapse: collapse; background: var(--bg-surface); min-width: 800px; }
-        th { background: var(--bg-body); color: var(--text-muted); padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; vertical-align: middle; }
-        .fraction-input { width: 80px; text-align: center; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); }
-        .res-text { font-family: monospace; font-weight: bold; color: var(--primary); }
-
+        .table-wrap { overflow-x: auto; border: 1px solid var(--border-dark); border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; background: var(--bg-panel); font-size: 12px; min-width: 800px; }
+        th { background: #f8fafc; color: var(--text-main); padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--border-dark); border-right: 1px solid var(--border-light); font-weight: 600;}
+        td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); border-right: 1px solid var(--border-light); vertical-align: middle; }
+        .fraction-input { width: 70px; text-align: center; padding: 4px 6px; }
+        .res-text { font-family: monospace; font-weight: 700; color: var(--primary); }
 
         /* =========================================
-           MEDIA QUERIES
+           RESPONSIVE LOGIC
            ========================================= */
         @media (min-width: 993px) {
             .sidebar.collapsed { margin-left: calc(var(--sidebar-width) * -1) !important; }
         }
         @media (max-width: 992px) {
-            .sidebar { position: fixed; height: 100vh; margin-left: calc(var(--sidebar-width) * -1); }
+            .sidebar { position: absolute; height: 100%; margin-left: calc(var(--sidebar-width) * -1); z-index: 1000;}
             .sidebar.show { margin-left: 0; }
             .grid { grid-template-columns: 1fr; }
-            .top-header { padding: 0 15px; }
-            .content-area { padding: 20px; }
-            .card { padding: 20px; }
         }
-        
     </style>
 </head>
 <body>
@@ -270,202 +237,187 @@
     <div id="loginOverlay">
         <div class="login-card">
             <div class="login-header">
-                <h2 class="login-title">
-                    <span class="plm-text">PLM</span> <span class="suite-text">Suite</span>
-                </h2>
+                <h2 class="login-title"><span class="plm-text">PLM</span> <span class="suite-text">Suite</span></h2>
                 <p class="login-subtitle">Pro Land Management Suite</p>
             </div>
-            
-            <div class="input-group">
-                <input type="text" id="userId" placeholder="User ID" autocomplete="off">
-            </div>
-            <div class="input-group">
-                <input type="password" id="password" placeholder="Password">
-            </div>
-            
+            <div class="input-group"><input type="text" id="userId" placeholder="User ID" autocomplete="off"></div>
+            <div class="input-group"><input type="password" id="password" placeholder="Password"></div>
             <button class="login-btn" onclick="customCheckLogin()">SECURE LOGIN</button>
-            <p id="loginError" class="login-error">Invalid Credentials! Access Denied.</p>
-            
+            <p id="loginError" class="login-error">❌ Invalid Credentials!</p>
             <div class="login-footer">
-                <span class="developer-info">Engineered by RockTechnology</span>
-                <span class="version-info">v2.1.0</span>
+                <span>By RockTechnology</span>
+                <span class="version-info">v2.2.0</span>
             </div>
         </div>
     </div>
 
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-title">PLM<span> Suite</span></div>
-            <div class="sidebar-subtitle">Pro Land Management Suite</div>
+            <div class="sidebar-title">🗂️ PLM<span> Suite</span></div>
         </div>
         <div class="sidebar-menu">
-            <div class="menu-category">डेटा प्रबंधन</div>
+            <div class="menu-category">Data Processing</div>
             <button class="nav-btn active" onclick="switchTab(event, 'extTab')">📄 B1 Extractor</button>
             <button class="nav-btn" onclick="switchTab(event, 'fmtTab')">📊 Data Formatter</button>
 
-            <div class="menu-category">राजस्व गणना</div>
+            <div class="menu-category">Revenue Calc Tools</div>
             <button class="nav-btn" onclick="switchTab(event, 'batTab')">⚖️ Batwara Calc</button>
-            <button class="nav-btn" onclick="switchTab(event, 'batwaraProposal')">📑 Batwara Proposal</button>
             <button class="nav-btn" onclick="switchTab(event, 'fracTab')">🧮 Fraction Calc</button>
 
-            <div class="menu-category">नक्शा एवं रेखांकन</div>
+            <div class="menu-category">Drafting & Maps (CAD)</div>
             <button class="nav-btn" onclick="switchTab(event, 'nakshaTab')">🗺️ Nazri Naksha</button>
             <button class="nav-btn" onclick="switchTab(event, 'traceNaksha')">✏️ Trace Naksha</button>
+            <button class="nav-btn" onclick="switchTab(event, 'batwaraProposal')">📑 Batwara Proposal</button>
 
-            <div class="menu-category">अन्य टूल्स</div>
-            <button class="nav-btn" onclick="switchTab(event, 'downTab')">⬇️ Download Formats</button>
+            <div class="menu-category">Cloud Repository</div>
+            <button class="nav-btn" onclick="switchTab(event, 'downTab')">⬇️ Server Formats</button>
         </div>
     </nav>
 
     <div class="main-wrapper" id="mainWrapper">
+        
         <header class="top-header">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-                <span style="font-weight: 600; color: var(--primary); font-family: monospace; font-size: 1.1rem;">📞 7869731689</span>
+            <div class="menu-left">
+                <button class="toggle-btn" onclick="toggleSidebar()" title="Toggle Explorer">☰</button>
+                <div class="system-mode">System Mode: <span style="color:var(--accent);">Pro</span></div>
             </div>
             
-            <button onclick="if(confirm('क्या आप लॉगआउट करना चाहते हैं?')) { document.querySelectorAll('input, textarea').forEach(el => el.value = ''); location.reload(); }" 
-                    style="background: #1E293B; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: inherit; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 5px rgba(231, 76, 60, 0.3);">
-                🚪 Logout
-            </button>
+            <div class="menu-right">
+                <span class="header-phone">📞 Help: 7869731689</span>
+                <button class="btn-logout" onclick="if(confirm('Are you sure you want to exit?')) { location.reload(); }">🚪 Exit</button>
+            </div>
         </header>
 
         <main class="content-area" id="mainApp">
             
-            <div id="extTab" class="tab-content active">
+            <div id="extTab" class="tab-content utility-tab active">
                 <div class="card">
                     <div class="section-title">MP Land Records Extractor (Smart Logic)</div>
-                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; display:flex; gap:10px; align-items:center;">
-                        <input type="file" id="fileInput" accept=".txt" multiple style="border:none;">
-                        <button class="btn" onclick="processLandData()">Extract Data</button>
+                    <div style="background:#f8fafc; padding:15px; border-radius:4px; display:flex; gap:10px; align-items:center; border:1px solid var(--border-light);">
+                        <input type="file" id="fileInput" accept=".txt" multiple style="border:none; padding:0;">
+                        <button class="btn" onclick="processLandData()">Extract Data ⚡</button>
                     </div>
                 </div>
-                <div class="card">
+                <div class="card" style="flex:1; display:flex; flex-direction:column;">
                     <div class="section-title">
-                        Extracted Data (खसरा एवं भूमिस्वामी विवरण) 
-                        <button class="btn btn-outline" style="font-size:12px; padding:5px 10px;" onclick="copyData('combinedOutput')">Copy All</button>
+                        Extracted Output 
+                        <button class="btn btn-outline" style="padding:4px 10px;" onclick="copyData('combinedOutput')">📄 Copy All</button>
                     </div>
-                    <textarea id="combinedOutput" rows="30" placeholder="सभी फाइलों का खसरा एवं भूमिस्वामी विवरण यहाँ एक साथ दिखाई देगा..."></textarea>
+                    <textarea id="combinedOutput" style="flex:1; min-height: 400px; resize:none; font-family:monospace;" placeholder="Extracted Khasra & Ownership details will appear here..."></textarea>
                 </div>
             </div>
-            <div id="batTab" class="tab-content">
+
+            <div id="batTab" class="tab-content utility-tab">
                 <div class="card">
-                    <div class="section-title">
-                        <span>बटवारा गणना (Proportional Renormalization)</span>
-                    </div>
+                    <div class="section-title">बटवारा गणना (Proportional Renormalization)</div>
                     <div class="grid" style="grid-template-columns: 1fr 3fr;">
-                        <div style="background:#fff8e1; padding:15px; border-radius:8px; border:1px solid #ffe0b2;">
-                            <label style="font-weight:bold; color:#f57c00;">कुल रकबा (Total Area)</label>
-                            <input type="text" id="totalArea" value="0.6000" style="margin-top:5px; font-weight:bold;">
-                            <button class="btn" style="width:100%; margin-top:15px;" onclick="parseAndLoad()">डाटा लोड करें</button>
+                        <div style="background:#fffbeb; padding:15px; border-radius:4px; border:1px solid #fde68a;">
+                            <label style="font-weight:700; color:#d97706; font-size:11px;">कुल रकबा (Total Area)</label>
+                            <input type="text" id="totalArea" value="0.6000" style="margin-top:5px; font-weight:bold; color:#b45309; border-color:#fcd34d;">
+                            <button class="btn" style="width:100%; margin-top:15px; background:#d97706; border-color:#d97706;" onclick="parseAndLoad()">डाटा लोड करें</button>
                         </div>
                         <div>
-                            <textarea id="rawInput" rows="5" placeholder="नाम और हिस्सा..."></textarea>
+                            <textarea id="rawInput" rows="4" placeholder="नाम और हिस्सा..."></textarea>
                         </div>
                     </div>
                 </div>
-                <div class="card" style="padding:0; overflow:hidden;">
-                    <div class="table-wrap">
+                <div class="card" style="padding:0; overflow-x:auto;">
+                    <div class="table-wrap" style="border:none; border-radius:0;">
                         <table id="dataTable">
                             <thead>
                                 <tr>
                                     <th width="5%">क्र.</th>
                                     <th width="40%">नाम</th>
                                     <th width="10%" style="text-align: center;">मूल हिस्सा</th>
-                                    <th width="10%">हटाना (रकबा या FULL)</th>
+                                    <th width="15%">हटाना (रकबा या FULL)</th>
                                     <th width="10%" style="text-align: center;">घटाया भिन्न</th>
                                     <th width="10%" style="text-align: center;">शेष हिस्सा</th>
-                                    <th width="15%" style="text-align: center;">पुनर्निधारित हिस्सा</th>
+                                    <th width="10%" style="text-align: center;">पुनर्निधारित हिस्सा</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div style="padding:15px; background:#f1f1f1; text-align:right;">
-                        <button class="btn" onclick="calculate()">गणना करें (Calculate)</button>
+                    <div style="padding:10px 15px; background:#f8fafc; text-align:right; border-top:1px solid var(--border-dark);">
+                        <button class="btn" style="background:var(--success); border-color:var(--success);" onclick="calculate()">गणना करें (Calculate) ⚡</button>
                     </div>
                 </div>
-                <div id="outputPanel" class="card" style="display:none; background:#e8f5e9; border:1px solid #c8e6c9;">
-                    <div class="section-title" style="border-left-color:#2e7d32; margin-bottom:10px;">
-                        <span style="color:#2e7d32;">परिणाम</span>
-                        <button class="btn" style="background:#2e7d32;" onclick="copyBatwaraResult()">Copy Text</button>
+                <div id="outputPanel" class="card" style="display:none; background:#ecfdf5; border-color:#a7f3d0;">
+                    <div class="section-title" style="margin-bottom:10px; color:#059669;">
+                        परिणाम (Result)
+                        <button class="btn" style="background:#059669; border-color:#059669;" onclick="copyBatwaraResult()">Copy Text</button>
                     </div>
-                    <div id="resultText" style="background:white; padding:15px; border-radius:6px; font-family:monospace; margin-bottom:10px; border:1px solid #ccc;"></div>
+                    <div id="resultText" style="background:white; padding:10px; border-radius:4px; font-family:monospace; border:1px solid #a7f3d0; font-size:13px;"></div>
                 </div>
             </div>
 
             <div id="batwaraProposal" class="tab-content">
-                <div style="width: 100%; height: 85vh; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: white;">
-                    <iframe src="https://rocktech-web.github.io/BatwaraProposal.html" style="width: 100%; height: 100%; border: none;" title="batwaraProposal" allow="downloads"></iframe>
-                </div>
+                <iframe src="https://rocktech-web.github.io/BatwaraProposal.html" style="width: 100%; height: 100%; border: none;" title="batwaraProposal" allow="downloads"></iframe>
             </div>
-            
-            <div id="fracTab" class="tab-content">
+
+            <div id="fracTab" class="tab-content utility-tab">
                 <div class="card">
-                    <div class="section-title">Fraction Tools</div>
+                    <div class="section-title">Fraction & Ratio Tools</div>
                     <div class="grid">
-                        <div>
-                            <label><b>Add Fractions</b></label>
-                            <textarea id="sumInput" rows="3"></textarea>
-                            <button class="btn" style="margin-top:5px;" onclick="calculateSum()">Sum</button>
-                            <div id="sumResult" class="res-text" style="margin-top:10px; color:var(--accent);"></div>
+                        <div style="background:#f8fafc; padding:15px; border-radius:4px; border:1px solid var(--border-light);">
+                            <label style="font-size:12px; font-weight:700;">Add Fractions (Sum)</label>
+                            <textarea id="sumInput" rows="8" style="margin-top:5px;"></textarea>
+                            <button class="btn" style="margin-top:10px; width:100%;" onclick="calculateSum()">Calculate Sum</button>
+                            <div id="sumResult" class="res-text" style="margin-top:10px; font-size:16px; text-align:center;"></div>
                         </div>
-                        <div>
-                            <label><b>Subtract / Divide</b></label>
+                        <div style="background:#f8fafc; padding:15px; border-radius:4px; border:1px solid var(--border-light);">
+                            <label style="font-size:12px; font-weight:700;">Subtract Fractions (Main - Sub)</label>
                             <div style="display:flex; gap:10px; margin-top:5px;">
-                                <input type="text" id="subMain" placeholder="Main">
-                                <input type="text" id="subValues" placeholder="Sub">
+                                <input type="text" id="subMain" placeholder="Main (e.g. 1/2)">
+                                <input type="text" id="subValues" placeholder="Sub (e.g. 1/4)">
                             </div>
-                            <button class="btn" style="margin-top:5px;" onclick="calculateSub()">Subtract</button>
-                            <div id="subResult" class="res-text" style="margin-top:5px; color:var(--accent);"></div>
+                            <button class="btn" style="margin-top:10px; width:100%; background:#8b5cf6; border-color:#8b5cf6;" onclick="calculateSub()">Subtract</button>
+                            <div id="subResult" class="res-text" style="margin-top:10px; font-size:16px; text-align:center; color:#8b5cf6;"></div>
                             
-                            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
-                                <div style="display:flex; gap:10px;">
-                                    <input type="text" id="divMain" placeholder="Frac">
-                                    <input type="number" id="divCount" placeholder="Parts">
-                                </div>
-                                <button class="btn" style="margin-top:5px;" onclick="calculateDiv()">Divide</button>
-                                <div id="divResult" class="res-text" style="margin-top:5px; color:var(--accent);"></div>
+                            <hr style="border:none; border-top:1px dashed var(--border-dark); margin:15px 0;">
+                            
+                            <label style="font-size:12px; font-weight:700;">Divide Fraction</label>
+                            <div style="display:flex; gap:10px; margin-top:5px;">
+                                <input type="text" id="divMain" placeholder="Frac (e.g. 1/2)">
+                                <input type="number" id="divCount" placeholder="Parts (e.g. 3)">
                             </div>
+                            <button class="btn" style="margin-top:10px; width:100%; background:#14b8a6; border-color:#14b8a6;" onclick="calculateDiv()">Divide</button>
+                            <div id="divResult" class="res-text" style="margin-top:10px; font-size:16px; text-align:center; color:#0d9488;"></div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div id="fmtTab" class="tab-content">
+            <div id="fmtTab" class="tab-content utility-tab">
                 <div class="card">
                     <div class="section-title">Data Formatter (Table Generator)</div>
-                    <div class="grid" style="grid-template-columns: 1fr;">
-                        <div>
-                            <label><b>डाटा पेस्ट करें (Comma Separated):</b></label>
-                            <textarea id="fmtInput" rows="5" placeholder="उदाहरण: राम 1/4, श्याम 1/4..."></textarea>
-                            <button class="btn" style="margin-top:15px;" onclick="processFmt()">Format Data</button>
-                        </div>
-                    </div>
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Raw Data (Comma Separated):</label>
+                    <textarea id="fmtInput" rows="4" placeholder="e.g. राम 1/4, श्याम 1/4" style="margin-top:5px;"></textarea>
+                    <button class="btn" style="margin-top:10px;" onclick="processFmt()">Generate Tables ⚡</button>
                 </div>
 
                 <div id="fmtResult" class="grid" style="display:none; grid-template-columns: 1fr 2fr;">
-                    <div class="card">
-                        <div class="section-title">
-                            <span>Table 1: संयुक्त विवरण</span>
-                            <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblRaw')">Copy</button>
+                    <div class="card" style="padding:15px;">
+                        <div class="section-title" style="margin-bottom:10px;">
+                            Table 1: संयुक्त
+                            <button class="btn btn-outline" style="padding:2px 8px;" onclick="copyTable('tblRaw')">Copy</button>
                         </div>
                         <div class="table-wrap">
                             <table id="tblRaw">
-                                <thead><tr><th>भूमि स्‍वामी का नाम + हिस्‍सा</th></tr></thead>
+                                <thead><tr><th>नाम + हिस्सा</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="section-title">
-                            <span>Table 2: विस्तृत विवरण</span>
-                            <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="copyTable('tblDetail')">Copy</button>
+                    <div class="card" style="padding:15px;">
+                        <div class="section-title" style="margin-bottom:10px;">
+                            Table 2: विस्तृत
+                            <button class="btn btn-outline" style="padding:2px 8px;" onclick="copyTable('tblDetail')">Copy</button>
                         </div>
                         <div class="table-wrap">
                             <table id="tblDetail">
                                 <thead>
-                                    <tr><th>भूमि स्‍वामी का नाम</th><th>हिस्‍सा</th><th>अंश</th><th>हर</th></tr>
+                                    <tr><th>नाम</th><th>हिस्सा</th><th>अंश</th><th>हर</th></tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
@@ -475,24 +427,20 @@
             </div>
 
             <div id="nakshaTab" class="tab-content">
-                <div style="width: 100%; height: 85vh; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: white;">
-                    <iframe src="https://rocktech-web.github.io/NajriNaksha.html" style="width: 100%; height: 100%; border: none;" title="NajriNaksha" allow="downloads"></iframe>
-                </div>
+                <iframe src="https://rocktech-web.github.io/NajriNaksha.html" style="width: 100%; height: 100%; border: none;" title="NajriNaksha" allow="downloads"></iframe>
             </div>
 
             <div id="traceNaksha" class="tab-content">
-                <div style="width: 100%; height: 85vh; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); background: white;">
-                    <iframe src="https://rocktech-web.github.io/TraceNaksha.html" style="width: 100%; height: 100%; border: none;" title="TraceNaksha" allow="downloads"></iframe>
-                </div>
+                <iframe src="https://rocktech-web.github.io/TraceNaksha.html" style="width: 100%; height: 100%; border: none;" title="TraceNaksha" allow="downloads"></iframe>
             </div>
             
-            <div id="downTab" class="tab-content">
+            <div id="downTab" class="tab-content utility-tab">
                 <div class="card">
                     <div class="section-title">
-                        <span>File Repository</span>
-                        <button class="btn" style="background:#2c3e50;" onclick="loadGithubFiles()">↻ Refresh List</button>
+                        Cloud Server Repository
+                        <button class="btn" style="background:var(--primary); border-color:var(--primary);" onclick="loadGithubFiles()">↻ Refresh Server</button>
                     </div>
-                    <div id="fileLoader" style="display:none; text-align:center; padding:20px;">Loading files from server...</div>
+                    <div id="fileLoader" style="display:none; text-align:center; padding:20px; font-weight:bold; color:var(--accent);">Connecting to secure server...</div>
                     <div id="filesContainer"></div>
                 </div>
             </div>
@@ -500,26 +448,20 @@
         </main>
     </div>
 
-
-
     <script>
-        // --- NEW SIDEBAR & AUTH LOGIC ---
         function customCheckLogin() {
             const errorElement = document.getElementById('loginError');
-            errorElement.classList.remove('show'); // Reset animation
-            
-            // छोटा सा डिले देकर चेक करें ताकि एनिमेशन स्मूथ लगे
+            errorElement.classList.remove('show');
             setTimeout(() => {
                 if(document.getElementById('userId').value === "RockTechnology" && document.getElementById('password').value === "Manish@31689") {
                     document.getElementById('loginOverlay').style.opacity = '0';
                     document.getElementById('loginOverlay').style.transition = 'opacity 0.5s ease';
-                    
                     setTimeout(() => {
                         document.getElementById('loginOverlay').style.display = 'none';
                         document.getElementById('sidebar').style.display = 'flex';
                         document.getElementById('mainWrapper').style.display = 'flex';
                         if (typeof drawCanvas === "function") drawCanvas(); 
-                    }, 500); // फेड आउट होने के बाद हाइड करें
+                    }, 500);
                 } else { 
                     errorElement.classList.add('show'); 
                 }
@@ -531,7 +473,7 @@
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('sidebar').style.display = 'flex';
                 document.getElementById('mainWrapper').style.display = 'flex';
-                drawCanvas(); 
+                if (typeof drawCanvas === "function") drawCanvas(); 
             } else { document.getElementById('loginError').style.display = 'block'; }
         }
 
@@ -541,24 +483,20 @@
             document.getElementById(tabId).classList.add('active');
             evt.currentTarget.classList.add('active');
             if (window.innerWidth <= 992) document.getElementById('sidebar').classList.remove('show');
-            if(tabId === 'nakshaTab') drawCanvas();
+            if(tabId === 'nakshaTab' && typeof drawCanvas === "function") drawCanvas();
         }
 
         function toggleSidebar() { 
-    const sidebar = document.getElementById('sidebar');
-    
-    if (window.innerWidth <= 992) {
-        // मोबाइल के लिए: 'show' क्लास का उपयोग
-        sidebar.classList.remove('collapsed'); 
-        sidebar.classList.toggle('show');      
-    } else {
-        // डेस्कटॉप के लिए: 'collapsed' क्लास का उपयोग
-        sidebar.classList.remove('show');      
-        sidebar.classList.toggle('collapsed'); 
-    }
-}
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth <= 992) {
+                sidebar.classList.remove('collapsed'); 
+                sidebar.classList.toggle('show');      
+            } else {
+                sidebar.classList.remove('show');      
+                sidebar.classList.toggle('collapsed'); 
+            }
+        }
 
-        // --- GENERIC COPY ---
         function copyData(id) { document.getElementById(id).select(); document.execCommand('copy'); }
         function copyBatwaraResult() { 
             const text = document.getElementById('resultText').innerText;
@@ -566,12 +504,10 @@
             navigator.clipboard.writeText(text).then(() => { alert("टेक्स्ट कॉपी कर लिया गया है!"); }).catch(err => { alert("कॉपी करने में त्रुटि: " + err); });
         }
 
-        // --- B1 EXTRACTOR LOGIC (COMBINED OUTPUT - MULTIPLE FILES) ---
         async function processLandData() {
             const files = document.getElementById('fileInput').files;
             if(files.length === 0) return alert("Select File(s) (.txt)");
 
-            // आउटपुट बॉक्स को Processing स्टेट में सेट करें
             const outputBox = document.getElementById('combinedOutput');
             outputBox.value = "Processing Data...";
 
@@ -587,7 +523,6 @@
                 let khata = "अज्ञात"; 
                 if(lines.length > 20) { let rawKhata = lines[20]; let match = rawKhata.match(/\d+/); if(match) khata = match[0]; }
                 
-                // भूमिस्वामी (Owners) एक्सट्रैक्ट करें
                 let owners = []; let nameBuffer = ""; 
                 for(let j = 22; j < lines.length; j++) {
                     let line = lines[j].trim(); if(!line) continue;
@@ -598,7 +533,6 @@
                     } else if(line.includes("भूमि स्वामी") || line.length < 2) continue; else nameBuffer += line + " ";
                 }
 
-                // खसरा (Khasara) एक्सट्रैक्ट करें
                 let khasaras = []; let totalArea = 0.0;
                 for(let j = 0; j < lines.length; j++) {
                     if(lines[j].includes("(S)")) {
@@ -607,30 +541,18 @@
                     }
                 }
                 
-                // --- डेटा को एक साथ फॉरमेट करना ---
                 let fileOutput = `--- [फाइल: ${file.name}] ---\n`;
-                
-                // 1. पहले खसरा रकवा विवरण
                 let header = `ग्राम ${gram} स्थित भूमि खाता क्रमांक ${khata}, खसरा क्रमांक `; 
                 let list = khasaras.join(", "); 
                 let footer = `\nकिता ${khasaras.length} कुल रकवा ${totalArea.toFixed(4)}हे.`;
-                if (khasaras.length > 0) {
-                    fileOutput += header + list + footer + "\n\n";
-                }
-
-                // 2. उसके बाद भूमिस्वामी विवरण
-                if (owners.length > 0) {
-                    fileOutput += `भूमिस्वामी विवरण:\n` + owners.join(", ") + "\n";
-                }
+                if (khasaras.length > 0) { fileOutput += header + list + footer + "\n\n"; }
+                if (owners.length > 0) { fileOutput += `भूमिस्वामी विवरण:\n` + owners.join(", ") + "\n"; }
                 
                 allFilesData.push(fileOutput);
             }
-
-            // सभी फाइलों के डेटा को एक साथ दिखाएं (हर फाइल के बीच एक डिवाइडर लाइन के साथ)
             outputBox.value = allFilesData.join("\n========================================\n\n");
         }
 
-        // फाइल को रीड करने के लिए हेल्पर फंक्शन
         function readFileAsync(file) {
             return new Promise((resolve, reject) => {
                 let reader = new FileReader();
@@ -640,7 +562,6 @@
             });
         }
 
-        // --- MATH & BATWARA LOGIC ---
         class Fraction {
             constructor(n,d){if(d===0n)throw new Error("Div0");if(d<0n){n=-n;d=-d}this.n=BigInt(n);this.d=BigInt(d);this.simplify()}
             static gcd(a,b){return b===0n?a:Fraction.gcd(b,a%b)}
@@ -669,12 +590,12 @@
                     <td>
                         <div style="display:flex;gap:5px;">
                             <input type="text" class="fraction-input" placeholder="0.00 या 1/4" value="${r.manualRemoveStr}" onchange="upd(${i},this.value)" ${r.isFullRemove?'disabled':''}>
-                            <button class="btn" style="padding:2px 8px;font-size:11px;${r.isFullRemove?'background:#c62828':''}" onclick="tog(${i})">${r.isFullRemove?'UNDO':'FULL'}</button>
+                            <button class="btn" style="padding:2px 8px;font-size:11px;${r.isFullRemove?'background:#c62828;border-color:#c62828;':''}" onclick="tog(${i})">${r.isFullRemove?'UNDO':'FULL'}</button>
                         </div>
                     </td>
                     <td class="res-text" id="d-${i}">-</td>
                     <td class="res-text" id="r-${i}">-</td>
-                    <td class="res-text" id="n-${i}" style="color:green">-</td>
+                    <td class="res-text" id="n-${i}" style="color:var(--success)">-</td>
                 </tr>`;
             });
         }
@@ -684,53 +605,46 @@
             try{
                 let totAStr = document.getElementById('totalArea').value || "1";
                 let totA = Fraction.fromString(totAStr);
-                let totA_float = parseFloat(totAStr) || 1; // रकबा कैलकुलेशन के लिए
+                let totA_float = parseFloat(totAStr) || 1; 
                 
                 let sumRem=new Fraction(0,1), states=[], remAreas=[];
                 
                 rowData.forEach((r,i)=>{
-                    // 1. मूल हिस्सा और उसका रकबा
                     let origArea = (Number(r.origShare.n) / Number(r.origShare.d)) * totA_float;
                     document.getElementById(`orig-${i}`).innerHTML = `${r.origShare.toString()}<br><span style="font-size:11px;color:#d35400;">(${origArea.toFixed(4)} हे.)</span>`;
 
-                    // 2. हटाए गए हिस्से की स्मार्ट पहचान (रकबा या भिन्न)
                     let ded=new Fraction(0,1); 
                     if(r.isFullRemove) {
                         ded=r.origShare; 
                     } else if(r.manualRemoveStr) {
                         if (r.manualRemoveStr.includes('/')) {
-                            ded = Fraction.fromString(r.manualRemoveStr); // अगर '/' है, तो इसे भिन्न (Share) मानें
+                            ded = Fraction.fromString(r.manualRemoveStr); 
                         } else {
-                            ded = Fraction.fromString(r.manualRemoveStr).div(totA); // अन्यथा इसे रकबा (Area) मानें
+                            ded = Fraction.fromString(r.manualRemoveStr).div(totA); 
                         }
                     }
                     
-                    // 3. शेष हिस्सा
                     let rem=r.origShare.sub(ded); 
                     if(rem.n<0n) rem=new Fraction(0,1);
                     
-                    // 4. घटाया गया हिस्सा और रकबा प्रदर्शित करें
                     let dedArea = (Number(ded.n) / Number(ded.d)) * totA_float;
-                    document.getElementById(`d-${i}`).innerHTML = ded.n===0n ? "-" : `${ded.toString()}<br><span style="font-size:11px;color:#c0392b;">(-${dedArea.toFixed(4)} हे.)</span>`;
+                    document.getElementById(`d-${i}`).innerHTML = ded.n===0n ? "-" : `${ded.toString()}<br><span style="font-size:11px;color:#EF4444;">(-${dedArea.toFixed(4)} हे.)</span>`;
                     
-                    // 5. शेष हिस्सा और रकबा प्रदर्शित करें
                     let remArea = (Number(rem.n) / Number(rem.d)) * totA_float;
-                    document.getElementById(`r-${i}`).innerHTML = `${rem.toString()}<br><span style="font-size:11px;color:#2980b9;">(${remArea.toFixed(4)} हे.)</span>`;
+                    document.getElementById(`r-${i}`).innerHTML = `${rem.toString()}<br><span style="font-size:11px;color:#0EA5E9;">(${remArea.toFixed(4)} हे.)</span>`;
                     
                     sumRem=sumRem.add(rem); 
                     states.push(rem);
-                    remAreas.push(remArea); // नए हिस्से के लिए रकबा स्टोर करें
+                    remAreas.push(remArea); 
                 });
                 
                 let out=[]; 
                 rowData.forEach((r,i)=>{
-                    // 6. पुनर्निधारित (Renormalized) हिस्सा
                     let ns="0"; 
                     if(states[i].n>0n && sumRem.n>0n) {
                         ns=states[i].div(sumRem).toString(); 
                     }
-                    // नया हिस्सा और उसका वास्तविक भौतिक रकबा (जो बदलता नहीं है) प्रदर्शित करें
-                    document.getElementById(`n-${i}`).innerHTML = ns==="0" ? "-" : `<b>${ns}</b><br><span style="font-size:11px;color:#27ae60;">(${remAreas[i].toFixed(4)} हे.)</span>`;
+                    document.getElementById(`n-${i}`).innerHTML = ns==="0" ? "-" : `<b>${ns}</b><br><span style="font-size:11px;color:#10B981;">(${remAreas[i].toFixed(4)} हे.)</span>`;
                     
                     if(states[i].n>0n) out.push(`${r.name} ${ns}`);
                 });
@@ -740,12 +654,10 @@
             }catch(e){console.error(e)}
         }
         
-        // Fraction Tools
         function calculateSum(){let s=new Fraction(0,1);document.getElementById('sumInput').value.split(/[\n,]+/).forEach(x=>{if(x.trim())s=s.add(Fraction.fromString(x))});document.getElementById('sumResult').innerText=s.toString()}
         function calculateSub(){document.getElementById('subResult').innerText=Fraction.fromString(document.getElementById('subMain').value).sub(Fraction.fromString(document.getElementById('subValues').value)).toString()}
         function calculateDiv(){document.getElementById('divResult').innerText=new Fraction(BigInt(Fraction.fromString(document.getElementById('divMain').value).n), Fraction.fromString(document.getElementById('divMain').value).d * BigInt(document.getElementById('divCount').value)).toString()}
 
-        // --- DATA FORMATTER LOGIC ---
         function processFmt() {
             const raw = document.getElementById('fmtInput').value; if(!raw.trim()) return alert("डाटा पेस्ट करें!");
             const items = raw.replace(/\n/g, ',').split(','); const t1 = document.querySelector('#tblRaw tbody'); const t2 = document.querySelector('#tblDetail tbody');
@@ -760,7 +672,6 @@
         }
         function copyTable(id) { const el = document.getElementById(id); const range = document.createRange(); range.selectNode(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); document.execCommand('copy'); window.getSelection().removeAllRanges(); alert("टेबल कॉपी हो गई!"); }
 
-        // --- GITHUB FILE DOWNLOADER LOGIC ---
         async function loadGithubFiles() {
             const owner = 'rocktech-web'; const repo = 'AllFormats'; const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
             const container = document.getElementById('filesContainer'); const loader = document.getElementById('fileLoader'); container.innerHTML = ""; loader.style.display = "block";
@@ -769,15 +680,13 @@
                 const grouped = {}; data.forEach(file => { if (file.type === 'file') { const ext = file.name.split('.').pop().toUpperCase(); if (!grouped[ext]) grouped[ext] = []; grouped[ext].push(file); } });
                 loader.style.display = "none"; if (Object.keys(grouped).length === 0) { container.innerHTML = "<p>No files found in repository.</p>"; return; }
                 for (const [ext, files] of Object.entries(grouped)) {
-                    let sectionHtml = `<div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;"><div style="background: #e9ecef; padding: 10px 15px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ddd;">📂 ${ext} FILES (${files.length})</div><div class="table-wrap"><table><thead><tr><th width="70%">File Name</th><th width="15%">Size</th><th width="15%">Action</th></tr></thead><tbody>`;
-                    files.forEach(file => { let sizeKB = (file.size / 1024).toFixed(1) + ' KB'; sectionHtml += `<tr><td>${file.name}</td><td>${sizeKB}</td><td><button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="verifyAndDownload('${file.download_url}')">⬇ Download</button></td></tr>`; });
+                    let sectionHtml = `<div style="margin-bottom: 20px; border: 1px solid var(--border-dark); border-radius: 4px; overflow: hidden;"><div style="background: var(--bg-app); padding: 8px 12px; font-weight: 700; color: var(--primary); border-bottom: 1px solid var(--border-dark); font-size: 12px;">📂 ${ext} FILES (${files.length})</div><div class="table-wrap" style="border:none;"><table><thead><tr><th width="70%">File Name</th><th width="15%">Size</th><th width="15%">Action</th></tr></thead><tbody>`;
+                    files.forEach(file => { let sizeKB = (file.size / 1024).toFixed(1) + ' KB'; sectionHtml += `<tr><td>${file.name}</td><td>${sizeKB}</td><td><button class="btn" style="padding: 4px 8px; font-size: 11px;" onclick="verifyAndDownload('${file.download_url}')">⬇ Download</button></td></tr>`; });
                     sectionHtml += `</tbody></table></div></div>`; container.innerHTML += sectionHtml;
                 }
-            } catch (error) { loader.style.display = "none"; container.innerHTML = `<p style="color:red;">Error: ${error.message}. <br>Make sure the repository is Public.</p>`; }
+            } catch (error) { loader.style.display = "none"; container.innerHTML = `<p style="color:red; font-weight:bold;">Error: ${error.message}. <br>Make sure the repository is Public.</p>`; }
         }
         function verifyAndDownload(url) { let code = prompt("सुरक्षा कोड दर्ज करें (Enter Code to Download):"); if (code === "258") window.open(url, '_blank'); else if (code !== null) alert("❌ गलत कोड! डाउनलोड अस्वीकृत।"); }
-
-
     </script>
 </body>
 </html>
