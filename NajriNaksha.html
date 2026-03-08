@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RockTechnology - Land Revenue CAD System</title>
+    <title>RockTechnology - Master CAD</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,128 +13,92 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         /* =========================================
-           NAJRI NAKSHA - PREMIUM CORPORATE THEME
+           NAJRI NAKSHA - DESKTOP SOFTWARE UI
            ========================================= */
         :root { 
-            --bg-body: #F1F5F9;       
-            --bg-panel: #FFFFFF;    
-            --border-light: #E2E8F0;  
-            --border-dark: #CBD5E1;   
-            
-            --primary: #1E293B;       
-            --primary-light: #334155; 
-            
-            --accent: #0EA5E9;        
-            --accent-hover: #0284C7;  
-            --accent-light: #E0F2FE;  
-            
-            --text-main: #334155;     
-            --text-muted: #64748B;    
-            
-            --success: #10B981; 
-            --danger: #EF4444; 
-            
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.1);
-            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
-            
+            --bg-app: #e2e8f0; --bg-panel: #FFFFFF;    
+            --border-light: #E2E8F0; --border-dark: #CBD5E1;   
+            --primary: #1E293B; --primary-light: #334155; 
+            --accent: #0EA5E9; --accent-hover: #0284C7; --accent-light: #E0F2FE;  
+            --text-main: #334155; --text-muted: #64748B;    
+            --success: #10B981; --danger: #EF4444; 
             --print-border: #000000;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: var(--bg-body); 
-            color: var(--text-main);
-            margin: 0; padding: 15px 20px; 
-            display: flex; flex-direction: column; align-items: center; 
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-app); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        .header { text-align: center; margin-bottom: 10px; }
-        .header h1 { color: var(--primary); margin-bottom: 2px; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;}
-        .header p { color: var(--text-muted); font-size: 13px; margin: 0; font-weight: 500;}
-
-        /* --- TABS CSS --- */
-        .view-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .view-tab { 
-            padding: 8px 20px; font-weight: 600; font-size: 14px; border-radius: 6px; cursor: pointer;
-            background: #FFFFFF; color: var(--text-muted); border: 1px solid var(--border-light); transition: 0.2s;
-            box-shadow: var(--shadow-sm);
-        }
-        .view-tab.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
-
-        /* Panels & Toolbars */
-        .panel { 
-            background: var(--bg-panel); padding: 12px 15px; border-radius: 12px; 
-            border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); 
-            width: 100%; box-sizing: border-box; display: flex; 
-        }
-
-        .btn { 
-            padding: 8px 14px; border: 1px solid var(--border-light); border-radius: 8px; 
-            background: #FFFFFF; color: var(--text-main); font-weight: 500; 
-            font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.2s ease; 
-            display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: var(--shadow-sm);
-        }
-        .btn:hover { background: var(--bg-body); transform: translateY(-1px); }
-        .btn:active { transform: translateY(0); }
+        /* Menu Bar */
+        .menu-bar { background: #FFFFFF; border-bottom: 1px solid var(--border-dark); display: flex; align-items: center; padding: 0 15px; height: 35px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 100;}
+        .menu-item { position: relative; padding: 8px 15px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--primary); user-select: none; }
+        .menu-item:hover { background: var(--bg-app); }
+        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; background: #FFFFFF; border: 1px solid var(--border-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.1); min-width: 180px; z-index: 1000; border-radius: 0 0 4px 4px; overflow: hidden;}
+        .menu-item:hover .dropdown-content { display: block; }
+        .dropdown-content a { display: block; padding: 8px 15px; font-size: 13px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-light); }
+        .dropdown-content a:hover { background: var(--accent-light); color: var(--accent-hover); }
         
-        .active-tool { 
-            background: var(--accent-light) !important; border-color: var(--accent) !important; 
-            color: var(--accent-hover) !important; font-weight: 600; box-shadow: inset 0 1px 2px rgba(14, 165, 233, 0.1);
-        }
+        #currentFileNameDisplay { font-size: 12px; background: var(--accent-light); color: var(--accent-hover); padding: 4px 10px; border-radius: 4px; font-weight: 600; font-family: monospace; margin-left: auto; border: 1px solid #BAE6FD;}
+        #currentFileNameDisplay.unsaved { background: #FEF2F2; color: #EF4444; border-color: #FCA5A5; }
 
+        /* Toolbar */
+        .toolbar { background: #F8FAFC; border-bottom: 1px solid var(--border-dark); padding: 8px 15px; display: flex; align-items: center; gap: 6px; overflow-x: auto; white-space: nowrap; flex-shrink: 0; }
+        
+        .btn { padding: 6px 12px; border: 1px solid var(--border-dark); border-radius: 4px; background: #FFFFFF; color: var(--text-main); font-weight: 500; font-family: inherit; font-size: 12px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn:hover { background: #E2E8F0; }
+        .active-tool { background: var(--accent-light) !important; border-color: var(--accent) !important; color: var(--accent-hover) !important; font-weight: 600; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        
         .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: white; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3); }
-        
-        .btn-dark { background: var(--primary-light); border-color: var(--primary-light); color: white; }
-        .btn-dark:hover { background: var(--primary); border-color: var(--primary); color: white; }
-
+        .btn-primary:hover { background: var(--accent-hover); color: white; }
         .btn-success { background: var(--success); border-color: var(--success); color: white; }
-        .btn-danger { background: #FEF2F2; border-color: #FCA5A5; color: var(--danger); }
-        .btn-danger:hover { background: #FEE2E2; }
+        .btn-success:hover { background: #059669; color: white; }
+        .divider-v { width: 1px; height: 20px; background: var(--border-dark); margin: 0 5px; }
 
-        .control-group { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-muted); background: var(--bg-body); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-light);}
-        .number-input { width: 45px; padding: 4px; border: 1px solid var(--border-dark); border-radius: 4px; font-family: inherit; font-weight: 600; text-align: center; color: var(--text-main); font-size: 12px;}
-        .text-input { padding: 8px 10px; border: 1px solid var(--border-dark); border-radius: 6px; font-family: inherit; font-weight: 500; font-size: 12px; width: 100%; box-sizing: border-box; outline: none;}
-        .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-
-        .viewport { width: 160mm; height: 174mm; border: 1px solid var(--border-dark); background: var(--border-light); overflow: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); position: relative; border-radius: 8px; margin-top: 5px;}
-        .canvas-wrapper { width: 160mm; height: 174mm; background: white; transform-origin: top left; transition: transform 0.1s ease; position: relative; }
+        /* Main Workspace Layout */
+        .workspace { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Left: Canvas Area */
+        .canvas-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-app); position: relative; }
+        .viewport { flex: 1; overflow: hidden; position: relative; background: #cbd5e1; display: flex; justify-content: center; align-items: center;}
+        .canvas-wrapper { width: 160mm; height: 174mm; background: white; transform-origin: top left; position: absolute; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
         
-        #instruction { color: var(--accent-hover); font-weight: 600; text-align: center; font-size: 13px; background: var(--accent-light); padding: 8px 15px; border-radius: 8px; border: 1px solid #BAE6FD; margin-bottom: 5px; width: 100%; box-sizing: border-box;}
-        
-        .floating-input-container { position: absolute; background: white; border: 1px solid var(--border-dark); border-radius: 8px; padding: 12px; z-index: 1000; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 8px;}
-        .floating-textarea { font-family: inherit; font-size: 13px; padding: 8px; font-weight: 500; outline: none; border: 1px solid var(--border-dark); border-radius: 6px; resize: both; min-width: 200px; min-height: 50px;}
-        .floating-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-        
-        #cadDistanceBox { display: none; position: absolute; background: var(--primary); color: white; padding: 4px 10px; border-radius: 4px; font-weight: 600; pointer-events: none; z-index: 10; font-size: 12px; box-shadow: var(--shadow-sm);}
+        .status-bar { height: 30px; background: #F8FAFC; border-top: 1px solid var(--border-dark); display: flex; align-items: center; padding: 0 15px; font-size: 12px; font-weight: 600; color: var(--text-muted); justify-content: space-between; flex-shrink: 0;}
 
-        /* Inline Form Fields */
+        /* Right Sidebar */
+        .right-sidebar { width: 320px; background: #FFFFFF; border-left: 1px solid var(--border-dark); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0;}
+        .sidebar-section { padding: 15px; border-bottom: 1px solid var(--border-light); }
+        .section-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* Forms & Controls */
+        .control-group { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;}
         .form-group { margin-bottom: 8px; }
-        .form-group label { display: block; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; font-size: 12px;}
-        .form-group input, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-family: inherit; font-size: 12px; box-sizing: border-box; background: #ffffff; transition: 0.2s; outline: none;}
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light);}
+        .form-group label { display: block; font-weight: 600; color: var(--text-muted); margin-bottom: 3px; font-size: 11px;}
+        .form-group input, .form-group textarea, select { width: 100%; padding: 6px 8px; border: 1px solid var(--border-dark); border-radius: 4px; font-family: inherit; font-size: 12px; box-sizing: border-box; outline: none;}
+        .form-group input:focus, .form-group textarea:focus, select:focus { border-color: var(--accent); }
+        textarea { resize: vertical; min-height: 40px; }
 
-        .divider-v { width: 1px; height: 24px; background: var(--border-light); margin: 0 8px; }
-        .divider-h { width: 100%; height: 1px; background: var(--border-light); margin: 8px 0; }
+        #cadDistanceBox { display: none; position: absolute; background: var(--primary); color: white; padding: 4px 10px; border-radius: 4px; font-weight: 600; pointer-events: none; z-index: 10; font-size: 12px;}
+        .floating-input-container { position: absolute; background: white; border: 1px solid var(--border-dark); border-radius: 6px; padding: 10px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 5px;}
+        .floating-textarea { font-family: inherit; font-size: 13px; padding: 6px; font-weight: 500; outline: none; border: 1px solid var(--border-dark); border-radius: 4px; min-width: 150px; min-height: 40px;}
 
-        /* =========================================
-           OFFICIAL A4 PRINT CSS 
-           ========================================= */
-        #printArea { display: none; }
-        
+        /* Print Media */
+        /* Print Area (Hidden and out of normal layout) */
+        #printArea { 
+            display: none; 
+            position: absolute; 
+            top: -20000px; 
+            left: -20000px; 
+            z-index: -999; 
+        }
         @media print {
             @page { size: A4; margin: 10mm; }
-            body { margin: 0; padding: 0; background-color: transparent; }
+            body { margin: 0; padding: 0; background-color: white; display: block; height: auto; overflow: visible;}
             body > *:not(#printArea) { display: none !important; }
-            
-            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: 'Poppins', sans-serif; color: #000; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; font-family: 'Poppins', sans-serif; color: #000; background: white; }
             .document-container { width: 190mm; height: 277mm; margin: 0 auto; background-color: #fff; border: 1px solid var(--print-border); box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
             .bold { font-weight: 700 !important; } .regular { font-weight: 400 !important; } .font-14 { font-size: 14pt !important; } .font-11 { font-size: 11pt !important; }
             .header-table { width: 100%; border-collapse: collapse; border-bottom: 1px solid var(--print-border); }
@@ -146,7 +110,7 @@
             .mid-table td { border-bottom: 1px solid var(--print-border); padding: 10px; }
             .mid-table tr:last-child td { border-bottom: none; }
             .title-cell { text-align: center; vertical-align: middle; height: 5px; } .date-cell { text-align: center; vertical-align: bottom; height: 30px; padding-bottom: 10px; }
-            .map-area { flex-grow: 1; min-height: 0; border-bottom: 1px solid var(--print-border); display: flex; justify-content: center; align-items: center; padding: 5px; box-sizing: border-box; overflow: hidden; }
+            .map-area { flex-grow: 1; min-height: 0; width: 100%; border-bottom: 1px solid var(--print-border); display: flex; justify-content: center; align-items: center; padding: 5px; box-sizing: border-box; overflow: hidden; }
             .map-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
             .declaration-text { padding: 12px; text-align: center; } .signature-line { padding: 6px 10px; }
             .footer-layout-table { width: 100%; border-collapse: collapse; border-top: 1px solid var(--print-border); }
@@ -161,137 +125,115 @@
 </head>
 <body>
 
-    <div class="header">
-        <h1>RockTechnology - Master CAD</h1>
-        <p>प्रोफेशनल नज़री नक्शा एवं राजस्व दस्तावेज़ जनरेटर</p>
-    </div>
-
-    <div class="view-tabs">
-        <div class="view-tab active" id="tabDraw" onclick="switchAppTab('draw')">✏️ 1. नक़्शा बनाएं (Draw)</div>
-        <div class="view-tab" id="tabEdit" onclick="switchAppTab('edit')">🖨️ 2. दस्तावेज़ एवं प्रिंट (Edit/Print)</div>
-    </div>
-
-    <div class="panel" style="max-width: 1200px; margin-bottom: 15px; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <div class="menu-bar">
         <input type="file" id="projectInput" accept=".rock" style="display: none;" />
-        <button class="btn btn-dark" onclick="openFile()">📂 प्रोजेक्ट खोलें</button>
-        <button class="btn btn-dark" onclick="saveFile()">💾 सेव</button>
-        <button class="btn btn-dark" onclick="saveFileAs()">💾 सेव ऐज़</button>
-        <div class="divider-v"></div>
-        <button class="btn" onclick="changeZoom(0.2)">🔍 +</button>
-        <button class="btn" onclick="changeZoom(-0.2)">🔍 -</button>
-        <div class="divider-v"></div>
-        <button class="btn" onclick="undo()">↩️ Undo</button>
-        <button class="btn" onclick="redo()">↪️ Redo</button>
-        <div class="divider-v"></div>
-        <button class="btn btn-danger" onclick="location.reload()">🗑️ नया (Reset)</button>
+        <div class="menu-item">
+            File
+            <div class="dropdown-content">
+                <a href="#" onclick="if(confirm('नया नक्शा बनाना चाहते हैं? (पूरा डाटा मिट जाएगा)')) location.reload();">New Project</a>
+                <a href="#" onclick="openFile()">Open Project...</a>
+                <a href="#" onclick="saveFile()">Save</a>
+                <a href="#" onclick="saveFileAs()">Save As...</a>
+            </div>
+        </div>
+        <span id="currentFileNameDisplay">📄 फ़ाइल: नई फ़ाइल</span>
     </div>
 
-    <div style="display: flex; gap: 20px; width: 100%; max-width: 1200px; justify-content: center; align-items: flex-start;">
+    <div class="toolbar">
+        <label class="btn" style="margin: 0;"><input type="file" id="imageInput" accept="image/*" style="display: none;" />🖼️ फोटो ट्रेस</label>
+        <button class="btn active-tool" id="btnRoad" onclick="setMode('main')">🛣️ सड़क</button>
+        <button class="btn" id="btnEditDraft" onclick="setMode('editDraft')" style="color: #166534; border-color: #bbf7d0;">👆 सड़क सुधारें</button>
+        <button class="btn" id="btnRail" onclick="setMode('rail')">🚂 रेल</button>
+        <button class="btn" id="btnPlot" onclick="setMode('plot')">🔲 प्लॉट</button>
+        <button class="btn" id="btnText" onclick="setMode('text')">📝 टेक्स्ट</button>
+        <button class="btn" id="btnPan" onclick="setMode('pan')">✋ खिसकाएं (Spacebar)</button>
         
-        <div style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center;">
-            <div id="instruction">प्रोजेक्ट खोलें या नया मैप अपलोड कर काम शुरू करें।</div>
+        <div class="divider-v"></div>
+        <button class="btn btn-primary" onclick="generateAndSwitchTab()" style="font-weight: bold;">✨ लाइन आर्ट तैयार करें</button>
+        <div class="divider-v"></div>
+
+        <button class="btn" id="btnTrim" onclick="setEditMode('trim')">✂️ कैंची</button>
+        <button class="btn" id="btnEditLine" onclick="setEditMode('editLine')">📌 नोड</button>
+        <button class="btn" id="btnSmartText" onclick="setEditMode('smartText')">🏷️ मार्ग नाम</button>
+        <button class="btn" id="btnFreeTextEdit" onclick="setEditMode('freeText')">📝 फ्री टेक्स्ट</button>
+        <button class="btn" id="btnEditText" onclick="setEditMode('editText')">⚙️ टेक्स्ट सुधारें</button>
+    </div>
+
+    <div class="workspace">
+        
+        <div class="canvas-area">
             <div class="viewport" id="viewport">
                 <div class="canvas-wrapper" id="canvasWrapper">
                     <canvas id="mapCanvas" width="1600" height="1740"></canvas>
                     <div id="cadDistanceBox">दूरी: <span id="cadDistValue"></span></div>
                 </div>
             </div>
-        </div>
-
-        <div style="flex: 1; min-width: 320px; max-width: 400px; display: flex; flex-direction: column;">
             
-            <div id="viewDraw" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-                <div class="panel" id="drawToolbar" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <label class="btn btn-dark" style="margin-bottom: 5px;">🗺️ फोटो ट्रेस के लिए डालें <input type="file" id="imageInput" accept="image/*" style="display: none;" /></label>
-                    
-                    <button class="btn" id="btnMain" onclick="setMode('main')">🛣️ मुख्य मार्ग (Red)</button>
-                    <button class="btn" id="btnLink" onclick="setMode('link')">🟨 लिंक मार्ग (Yellow)</button>
-                    <button class="btn" id="btnKachchi" onclick="setMode('kachchi')">🛤️ कच्चा रास्ता (Dash)</button>
-                    <button class="btn" id="btnRail" onclick="setMode('rail')">🚂 रेल लाइन</button>
-                    <button class="btn" id="btnPlot" onclick="setMode('plot')">🔲 प्लॉट लाइन</button>
-                    <button class="btn" id="btnText" onclick="setMode('text')">📝 टेक्स्ट (नाम लिखें)</button>
-                    
-                    <div class="divider-h"></div>
-                    <button class="btn btn-primary" onclick="generateAndSwitchTab()" style="padding: 10px; font-size: 14px;">✨ लाइन आर्ट तैयार करें</button>
-                </div>
-
-                <div class="panel" id="sliderPanel" style="flex-direction: column; align-items: stretch; gap: 10px;">
-                    <div style="font-weight: 700; color: var(--primary); font-size: 13px; text-align: center; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">रास्तों की मोटाई (Width)</div>
-                    <div class="control-group" style="justify-content: space-between;">
-                        <label style="color:#c0392b; width: 50px;">मुख्य:</label>
-                        <input type="range" id="mainWidthRange" min="10" max="500" value="35" style="flex: 1;" oninput="syncWidths('main', this.value)">
-                        <input type="number" id="mainWidthNum" class="number-input" min="10" max="500" value="75" oninput="syncWidths('main', this.value)">
-                    </div>
-                    <div class="control-group" style="justify-content: space-between;">
-                        <label style="color:#d35400; width: 50px;">लिंक:</label>
-                        <input type="range" id="linkWidthRange" min="5" max="500" value="25" style="flex: 1;" oninput="syncWidths('link', this.value)">
-                        <input type="number" id="linkWidthNum" class="number-input" min="5" max="500" value="55" oninput="syncWidths('link', this.value)">
-                    </div>
-                    <div class="control-group" style="justify-content: space-between;">
-                        <label style="color:#8e44ad; width: 50px;">कच्चा:</label>
-                        <input type="range" id="kachchiWidthRange" min="5" max="500" value="20" style="flex: 1;" oninput="syncWidths('kachchi', this.value)">
-                        <input type="number" id="kachchiWidthNum" class="number-input" min="5" max="500" value="40" oninput="syncWidths('kachchi', this.value)">
-                    </div>
+            <div class="status-bar">
+                <span id="instruction">मैप पर क्लिक करके पॉइंट बनाएं।</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label>फोटो Opc:</label>
+                    <input type="range" id="bgOpacity" min="0" max="100" value="40" style="width: 80px;" oninput="drawCanvas()">
+                    <span style="margin-left: 10px;">(Shift: Straight | Scroll: Zoom)</span>
                 </div>
             </div>
+        </div>
 
-            <div id="viewEdit" style="display: none; flex-direction: column; gap: 15px; width: 100%;">
-                
-                <div class="panel" id="editToolbar" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <button class="btn btn-danger" id="btnTrim" onclick="setEditMode('trim')">✂️ कैंची (एक्स्ट्रा लाइन काटें)</button>
-                    <button class="btn" id="btnEditLine" onclick="setEditMode('editLine')">✋ नोड खिसकाएं</button>
-                    <div class="divider-h"></div>
-                    <button class="btn" id="btnSmartText" onclick="setEditMode('smartText')">🏷️ मार्ग का नाम (सड़क पर)</button>
-                    <button class="btn" id="btnFreeTextEdit" onclick="setEditMode('freeText')">📝 नया फ्री टेक्स्ट</button>
-                    <button class="btn btn-dark" id="btnEditText" onclick="setEditMode('editText')">⚙️ टेक्स्ट सेलेक्ट / सुधारें</button>
-                    
-                    <div id="textControls" style="display: none; flex-direction: column; gap: 8px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid var(--border-light); margin-top: 5px;">
-                        <label style="font-size: 11px; font-weight: 600; color: var(--primary);">टेक्स्ट की सेटिंग्स:</label>
-                        <input type="text" id="textContentInput" class="text-input" placeholder="टेक्स्ट बदलें..." oninput="updateTextProp('content', this.value)" onchange="saveState()">
-                        
-                        <div style="display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;">
-                            <label style="width: 40px; color: var(--text-muted);">साइज़:</label>
-                            <input type="range" id="textSizeSlider" min="15" max="100" value="35" style="flex: 1;" oninput="updateTextProp('size', this.value)" onchange="saveState()">
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;">
-                            <label style="width: 40px; color: var(--text-muted);">घुमाव:</label>
-                            <input type="range" id="textAngleSlider" min="-180" max="180" value="0" style="flex: 1;" oninput="updateTextProp('angle', this.value)" onchange="saveState()">
-                        </div>
-                        <button class="btn btn-danger" style="width: 100%; padding: 6px;" onclick="deleteSelectedText()">🗑️ इसे डिलीट करें</button>
-                    </div>
+        <div class="right-sidebar">
+            
+            <div class="sidebar-section" id="draftPropsPanel" style="display: none; background: #f0fdf4;">
+                <div class="section-title">चयनित सड़क सेटिंग्स</div>
+                <div class="control-group">
+                    <label style="width: 50px;">चौड़ाई:</label>
+                    <input type="range" id="draftWidthRange" min="10" max="150" value="35" style="flex: 1;" oninput="updateDraftProp('width', this.value)">
+                    <span id="draftWidthVal" style="width: 25px; text-align: right;">35</span>
                 </div>
+                <div class="control-group">
+                    <label style="width: 50px;">मोड़:</label>
+                    <input type="range" id="draftCurveRange" min="0" max="150" value="0" style="flex: 1;" oninput="updateDraftProp('curve', this.value)">
+                    <span id="draftCurveVal" style="width: 25px; text-align: right;">0</span>
+                </div>
+                <div class="control-group">
+                    <label style="width: 50px;">प्रकार:</label>
+                    <select id="draftStyleSelect" style="flex: 1;" onchange="updateDraftProp('style', this.value)">
+                        <option value="main">मुख्य मार्ग (Solid)</option>
+                        <option value="link">लिंक मार्ग (Narrow)</option>
+                        <option value="kachchi">कच्चा रास्ता (Dashed)</option>
+                    </select>
+                </div>
+                <button class="btn btn-danger" style="width: 100%; justify-content: center; margin-top: 5px;" onclick="deleteSelectedDraft()">🗑️ इसे डिलीट करें</button>
+            </div>
 
-                <div class="panel" id="docDetailsPanel" style="flex-direction: column; align-items: stretch; gap: 5px; background: #f0fdfa; border-color: #5eead4; padding: 15px;">
-                    <div style="font-weight: 700; color: var(--success); border-bottom: 1px solid #ccfbf1; padding-bottom: 8px; margin-bottom: 5px; font-size: 14px; text-align: center;">📝 दस्तावेज़ का विवरण (Print)</div>
+            <div class="sidebar-section" id="textControls" style="display: none; background: #fffbeb;">
+                <div class="section-title">टेक्स्ट सेटिंग्स</div>
+                <input type="text" id="textContentInput" class="form-group input" style="width: 100%; padding: 6px; margin-bottom: 8px;" placeholder="टेक्स्ट..." oninput="updateTextProp('content', this.value)" onchange="saveState()">
+                <div class="control-group">
+                    <label style="width: 40px;">साइज़:</label>
+                    <input type="range" id="textSizeSlider" min="15" max="100" value="35" style="flex: 1;" oninput="updateTextProp('size', this.value)" onchange="saveState()">
+                </div>
+                <div class="control-group">
+                    <label style="width: 40px;">घुमाव:</label>
+                    <input type="range" id="textAngleSlider" min="-180" max="180" value="0" style="flex: 1;" oninput="updateTextProp('angle', this.value)" onchange="saveState()">
+                </div>
+                <button class="btn btn-danger" style="width: 100%; justify-content: center; margin-top: 5px;" onclick="deleteSelectedText()">🗑️ डिलीट करें</button>
+            </div>
+
+            <div class="sidebar-section" style="background: #f8fafc; flex: 1;">
+                <div class="section-title" style="color: var(--success);">दस्तावेज़ का विवरण (Print)</div>
+                <div class="form-group"><label>कार्यालय विवरण:</label><textarea id="docOffice" rows="4">कार्यालय पटवारी हल्का बैढ़न, क्रमांक 14&#10;रा.नि. मण्डल: बैढ़न, तहसील: सिंगरौली नगर&#10;जिला: सिंगरौली, मध्य प्रदेश</textarea></div>
+                <div class="form-group"><label>पटवारी हस्ताक्षर:</label><textarea id="docPatwari" rows="4">हल्का बैढ़न, क्रमांक 14&#10;रा.नि. मण्डल: बैढ़न&#10;तहसील: सिंगरौली नगर</textarea></div>
+                <div class="form-group"><label>खसरा व भू-स्वामी:</label><textarea id="docKhasra" rows="4">1388/1/2/2 रकवा 0.0220 हे. (कुसुम कली)</textarea></div>
+                <div style="display: flex; gap: 5px;">
+                    <div class="form-group" style="flex: 1;"><label>ग्राम/नगर:</label><input type="text" id="docVillage" value="गनियारी"></div>
+                    <div class="form-group" style="flex: 1;"><label>दिनांक:</label><input type="text" id="docDate" placeholder="DD/MM/YYYY"></div>
                     
-                    <div class="form-group">
-                        <label>कार्यालय विवरण:</label>
-                        <textarea id="docOffice" rows="4" style="resize: vertical;">कार्यालय पटवारी हल्का बैढ़न, क्रमांक 14&#10;रा.नि. मण्डल: बैढ़न, तहसील: सिंगरौली नगर&#10;जिला: सिंगरौली, मध्य प्रदेश</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>पटवारी हस्ताक्षर विवरण:</label>
-                        <textarea id="docPatwari" rows="4" style="resize: vertical;">हल्का बैढ़न, क्रमांक 14&#10;रा.नि. मण्डल: बैढ़न&#10;तहसील: सिंगरौली नगर</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>खसरा व भू-स्वामी विवरण:</label>
-                        <textarea id="docKhasra" rows="4" style="resize: vertical;">1388/1/2/2 रकवा 0.0220 हेक्टेयर (भूमि स्वामी कुसुम कली गुप्ता पति सुरेन्द्र प्रसाद गुप्ता)</textarea>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label>ग्राम/नगर:</label>
-                            <input type="text" id="docVillage" value="गनियारी">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>दिनांक:</label>
-                            <input type="text" id="docDate" placeholder="DD/MM/YYYY">
-                        </div>
-                    </div>
-                    
-                    <div class="divider-h"></div>
-                    <button class="btn btn-success" onclick="generateOfficialPDF()" style="font-size: 14px; padding: 10px; margin-bottom: 8px;">🖨️ A4 आधिकारिक प्रिंट</button>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-dark" style="flex: 1;" onclick="downloadSVG()">SVG</button>
-                        <button class="btn btn-dark" style="flex: 1;" onclick="downloadImage('jpeg')">JPG</button>
+                </div>
+                
+                <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                    <button class="btn btn-success" style="justify-content: center; padding: 10px;" onclick="generateOfficialPDF()">🖨️ A4 आधिकारिक प्रिंट</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn" style="flex: 1; justify-content: center;" onclick="downloadSVG()">SVG सेव</button>
+                        <button class="btn" style="flex: 1; justify-content: center;" onclick="downloadImage('jpeg')">JPG सेव</button>
                     </div>
                 </div>
             </div>
@@ -302,17 +244,9 @@
         <div class="document-container">
             <table class="header-table">
                 <tr>
-                    <td class="header-left">
-                        <div id="printOfficeLine1" class="font-14 bold"></div>
-                        <div id="printOfficeLine2" class="font-11 bold" style="white-space: pre-line; margin-top: 2px;"></div>
-                    </td>
-                    <td class="header-mid">
-                        <table class="mid-table">
-                            <tr><td class="title-cell font-14 bold">नजरी नक्शा (चौहद्दी)</td></tr>
-                            <tr><td class="date-cell font-11 regular">दिनांक : <span id="printDateValue" class="bold">_ _ _ _ _ _ _ _ 2026</span></td></tr>
-                        </table>
-                    </td>
-                    <td class="header-right"><img src="https://png.pngtree.com/png-vector/20230131/ourmid/pngtree-beautiful-compass-icon-vector-illustration-png-image_6580312.png" alt="Compass" class="compass-img"></td>
+                    <td class="header-left"><div id="printOfficeLine1" class="font-14 bold"></div><div id="printOfficeLine2" class="font-11 bold" style="white-space: pre-line; margin-top: 2px;"></div></td>
+                    <td class="header-mid"><table class="mid-table"><tr><td class="title-cell font-14 bold">नजरी नक्शा (चौहद्दी)</td></tr><tr><td class="date-cell font-11 regular">दिनांक : <span id="printDateValue" class="bold">_ _ _ _ _ _ _ _ 2026</span></td></tr></table></td>
+                    <td class="header-right"><img src="https://png.pngtree.com/png-vector/20230131/ourmid/pngtree-beautiful-compass-icon-vector-illustration-png-image_6580312.png" class="compass-img"></td>
                 </tr>
             </table>
             <div class="map-area"><img id="printMapImage" style="width: 100%; height: 100%; object-fit: contain;" src=""></div>
@@ -326,12 +260,7 @@
                             <tr><td class="label-col font-11 regular">खसरा, रकवा व भू-<br>स्वामी विवरण:</td><td class="value-col font-11 bold" id="printKhasra"></td></tr>
                         </table>
                     </td>
-                    <td style="width: 30%; padding: 0;">
-                        <div class="patwari-block">
-                            <div class="font-11 bold" style="margin-bottom: 5px;">पटवारी</div>
-                            <div class="font-11" id="printPatwari" style="white-space: pre-line;"></div>
-                        </div>
-                    </td>
+                    <td style="width: 30%; padding: 0;"><div class="patwari-block"><div class="font-11 bold" style="margin-bottom: 5px;">पटवारी</div><div class="font-11" id="printPatwari" style="white-space: pre-line;"></div></div></td>
                 </tr>
             </table>
         </div>
@@ -344,394 +273,287 @@
         const cadBox = document.getElementById('cadDistanceBox');
         const cadValue = document.getElementById('cadDistValue');
         
-        let uploadedImage = null; let mode = null; let editMode = null; 
+        let uploadedImage = null; let mode = 'main'; let editMode = null; 
         let isGenerated = false; let currentZoom = 1;
+        
+        // Pan & Zoom Engine
+        let panX = 0, panY = 0;
+        let isPanning = false, panStart = {x: 0, y: 0};
+        let isSpacePressed = false, isShiftPressed = false;
+        
+        function updateCanvasTransform() { wrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`; }
+        function changeZoom(delta) { currentZoom += delta; if(currentZoom < 0.2) currentZoom = 0.2; if(currentZoom > 5) currentZoom = 5; updateCanvasTransform(); }
+        
+        document.getElementById('viewport').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            let zoomAmount = e.deltaY > 0 ? -0.1 : 0.1;
+            let oldZoom = currentZoom;
+            currentZoom += zoomAmount;
+            if(currentZoom < 0.2) currentZoom = 0.2; if(currentZoom > 5) currentZoom = 5;
+            let rect = document.getElementById('viewport').getBoundingClientRect();
+            let mouseX = e.clientX - rect.left; let mouseY = e.clientY - rect.top;
+            panX -= (mouseX - panX) * (currentZoom - oldZoom) / oldZoom;
+            panY -= (mouseY - panY) * (currentZoom - oldZoom) / oldZoom;
+            updateCanvasTransform();
+        }, {passive: false});
+
+        function applyShiftSnap(start, current, isShift) {
+            if(!isShift) return current;
+            let dx = current.x - start.x; let dy = current.y - start.y;
+            let angle = Math.atan2(dy, dx); let dist = Math.hypot(dx, dy);
+            let snappedAngle = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4);
+            return { x: start.x + Math.cos(snappedAngle) * dist, y: start.y + Math.sin(snappedAngle) * dist };
+        }
         
         let historyStack = []; let finalSegments = []; let finalTexts = [];
         let undoStack = []; let redoStack = [];
 
-        // --- NEW: Unsaved Data & File System Variables ---
-        let hasUnsavedChanges = false;
-        const originalTitle = document.title;
-        let currentFileHandle = null;
+        let selectedDraftIdx = -1; let draggedDraftNode = null; let draggedWholeDraft = null;
+        let hoverSegmentIdx = -1; let selectedTextIdx = -1; let isDraggingText = false;
+        let hoveredNode = null; let draggedNode = null; 
+        let currentPath = []; let mousePos = {x: 0, y: 0}; let typedDistance = ""; let snapPoint = null; 
 
-        function markUnsaved() { if (!hasUnsavedChanges) { hasUnsavedChanges = true; document.title = "*" + originalTitle; } }
-        function markSaved() { hasUnsavedChanges = false; document.title = originalTitle; }
+        // File System & Auto-save
+        let hasUnsavedChanges = false; const originalTitle = document.title;
+        let currentFileHandle = null; let currentFileName = "नई फ़ाइल";
+        const AUTOSAVE_KEY = 'rocktech_najri_autosave';
+        setInterval(autoSaveToLocal, 60000);
+
+        function autoSaveToLocal() { if(hasUnsavedChanges && (historyStack.length > 0 || finalTexts.length > 0)) { localStorage.setItem(AUTOSAVE_KEY, getEncodedData()); } }
+        function checkAutoSave() { const saved = localStorage.getItem(AUTOSAVE_KEY); if(saved && confirm("पिछला अधूरा काम मिला है। क्या आप उसे रिकवर करना चाहते हैं?")) { loadProjectData(saved); } }
+        function updateFileNameUI() { const el = document.getElementById('currentFileNameDisplay'); if(el) { el.innerText = `📄 फ़ाइल: ${currentFileName}${hasUnsavedChanges ? ' *' : ''}`; if(hasUnsavedChanges) el.classList.add('unsaved'); else el.classList.remove('unsaved'); } }
+        function markUnsaved() { if (!hasUnsavedChanges) { hasUnsavedChanges = true; document.title = "*" + originalTitle; } updateFileNameUI(); }
+        function markSaved() { hasUnsavedChanges = false; document.title = originalTitle; updateFileNameUI(); localStorage.removeItem(AUTOSAVE_KEY); }
         
-        window.addEventListener('beforeunload', function (e) { if (hasUnsavedChanges) { e.preventDefault(); e.returnValue = 'आपके बदलाव सेव नहीं किए गए हैं।'; } });
+        window.addEventListener('beforeunload', function (e) { if (hasUnsavedChanges) { autoSaveToLocal(); e.preventDefault(); e.returnValue = ''; } });
         document.addEventListener('input', (e) => { if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.type === 'range') { markUnsaved(); } });
 
-        // --- ENCODING & FILE SYSTEM LOGIC ---
+        // Encoding & System
         function getEncodedData() {
-            const projectData = {
-                version: "1.1", imgSrc: uploadedImage ? uploadedImage.src : null,
-                historyStack: historyStack, finalSegments: finalSegments, finalTexts: finalTexts, isGenerated: isGenerated,
-                widths: { main: document.getElementById('mainWidthNum').value, link: document.getElementById('linkWidthNum').value, kachchi: document.getElementById('kachchiWidthNum').value },
-                docDetails: { office: document.getElementById('docOffice').value, village: document.getElementById('docVillage').value, date: document.getElementById('docDate').value, khasra: document.getElementById('docKhasra').value, patwari: document.getElementById('docPatwari').value }
-            };
+            const projectData = { version: "2.2", imgSrc: uploadedImage ? uploadedImage.src : null, historyStack: historyStack, finalSegments: finalSegments, finalTexts: finalTexts, isGenerated: isGenerated, docDetails: { office: document.getElementById('docOffice').value, village: document.getElementById('docVillage').value, date: document.getElementById('docDate').value, khasra: document.getElementById('docKhasra').value, patwari: document.getElementById('docPatwari').value } };
             return btoa(unescape(encodeURIComponent(JSON.stringify(projectData)))); 
         }
-
         function loadProjectData(base64Data) {
             try {
                 const data = JSON.parse(decodeURIComponent(escape(atob(base64Data))));
                 historyStack = data.historyStack || []; finalSegments = data.finalSegments || []; finalTexts = data.finalTexts || []; isGenerated = data.isGenerated || false;
-                if(data.widths) { ['main', 'link', 'kachchi'].forEach(type => { if(data.widths[type] !== undefined) { document.getElementById(type + 'WidthRange').value = data.widths[type]; document.getElementById(type + 'WidthNum').value = data.widths[type]; } }); }
                 if(data.docDetails) { document.getElementById('docOffice').value = data.docDetails.office || ""; document.getElementById('docVillage').value = data.docDetails.village || ""; document.getElementById('docDate').value = data.docDetails.date || ""; document.getElementById('docKhasra').value = data.docDetails.khasra || ""; document.getElementById('docPatwari').value = data.docDetails.patwari || ""; }
                 
-                if(isGenerated) { switchAppTab('edit', true); } else { switchAppTab('draw', true); }
-
-                if(data.imgSrc) { uploadedImage = new Image(); uploadedImage.onload = () => restoreState({isGenerated, historyStack, finalSegments, finalTexts}); uploadedImage.src = data.imgSrc; } 
+                if(data.imgSrc) { uploadedImage = new Image(); uploadedImage.onload = () => { restoreState({isGenerated, historyStack, finalSegments, finalTexts}); }; uploadedImage.src = data.imgSrc; } 
                 else { uploadedImage = null; restoreState({isGenerated, historyStack, finalSegments, finalTexts}); }
                 markSaved();
-            } catch(err) { alert("फ़ाइल को पढ़ने में त्रुटि! सही .rock फ़ाइल चुनें।"); }
+            } catch(err) { alert("फ़ाइल को पढ़ने में त्रुटि!"); }
         }
 
-        async function openFile() {  
-            if (window.showOpenFilePicker) {
-                try {
-                    const [handle] = await window.showOpenFilePicker({ types: [{ description: 'RockTech File', accept: {'application/octet-stream': ['.rock']} }] });
-                    currentFileHandle = handle; const file = await handle.getFile(); loadProjectData(await file.text());
-                } catch (e) { /* cancelled */ }
-            } else { document.getElementById('projectInput').click(); }
+        // फ़ाइल में लिखने (Write) की परमिशन चेक करने और मांगने का फ़ंक्शन
+        async function verifyPermission(fileHandle) {
+            const options = { mode: 'readwrite' };
+            // 1. चेक करें कि क्या पहले से अनुमति मिली हुई है
+            if ((await fileHandle.queryPermission(options)) === 'granted') {
+                return true;
+            }
+            // 2. अगर अनुमति नहीं है, तो ब्राउज़र से अनुमति मांगें (पॉपअप आएगा)
+            if ((await fileHandle.requestPermission(options)) === 'granted') {
+                return true;
+            }
+            // 3. अगर यूज़र ने 'Deny' कर दिया
+            return false;
         }
-
-        document.getElementById('projectInput').addEventListener('change', function(e) {
-            const file = e.target.files[0]; if(!file) return; currentFileHandle = null;
-            const reader = new FileReader(); reader.onload = function(ev) { loadProjectData(ev.target.result); }; reader.readAsText(file); e.target.value = '';
-        });
-
+        
+        async function openFile() { if (window.showOpenFilePicker) { try { const [handle] = await window.showOpenFilePicker({ types: [{ description: 'RockTech File', accept: {'application/octet-stream': ['.rock']} }] }); currentFileHandle = handle; const file = await handle.getFile(); currentFileName = file.name; loadProjectData(await file.text()); } catch (e) { } } else { document.getElementById('projectInput').click(); } }
+        document.getElementById('projectInput').addEventListener('change', function(e) { const file = e.target.files[0]; if(!file) return; currentFileHandle = null; currentFileName = file.name; const reader = new FileReader(); reader.onload = function(ev) { loadProjectData(ev.target.result); }; reader.readAsText(file); e.target.value = ''; });
         async function saveFile() {
             if (window.showSaveFilePicker) {
                 if (!currentFileHandle) return saveFileAs();
-                try { const writable = await currentFileHandle.createWritable(); await writable.write(getEncodedData()); await writable.close(); markSaved(); } catch (err) { alert("त्रुटि: " + err); }
-            } else { saveProjectFallback(); }
-        }
+                try {
+                    // नया कोड: परमिशन चेक करें
+                    const hasPermission = await verifyPermission(currentFileHandle);
+                    if (!hasPermission) {
+                        alert("फ़ाइल को अपडेट करने की अनुमति नहीं मिली। कृपया 'Save As' का उपयोग करें।");
+                        return await saveFileAs();
+                    }
 
-        async function saveFileAs() {
-            if (window.showSaveFilePicker) {
-                try { currentFileHandle = await window.showSaveFilePicker({ suggestedName: 'RockTech_Project.rock', types: [{ description: 'RockTech File', accept: {'application/octet-stream': ['.rock']} }] }); await saveFile(); } catch (err) { }
-            } else { saveProjectFallback(); }
-        }
-
-        function saveProjectFallback() { saveAs(new Blob([getEncodedData()], {type: "application/octet-stream"}), "RockTech_Project.rock"); markSaved(); }
-
-        function saveState() {
-            undoStack.push({ isGenerated: isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) });
-            redoStack = []; markUnsaved();
-        }
-
-        function undo() {
-            if(undoStack.length > 0) {
-                redoStack.push({ isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) });
-                restoreState(undoStack.pop()); markUnsaved();
-            }
-        }
-
-        function redo() {
-            if(redoStack.length > 0) {
-                undoStack.push({ isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) });
-                restoreState(redoStack.pop()); markUnsaved();
-            }
-        }
-
-        function restoreState(state) {
-            isGenerated = state.isGenerated; historyStack = state.historyStack; finalSegments = state.finalSegments; finalTexts = state.finalTexts;
-            if(isGenerated) { switchAppTab('edit', true); } else { switchAppTab('draw', true); }
-            if(!isGenerated) { currentPath = []; mode = null; document.querySelectorAll('.active-tool').forEach(el => el.classList.remove('active-tool')); }
-            selectedTextIdx = -1; hoveredNode = null; drawCanvas();
-        }
-
-        // --- NEW: TAB SWITCHING LOGIC ---
-        function switchAppTab(tabId, force = false) {
-            if(tabId === 'edit') {
-                if(!force && !isGenerated && currentPath.length === 0 && historyStack.length === 0) {
-                    alert("कृपया पहले कुछ ड्रॉ करें!"); return;
+                    const writable = await currentFileHandle.createWritable();
+                    await writable.write(getEncodedData());
+                    await writable.close();
+                    markSaved();
+                    alert("✅ फ़ाइल सफलतापूर्वक अपडेट (Save) हो गई है।");
+                } catch (err) {
+                    console.error("Save Error:", err);
+                    alert("⚠️ फ़ाइल को उसी जगह पर अपडेट करने में समस्या आई। हम 'Save As' डायलॉग खोल रहे हैं...");
+                    await saveFileAs();
                 }
-                document.getElementById('tabDraw').classList.remove('active');
-                document.getElementById('tabEdit').classList.add('active');
-                document.getElementById('viewDraw').style.display = 'none';
-                document.getElementById('viewEdit').style.display = 'flex';
-                if(!isGenerated) { setEditMode('editText'); }
-                document.getElementById('instruction').textContent = "एडिट मोड: बदलाव करें या सीधे प्रिंट बटन दबाएं।";
             } else {
-                if(!force && isGenerated) {
-                    if(confirm("ड्रॉइंग मोड में वापस जाने पर 'सुधारें (Edit)' टूल से किए गए बदलाव (कैंची/नोड) रीसेट हो जाएंगे। क्या आप सहमत हैं?")) {
-                        isGenerated = false; drawCanvas();
-                    } else { return; }
-                }
-                document.getElementById('tabEdit').classList.remove('active');
-                document.getElementById('tabDraw').classList.add('active');
-                document.getElementById('viewEdit').style.display = 'none';
-                document.getElementById('viewDraw').style.display = 'flex';
-                document.getElementById('instruction').textContent = "ड्रॉ मोड: मैप पर लाइनें और रास्ते खींचें।";
+                saveProjectFallback();
             }
         }
+        async function saveFileAs() { if (window.showSaveFilePicker) { try { currentFileHandle = await window.showSaveFilePicker({ suggestedName: 'RockTech_Map.rock', types: [{ description: 'RockTech File', accept: {'application/octet-stream': ['.rock']} }] }); currentFileName = currentFileHandle.name; await saveFile(); } catch (err) { } } else { saveProjectFallback(); } }
+        function saveProjectFallback() { currentFileName = "RockTech_Map.rock"; saveAs(new Blob([getEncodedData()], {type: "application/octet-stream"}), currentFileName); markSaved(); }
 
-        function generateAndSwitchTab() {
-            saveState();
-            if(currentPath.length > 0 && mode !== 'text') { historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; typedDistance=""; }
-            if(!isGenerated) { finalTexts = []; historyStack.forEach(el => { if (el.type === 'text') { finalTexts.push({ text: el.text, x: el.x, y: el.y, angle: el.angle || 0, fontSize: el.fontSize || 35 }); } }); }
-            regenerateSegments(); isGenerated = true;
-            
-            if(!document.getElementById('docDate').value) { document.getElementById('docDate').value = new Date().toLocaleDateString('en-GB'); }
-            switchAppTab('edit');
-            drawCanvas();
-        }
-
-        function changeZoom(delta) {
-            currentZoom += delta; if(currentZoom < 0.4) currentZoom = 0.4; if(currentZoom > 4) currentZoom = 4;
-            wrapper.style.transform = `scale(${currentZoom})`; wrapper.style.width = `calc(160mm * ${currentZoom})`; wrapper.style.height = `calc(174mm * ${currentZoom})`;
-        }
-
-        let currentPath = []; let mousePos = {x: 0, y: 0}; let typedDistance = ""; let snapPoint = null; 
-        let hoverSegmentIdx = -1; let selectedTextIdx = -1; let isDraggingText = false;
-        let hoveredNode = null; let draggedNode = null; 
-
-        document.getElementById('imageInput').addEventListener('change', function(e) {
-            if(e.target.files && e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    uploadedImage = new Image(); uploadedImage.onload = () => { saveState(); drawCanvas(); }; uploadedImage.src = event.target.result;
-                }
-                reader.readAsDataURL(e.target.files[0]);
+        // --- PHOTO TRACE UPLOAD LOGIC ---
+        document.getElementById('imageInput').addEventListener('change', function(e) { 
+            if(e.target.files && e.target.files[0]) { 
+                const reader = new FileReader(); 
+                reader.onload = function(event) { 
+                    uploadedImage = new Image(); 
+                    uploadedImage.onload = () => { 
+                        saveState(); 
+                        drawCanvas(); 
+                    }; 
+                    uploadedImage.src = event.target.result; 
+                }; 
+                reader.readAsDataURL(e.target.files[0]); 
             }
+            // यह लाइन यह सुनिश्चित करेगी कि आप एक ही फोटो को दोबारा भी अपलोड कर सकें
+            e.target.value = ''; 
         });
+        
+        function saveState() { undoStack.push({ isGenerated: isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) }); redoStack = []; markUnsaved(); }
+        function undo() { if(undoStack.length > 0) { redoStack.push({ isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) }); restoreState(undoStack.pop()); markUnsaved(); } }
+        function redo() { if(redoStack.length > 0) { undoStack.push({ isGenerated, historyStack: JSON.parse(JSON.stringify(historyStack)), finalSegments: JSON.parse(JSON.stringify(finalSegments)), finalTexts: JSON.parse(JSON.stringify(finalTexts)) }); restoreState(redoStack.pop()); markUnsaved(); } }
+        function restoreState(state) { isGenerated = state.isGenerated; historyStack = state.historyStack; finalSegments = state.finalSegments; finalTexts = state.finalTexts; if(isGenerated) { setEditMode('trim'); } else { setMode('main'); currentPath = []; selectedDraftIdx = -1; document.getElementById('draftPropsPanel').style.display = 'none'; } selectedTextIdx = -1; hoveredNode = null; drawCanvas(); }
 
-        function syncWidths(type, val) {
-            if(val === "") return; document.getElementById(type + 'WidthRange').value = val; document.getElementById(type + 'WidthNum').value = val;
-            if(isGenerated) { regenerateSegments(); drawCanvas(); markUnsaved(); } else { drawCanvas(); markUnsaved(); }
-        }
-
-        function getWidth(type) { return parseInt(document.getElementById(type + 'WidthNum').value) || 20; }
-
-        function setMode(newMode) {
-            if(currentPath.length > 0) { saveState(); historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; typedDistance=""; }
-            mode = newMode;
-            ['btnMain', 'btnLink', 'btnKachchi', 'btnRail', 'btnPlot', 'btnText'].forEach(id => document.getElementById(id).classList.remove('active-tool'));
-            let btnMap = {'main':'btnMain', 'link':'btnLink', 'kachchi':'btnKachchi', 'rail':'btnRail', 'plot':'btnPlot', 'text':'btnText'};
-            if(btnMap[mode]) document.getElementById(btnMap[mode]).classList.add('active-tool');
-        }
-
-        function setEditMode(newMode) {
-            editMode = newMode;
-            ['btnTrim', 'btnSmartText', 'btnFreeTextEdit', 'btnEditText', 'btnEditLine'].forEach(id => document.getElementById(id).classList.remove('active-tool'));
-            document.getElementById('textControls').style.display = 'none';
-
-            if(editMode === 'trim') { document.getElementById('btnTrim').classList.add('active-tool'); document.getElementById('instruction').textContent = "कैंची: एक्स्ट्रा लाइन पर क्लिक करके मिटाएं।"; canvas.style.cursor = 'crosshair'; }
-            if(editMode === 'editLine') { document.getElementById('btnEditLine').classList.add('active-tool'); document.getElementById('instruction').textContent = "नोड खिसकाएं: किसी भी लाइन के कोने (हरे गोले) को पकड़ कर खिसकाएं।"; canvas.style.cursor = 'move'; }
-            if(editMode === 'smartText') { document.getElementById('btnSmartText').classList.add('active-tool'); document.getElementById('instruction').textContent = "मार्ग नाम: सड़क की लाइन पर क्लिक करें।"; canvas.style.cursor = 'pointer'; }
-            if(editMode === 'freeText') { document.getElementById('btnFreeTextEdit').classList.add('active-tool'); document.getElementById('instruction').textContent = "फ्री टेक्स्ट: कहीं भी क्लिक करके लिखें।"; canvas.style.cursor = 'text'; }
-            if(editMode === 'editText') { 
-                document.getElementById('btnEditText').classList.add('active-tool'); 
-                document.getElementById('instruction').textContent = "टेक्स्ट एडिट: टेक्स्ट पर क्लिक करें। खिसकाएं, साइज़ बदलें, घुमाएं या शब्द सुधारें।"; 
-                document.getElementById('textControls').style.display = 'flex'; canvas.style.cursor = 'default'; 
+        // Core Generation Logic
+        function getCurvedPath(pts, radius) {
+            if(pts.length < 3 || !radius || radius <= 0) return pts;
+            let res = [pts[0]];
+            for(let i=1; i<pts.length-1; i++) {
+                let p0 = res[res.length-1]; let p1 = pts[i], p2 = pts[i+1];
+                let d1 = Math.hypot(p1.x-p0.x, p1.y-p0.y); let d2 = Math.hypot(p2.x-p1.x, p2.y-p1.y);
+                let r = Math.min(radius, d1/2.1, d2/2.1);
+                if(r <= 1) { res.push(p1); continue; }
+                let sX = p1.x - (p1.x-p0.x)*r/d1, sY = p1.y - (p1.y-p0.y)*r/d1;
+                let eX = p1.x + (p2.x-p1.x)*r/d2, eY = p1.y + (p2.y-p1.y)*r/d2;
+                res.push({x: sX, y: sY});
+                res.push({ x: 0.444*sX + 0.444*p1.x + 0.111*eX, y: 0.444*sY + 0.444*p1.y + 0.111*eY });
+                res.push({ x: 0.111*sX + 0.444*p1.x + 0.444*eX, y: 0.111*sY + 0.444*p1.y + 0.444*eY });
+                res.push({x: eX, y: eY});
             }
-            hoverSegmentIdx = -1; selectedTextIdx = -1; hoveredNode = null; draggedNode = null; drawCanvas();
+            res.push(pts[pts.length-1]); return res;
         }
-
-        function getCoords(e) {
-            const rect = canvas.getBoundingClientRect();
-            return { x: (e.clientX - rect.left) * (canvas.width / rect.width), y: (e.clientY - rect.top) * (canvas.height / rect.height) };
-        }
-
-        function spawnFloatingTextarea(e, onSave) {
-            if(document.querySelector('.floating-input-container')) return; 
-            const container = document.createElement('div'); container.className = 'floating-input-container';
-            container.style.left = e.pageX + 'px'; container.style.top = (e.pageY - 20) + 'px';
-
-            const textarea = document.createElement('textarea'); textarea.className = 'floating-textarea'; textarea.placeholder = "टेक्स्ट लिखें... (Enter दबाएं)";
-            const btn = document.createElement('button'); btn.textContent = "✔ सेव करें"; btn.className = "btn btn-primary"; btn.style.marginTop = "5px";
-
-            container.appendChild(textarea); container.appendChild(btn); document.body.appendChild(container); textarea.focus();
-
-            const saveText = () => {
-                let val = textarea.value.trim(); if(val !== "") onSave(val);
-                if(document.body.contains(container)) document.body.removeChild(container); drawCanvas();
-            };
-            btn.addEventListener('click', saveText);
-        }
-
-        function promptSingleLine(msg, onSave) { let val = prompt(msg); if(val && val.trim() !== "") onSave(val.trim()); }
-
-        function updateTextProp(prop, val) {
-            if (isGenerated && selectedTextIdx !== -1 && finalTexts[selectedTextIdx]) {
-                if(prop === 'size') finalTexts[selectedTextIdx].fontSize = parseInt(val);
-                if(prop === 'angle') finalTexts[selectedTextIdx].angle = parseInt(val) * (Math.PI / 180); 
-                if(prop === 'content') finalTexts[selectedTextIdx].text = val; 
-                drawCanvas(); markUnsaved();
-            }
-        }
-        function deleteSelectedText() {
-            if (isGenerated && selectedTextIdx !== -1) {
-                saveState(); finalTexts.splice(selectedTextIdx, 1); selectedTextIdx = -1; document.getElementById('textContentInput').value = ""; drawCanvas(); 
-            }
-        }
-
-        function findClosestText(p) {
-            let minDist = 40; let bestIdx = -1;
-            for(let i=0; i<finalTexts.length; i++) { let dist = Math.hypot(p.x - finalTexts[i].x, p.y - finalTexts[i].y); if(dist < minDist) { minDist = dist; bestIdx = i; } } return bestIdx;
-        }
-
-        function findClosestNode(p) {
-            let minDist = 30; let bestNode = null;
-            for(let i=0; i<finalSegments.length; i++) {
-                let d1 = Math.hypot(p.x - finalSegments[i].A.x, p.y - finalSegments[i].A.y); let d2 = Math.hypot(p.x - finalSegments[i].B.x, p.y - finalSegments[i].B.y);
-                if(d1 < minDist) { minDist = d1; bestNode = {segIdx: i, isA: true}; } if(d2 < minDist) { minDist = d2; bestNode = {segIdx: i, isA: false}; }
-            }
-            return bestNode;
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if(!isGenerated && currentPath.length > 0 && mode && mode !== 'text') {
-                if((e.key >= '0' && e.key <= '9') || e.key === '.') { typedDistance += e.key; drawCanvas(); } 
-                else if(e.key === 'Backspace') { typedDistance = typedDistance.slice(0, -1); drawCanvas(); } 
-                else if(e.key === 'Enter' && typedDistance !== "") {
-                    let lastPt = currentPath[currentPath.length - 1]; let angle = Math.atan2(mousePos.y - lastPt.y, mousePos.x - lastPt.x);
-                    saveState(); currentPath.push({x: lastPt.x + Math.cos(angle) * parseFloat(typedDistance), y: lastPt.y + Math.sin(angle) * parseFloat(typedDistance)}); typedDistance = ""; drawCanvas();
-                }
-            }
-        });
-
-        wrapper.addEventListener('mousemove', (e) => {
-            mousePos = getCoords(e);
-            if (isGenerated) {
-                if (editMode === 'trim' || editMode === 'smartText') { hoverSegmentIdx = findClosestSegment(mousePos); drawCanvas(); } 
-                else if (editMode === 'editLine') {
-                    if (draggedNode) {
-                        if(draggedNode.isA) finalSegments[draggedNode.segIdx].A = {x: mousePos.x, y: mousePos.y}; else finalSegments[draggedNode.segIdx].B = {x: mousePos.x, y: mousePos.y}; drawCanvas();
-                    } else { hoveredNode = findClosestNode(mousePos); drawCanvas(); }
-                }
-                else if (editMode === 'editText' && isDraggingText && selectedTextIdx !== -1) { finalTexts[selectedTextIdx].x = mousePos.x; finalTexts[selectedTextIdx].y = mousePos.y; drawCanvas(); }
-            } else if (!isGenerated && currentPath.length > 0) {
-                let startPt = currentPath[0]; let distToStart = Math.hypot(mousePos.x - startPt.x, mousePos.y - startPt.y); snapPoint = (distToStart < 30 && currentPath.length > 2) ? startPt : null; drawCanvas(); 
-            }
-        });
-
-        window.addEventListener('mouseup', () => { isDraggingText = false; if(draggedNode) { draggedNode = null; saveState(); } });
-
-        wrapper.addEventListener('mousedown', (e) => {
-            if(document.querySelector('.floating-input-container')) return; 
-            const coords = getCoords(e);
-
-            if (isGenerated) {
-                if (editMode === 'trim' && hoverSegmentIdx !== -1) { saveState(); finalSegments.splice(hoverSegmentIdx, 1); hoverSegmentIdx = -1; drawCanvas(); }
-                else if (editMode === 'editLine' && hoveredNode) { saveState(); draggedNode = hoveredNode; }
-                else if (editMode === 'smartText') {
-                    let segIdx = findClosestSegment(coords);
-                    if(segIdx !== -1) {
-                        let seg = finalSegments[segIdx]; let midX = (seg.A.x + seg.B.x) / 2; let midY = (seg.A.y + seg.B.y) / 2;
-                        let angle = Math.atan2(seg.B.y - seg.A.y, seg.B.x - seg.A.x); if (angle > Math.PI/2) angle -= Math.PI; if (angle < -Math.PI/2) angle += Math.PI;
-                        promptSingleLine("मार्ग का नाम:", (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: midX, y: midY, angle: angle, fontSize: size }); drawCanvas(); });
-                    } else { alert("सड़क की लाइन पर क्लिक करें।"); }
-                }
-                else if (editMode === 'freeText') { spawnFloatingTextarea(e, (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: coords.x, y: coords.y, angle: 0, fontSize: size }); drawCanvas(); }); }
-                else if (editMode === 'editText') {
-                    let clickedIdx = findClosestText(coords);
-                    if(clickedIdx !== -1) {
-                        saveState(); selectedTextIdx = clickedIdx; isDraggingText = true;
-                        document.getElementById('textSizeSlider').value = finalTexts[clickedIdx].fontSize || 35;
-                        document.getElementById('textAngleSlider').value = Math.round((finalTexts[clickedIdx].angle || 0) * (180/Math.PI));
-                        document.getElementById('textContentInput').value = finalTexts[clickedIdx].text; drawCanvas();
-                        document.getElementById('textControls').style.display = 'flex'; // Show controls
-                    } else { selectedTextIdx = -1; document.getElementById('textContentInput').value = ""; document.getElementById('textControls').style.display = 'none'; drawCanvas(); }
-                } return;
-            }
-
-            if(!mode) return;
-            if(mode === 'text') { spawnFloatingTextarea(e, (val) => { saveState(); let size = parseInt(document.getElementById('mainWidthNum').value) || 35; historyStack.push({ type: 'text', text: val, x: coords.x, y: coords.y, angle: 0, fontSize: size }); drawCanvas(); }); return; }
-
-            saveState();
-            if(snapPoint) { currentPath.push({x: snapPoint.x, y: snapPoint.y}); historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; snapPoint = null; typedDistance = ""; } 
-            else if(typedDistance !== "") { let lastPt = currentPath[currentPath.length - 1]; let angle = Math.atan2(coords.y - lastPt.y, coords.x - lastPt.x); currentPath.push({x: lastPt.x + Math.cos(angle) * parseFloat(typedDistance), y: lastPt.y + Math.sin(angle) * parseFloat(typedDistance)}); typedDistance = ""; } 
-            else { currentPath.push(coords); }
-            drawCanvas();
-        });
-
-        canvas.addEventListener('dblclick', () => {
-            if(mode === 'text' || !mode || currentPath.length === 0 || isGenerated) return;
-            saveState(); historyStack.push({ type: mode, points: [...currentPath] }); currentPath = []; typedDistance = ""; snapPoint = null; drawCanvas();
-        });
 
         function getParallelPaths(pts, width) {
             let left = [], right = []; let halfW = width / 2;
             for(let i=0; i<pts.length; i++) {
                 let p = pts[i]; let v1, v2;
-                if(i === 0) { v1 = {x: pts[1].x - p.x, y: pts[1].y - p.y}; v2 = v1; } 
-                else if (i === pts.length - 1) { v1 = {x: p.x - pts[i-1].x, y: p.y - pts[i-1].y}; v2 = v1; } 
-                else { v1 = {x: p.x - pts[i-1].x, y: p.y - pts[i-1].y}; v2 = {x: pts[i+1].x - p.x, y: pts[i+1].y - p.y}; }
+                if(i === 0) { v1 = {x: pts[1].x - p.x, y: pts[1].y - p.y}; v2 = v1; } else if (i === pts.length - 1) { v1 = {x: p.x - pts[i-1].x, y: p.y - pts[i-1].y}; v2 = v1; } else { v1 = {x: p.x - pts[i-1].x, y: p.y - pts[i-1].y}; v2 = {x: pts[i+1].x - p.x, y: pts[i+1].y - p.y}; }
                 let len1 = Math.hypot(v1.x, v1.y) || 1; v1 = {x: v1.x/len1, y: v1.y/len1}; let len2 = Math.hypot(v2.x, v2.y) || 1; v2 = {x: v2.x/len2, y: v2.y/len2};
                 let tangent = {x: v1.x + v2.x, y: v1.y + v2.y}; let tLen = Math.hypot(tangent.x, tangent.y); if(tLen === 0) tangent = v1; else tangent = {x: tangent.x/tLen, y: tangent.y/tLen};
                 let normal = {x: -tangent.y, y: tangent.x}; let n1 = {x: -v1.y, y: v1.x}; let dot = normal.x * n1.x + normal.y * n1.y; let miter = dot !== 0 ? 1/dot : 1;
-                if (Math.abs(miter) > 3) miter = 3 * Math.sign(miter); 
-                left.push({x: p.x + normal.x * halfW * miter, y: p.y + normal.y * halfW * miter}); right.push({x: p.x - normal.x * halfW * miter, y: p.y - normal.y * halfW * miter});
+                if (Math.abs(miter) > 3) miter = 3 * Math.sign(miter); left.push({x: p.x + normal.x * halfW * miter, y: p.y + normal.y * halfW * miter}); right.push({x: p.x - normal.x * halfW * miter, y: p.y - normal.y * halfW * miter});
             } return {left, right};
         }
-
-        function getRailwayTicks(pts) {
-            let ticks = []; let tickSpacing = 30; let tickWidth = 25; let totalLength = 0; let distances = [0];
-            for(let i=1; i<pts.length; i++) { totalLength += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y); distances.push(totalLength); }
-            let currentDist = tickSpacing / 2; let pIdx = 1;
-            while(currentDist < totalLength && pIdx < pts.length) {
-                if(currentDist > distances[pIdx]) { pIdx++; continue; }
-                let prev = pts[pIdx-1], curr = pts[pIdx]; let ratio = (currentDist - distances[pIdx-1]) / (distances[pIdx] - distances[pIdx-1]);
-                let x = prev.x + (curr.x - prev.x) * ratio; let y = prev.y + (curr.y - prev.y) * ratio; let dx = curr.x - prev.x, dy = curr.y - prev.y; let len = Math.hypot(dx, dy) || 1; let nx = -dy/len, ny = dx/len;
-                ticks.push([ {x: x + nx*(tickWidth/2), y: y + ny*(tickWidth/2)}, {x: x - nx*(tickWidth/2), y: y - ny*(tickWidth/2)} ]); currentDist += tickSpacing;
-            } return ticks;
-        }
-
-        function getIntersection(A, B, C, D) {
-            let bottom = (D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y); if (Math.abs(bottom) < 0.0001) return null;
-            let t = ((D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x)) / bottom; let u = ((B.x - A.x) * (A.y - C.y) - (B.y - A.y) * (A.x - C.x)) / bottom;
-            if (t > 0.01 && t < 0.99 && u > 0.01 && u < 0.99) { return { x: A.x + t * (B.x - A.x), y: A.y + t * (B.y - A.y) }; } return null;
-        }
-
-        function shatterSegments(segs) {
-            let result = [...segs]; let foundSplit = true; let maxIters = 1000;
-            while(foundSplit && maxIters-- > 0) {
-                foundSplit = false;
-                for(let i=0; i<result.length; i++) {
-                    for(let j=i+1; j<result.length; j++) {
-                        let intP = getIntersection(result[i].A, result[i].B, result[j].A, result[j].B);
-                        if(intP) {
-                            let s1 = result[i], s2 = result[j];
-                            result.splice(j, 1, {A: intP, B: s2.B, dash: s2.dash}, {A: s2.A, B: intP, dash: s2.dash});
-                            result.splice(i, 1, {A: intP, B: s1.B, dash: s1.dash}, {A: s1.A, B: intP, dash: s1.dash});
-                            foundSplit = true; break;
-                        }
-                    } if(foundSplit) break;
+        function getRailwayTicks(pts) { let ticks = []; let tickSpacing = 30; let tickWidth = 25; let totalLength = 0; let distances = [0]; for(let i=1; i<pts.length; i++) { totalLength += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y); distances.push(totalLength); } let currentDist = tickSpacing / 2; let pIdx = 1; while(currentDist < totalLength && pIdx < pts.length) { if(currentDist > distances[pIdx]) { pIdx++; continue; } let prev = pts[pIdx-1], curr = pts[pIdx]; let ratio = (currentDist - distances[pIdx-1]) / (distances[pIdx] - distances[pIdx-1]); let x = prev.x + (curr.x - prev.x) * ratio; let y = prev.y + (curr.y - prev.y) * ratio; let dx = curr.x - prev.x, dy = curr.y - prev.y; let len = Math.hypot(dx, dy) || 1; let nx = -dy/len, ny = dx/len; ticks.push([ {x: x + nx*(tickWidth/2), y: y + ny*(tickWidth/2)}, {x: x - nx*(tickWidth/2), y: y - ny*(tickWidth/2)} ]); currentDist += tickSpacing; } return ticks; }
+        function getIntersection(A, B, C, D) { let bottom = (D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y); if (Math.abs(bottom) < 0.0001) return null; let t = ((D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x)) / bottom; let u = ((B.x - A.x) * (A.y - C.y) - (B.y - A.y) * (A.x - C.x)) / bottom; if (t > 0.01 && t < 0.99 && u > 0.01 && u < 0.99) { return { x: A.x + t * (B.x - A.x), y: A.y + t * (B.y - A.y) }; } return null; }
+        function shatterSegments(segs) { let result = [...segs]; let foundSplit = true; let maxIters = 1000; while(foundSplit && maxIters-- > 0) { foundSplit = false; for(let i=0; i<result.length; i++) { for(let j=i+1; j<result.length; j++) { let intP = getIntersection(result[i].A, result[i].B, result[j].A, result[j].B); if(intP) { let s1 = result[i], s2 = result[j]; result.splice(j, 1, {A: intP, B: s2.B, dash: s2.dash}, {A: s2.A, B: intP, dash: s2.dash}); result.splice(i, 1, {A: intP, B: s1.B, dash: s1.dash}, {A: s1.A, B: intP, dash: s1.dash}); foundSplit = true; break; } } if(foundSplit) break; } } return result; }
+        function regenerateSegments() {
+            let initialSegments = [];
+            historyStack.forEach(el => {
+                if (el.type === 'text') return; 
+                let w = el.customWidth || (el.type === 'main' ? 75 : el.type === 'link' ? 55 : 40);
+                let processedPts = getCurvedPath(el.points, el.curveRadius || 0);
+                if (el.type === 'rail' || el.type === 'plot') {
+                    for(let i=0; i<processedPts.length-1; i++) initialSegments.push({A: processedPts[i], B: processedPts[i+1], dash: false});
+                    if(el.type === 'rail') getRailwayTicks(processedPts).forEach(t => initialSegments.push({A: t[0], B: t[1], dash: false}));
+                } else {
+                    let parallels = getParallelPaths(processedPts, w); let isDash = el.type === 'kachchi';
+                    for(let i=0; i<parallels.left.length-1; i++) initialSegments.push({A: parallels.left[i], B: parallels.left[i+1], dash: isDash});
+                    for(let i=0; i<parallels.right.length-1; i++) initialSegments.push({A: parallels.right[i], B: parallels.right[i+1], dash: isDash});
                 }
-            } return result;
+            });
+            finalSegments = shatterSegments(initialSegments);
         }
 
-        function pointToSegmentDistance(p, v, w) {
-            let l2 = (v.x - w.x)**2 + (v.y - w.y)**2; if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
-            let t = Math.max(0, Math.min(1, ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2)); return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+        // --- UNIFIED TOOLBAR LOGIC ---
+        function clearActiveTools() {
+            const btns = ['btnRoad', 'btnEditDraft', 'btnRail', 'btnPlot', 'btnText', 'btnTrim', 'btnEditLine', 'btnSmartText', 'btnFreeTextEdit', 'btnEditText', 'btnPan'];
+            btns.forEach(id => { let el = document.getElementById(id); if(el) el.classList.remove('active-tool'); });
+            document.getElementById('draftPropsPanel').style.display = 'none';
+            document.getElementById('textControls').style.display = 'none';
         }
 
-        function findClosestSegment(p) {
-            let minDist = 30; let bestIdx = -1;
-            for(let i=0; i<finalSegments.length; i++) { let dist = pointToSegmentDistance(p, finalSegments[i].A, finalSegments[i].B); if(dist < minDist) { minDist = dist; bestIdx = i; } } return bestIdx;
-        }
-
-        function drawPathArray(ctx, pts) {
-            if(pts.length < 2) return; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-            for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
-        }
-
-        function renderDraftElement(el) {
-            if(el.type === 'text') return;
-            ctx.strokeStyle = el.type==='main' ? '#c0392b' : el.type==='link' ? '#d35400' : el.type==='kachchi' ? '#8e44ad' : '#16a085'; ctx.lineWidth = 4; 
-            let w = el.type === 'main' ? getWidth('main') : el.type === 'link' ? getWidth('link') : getWidth('kachchi');
-
-            if(el.type === 'rail' || el.type === 'plot') {
-                drawPathArray(ctx, el.points); if(el.type === 'rail') getRailwayTicks(el.points).forEach(t => drawPathArray(ctx, t));
-            } else {
-                let parallels = getParallelPaths(el.points, w); if(el.type === 'kachchi') ctx.setLineDash([20, 20]);
-                drawPathArray(ctx, parallels.left); drawPathArray(ctx, parallels.right); ctx.setLineDash([]); 
+        function setMode(newMode) {
+            if(isGenerated) {
+                if(confirm("ड्रॉइंग मोड में वापस जाने पर कैंची (Trim) से काटे गए बदलाव रीसेट हो जाएंगे। क्या आप सहमत हैं?")) { isGenerated = false; } else return;
             }
+            if(currentPath.length > 0) { saveState(); commitCurrentPath(); }
+            mode = newMode; editMode = null; selectedDraftIdx = -1;
+            clearActiveTools();
+            let btnMap = {'main':'btnRoad', 'editDraft':'btnEditDraft', 'rail':'btnRail', 'plot':'btnPlot', 'text':'btnText', 'pan':'btnPan'};
+            if(btnMap[mode]) document.getElementById(btnMap[mode]).classList.add('active-tool');
+            
+            if(mode === 'editDraft') { document.getElementById('instruction').textContent = "सड़क चुनें: बनी हुई सड़क पर क्लिक करें। उसे खिसकाएं या साइडबार से मोड़/चौड़ाई बदलें।"; canvas.style.cursor = 'move'; }
+            else if (mode === 'pan') { document.getElementById('instruction').textContent = "खिसकाएं: नक्शे को ड्रैग करके इधर-उधर खिसकाएं।"; canvas.style.cursor = 'grab'; }
+            else { document.getElementById('instruction').textContent = "मैप पर क्लिक करके पॉइंट बनाएं। (Shift: Straight Line)"; canvas.style.cursor = 'crosshair'; }
+            drawCanvas();
         }
 
+        function setEditMode(newMode) {
+            if(!isGenerated) { alert("कृपया पहले '✨ लाइन आर्ट तैयार करें' बटन दबाएं!"); return; }
+            editMode = newMode; mode = null;
+            clearActiveTools();
+            let btnMap = {'trim':'btnTrim', 'editLine':'btnEditLine', 'smartText':'btnSmartText', 'freeText':'btnFreeTextEdit', 'editText':'btnEditText'};
+            if(btnMap[editMode]) document.getElementById(btnMap[editMode]).classList.add('active-tool');
+            
+            if(editMode === 'trim') { document.getElementById('instruction').textContent = "कैंची: एक्स्ट्रा लाइन पर क्लिक करके मिटाएं।"; canvas.style.cursor = 'crosshair'; }
+            if(editMode === 'editLine') { document.getElementById('instruction').textContent = "नोड खिसकाएं: लाइन के कोने (हरे गोले) को पकड़ कर खिसकाएं।"; canvas.style.cursor = 'move'; }
+            if(editMode === 'smartText') { document.getElementById('instruction').textContent = "मार्ग नाम: सड़क की लाइन पर क्लिक करें।"; canvas.style.cursor = 'pointer'; }
+            if(editMode === 'freeText') { document.getElementById('instruction').textContent = "फ्री टेक्स्ट: कहीं भी क्लिक करके लिखें।"; canvas.style.cursor = 'text'; }
+            if(editMode === 'editText') { document.getElementById('instruction').textContent = "टेक्स्ट एडिट: टेक्स्ट पर क्लिक करें। खिसकाएं, साइज़ बदलें या घुमाएं।"; document.getElementById('textControls').style.display = 'block'; canvas.style.cursor = 'default'; }
+            hoverSegmentIdx = -1; selectedTextIdx = -1; hoveredNode = null; draggedNode = null; drawCanvas();
+        }
+
+        function generateAndSwitchTab() {
+            saveState();
+            if(currentPath.length > 0 && mode !== 'text') { commitCurrentPath(); }
+            if(!isGenerated) { finalTexts = []; historyStack.forEach(el => { if (el.type === 'text') { finalTexts.push({ text: el.text, x: el.x, y: el.y, angle: el.angle || 0, fontSize: el.fontSize || 35 }); } }); }
+            regenerateSegments(); isGenerated = true;
+            if(!document.getElementById('docDate').value) { document.getElementById('docDate').value = new Date().toLocaleDateString('en-GB'); }
+            setEditMode('trim');
+        }
+
+        function commitCurrentPath() { let defaultWidth = mode === 'main' ? 75 : mode === 'link' ? 55 : 40; let obj = { type: mode, points: [...currentPath], customWidth: defaultWidth, curveRadius: 0 }; historyStack.push(obj); currentPath = []; typedDistance=""; }
+        function updateDraftProp(prop, val) { if(selectedDraftIdx !== -1 && historyStack[selectedDraftIdx]) { let el = historyStack[selectedDraftIdx]; if(prop === 'width') { el.customWidth = parseInt(val); document.getElementById('draftWidthVal').innerText = val; } if(prop === 'curve') { el.curveRadius = parseInt(val); document.getElementById('draftCurveVal').innerText = val; } if(prop === 'style') { el.type = val; } drawCanvas(); markUnsaved(); } }
+        function deleteSelectedDraft() { if(selectedDraftIdx !== -1) { saveState(); historyStack.splice(selectedDraftIdx, 1); selectedDraftIdx = -1; document.getElementById('draftPropsPanel').style.display = 'none'; drawCanvas(); } }
+
+        function getCoords(e) { 
+            const rect = canvas.getBoundingClientRect(); 
+            // ज़ूम और पैन को ऑटोमैटिकली एडजस्ट करने का सटीक फॉर्मूला
+            return { 
+                x: (e.clientX - rect.left) * (canvas.width / rect.width), 
+                y: (e.clientY - rect.top) * (canvas.height / rect.height) 
+            }; 
+        }
+
+        // --- KEYBOARD CONTROLS (UNIVERSAL) ---
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'Shift') isShiftPressed = true;
+            if(e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); isSpacePressed = true; document.getElementById('viewport').style.cursor = 'grab'; }
+            if(e.key === 'Escape') { currentPath = []; typedDistance = ""; snapPoint = null; selectedDraftIdx = -1; document.getElementById('draftPropsPanel').style.display = 'none'; if(mode === 'pan') setMode('main'); drawCanvas(); }
+            
+            // Undo/Redo Shortcuts
+            if(e.ctrlKey && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+            if(e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); redo(); }
+
+            if(!isGenerated && currentPath.length > 0 && mode && mode !== 'text' && mode !== 'editDraft' && mode !== 'pan') {
+                if((e.key >= '0' && e.key <= '9') || e.key === '.') { typedDistance += e.key; drawCanvas(); } 
+                else if(e.key === 'Backspace') { typedDistance = typedDistance.slice(0, -1); drawCanvas(); } 
+                else if(e.key === 'Enter' && typedDistance !== "") { 
+                    let lastPt = currentPath[currentPath.length - 1]; 
+                    let targetPt = applyShiftSnap(lastPt, mousePos, isShiftPressed);
+                    let angle = Math.atan2(targetPt.y - lastPt.y, targetPt.x - lastPt.x); 
+                    saveState(); currentPath.push({x: lastPt.x + Math.cos(angle) * parseFloat(typedDistance), y: lastPt.y + Math.sin(angle) * parseFloat(typedDistance)}); typedDistance = ""; drawCanvas(); 
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if(e.key === 'Shift') isShiftPressed = false;
+            if(e.code === 'Space') { isSpacePressed = false; document.getElementById('viewport').style.cursor = mode === 'pan' ? 'grab' : (mode === 'editDraft' ? 'move' : 'crosshair'); }
+        });
+
+        // --- DRAWING ---
+        function drawPathArray(ctx, pts) { if(pts.length < 2) return; ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke(); }
         function drawTexts(sourceArray, isFinal) {
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
             sourceArray.forEach((el, idx) => {
@@ -745,86 +567,199 @@
                 }
             });
         }
-
-        function regenerateSegments() {
-            let initialSegments = [];
-            historyStack.forEach(el => {
-                if (el.type === 'text') return; 
-                let w = el.type === 'main' ? getWidth('main') : el.type === 'link' ? getWidth('link') : getWidth('kachchi');
-                if (el.type === 'rail' || el.type === 'plot') {
-                    for(let i=0; i<el.points.length-1; i++) initialSegments.push({A: el.points[i], B: el.points[i+1], dash: false});
-                    if(el.type === 'rail') getRailwayTicks(el.points).forEach(t => initialSegments.push({A: t[0], B: t[1], dash: false}));
-                } else {
-                    let parallels = getParallelPaths(el.points, w); let isDash = el.type === 'kachchi';
-                    for(let i=0; i<parallels.left.length-1; i++) initialSegments.push({A: parallels.left[i], B: parallels.left[i+1], dash: isDash});
-                    for(let i=0; i<parallels.right.length-1; i++) initialSegments.push({A: parallels.right[i], B: parallels.right[i+1], dash: isDash});
-                }
-            });
-            finalSegments = shatterSegments(initialSegments);
+        function renderDraftElement(el, isSelected) {
+            if(el.type === 'text') return;
+            let processedPts = el.curveRadius > 0 ? getCurvedPath(el.points, el.curveRadius) : el.points;
+            ctx.strokeStyle = isSelected ? "#3b82f6" : (el.type==='main' ? '#c0392b' : el.type==='link' ? '#d35400' : el.type==='kachchi' ? '#8e44ad' : '#16a085'); 
+            ctx.lineWidth = isSelected ? 6 : 4; 
+            if(el.type === 'rail' || el.type === 'plot') { drawPathArray(ctx, processedPts); if(el.type === 'rail') getRailwayTicks(processedPts).forEach(t => drawPathArray(ctx, t)); } 
+            else { let w = el.customWidth || 35; let parallels = getParallelPaths(processedPts, w); if(el.type === 'kachchi') ctx.setLineDash([20, 20]); drawPathArray(ctx, parallels.left); drawPathArray(ctx, parallels.right); ctx.setLineDash([]); }
+            if(isSelected) { ctx.fillStyle = "#10B981"; el.points.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }); }
         }
-
         function drawCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); cadBox.style.display = 'none'; 
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            cadBox.style.display = 'none'; 
+            
+            let opacity = document.getElementById('bgOpacity') ? document.getElementById('bgOpacity').value / 100 : 0.4;
             if (!isGenerated) {
-                if (uploadedImage) { 
-                    ctx.globalAlpha = 0.4; let imgRatio = uploadedImage.width / uploadedImage.height; let canvasRatio = canvas.width / canvas.height; let drawW, drawH, drawX, drawY;
-                    if (imgRatio > canvasRatio) { drawW = canvas.width; drawH = canvas.width / imgRatio; drawX = 0; drawY = (canvas.height - drawH) / 2; } 
-                    else { drawH = canvas.height; drawW = canvas.height * imgRatio; drawX = (canvas.width - drawW) / 2; drawY = 0; }
-                    ctx.drawImage(uploadedImage, drawX, drawY, drawW, drawH); ctx.globalAlpha = 1.0; 
-                }
-                historyStack.forEach(el => renderDraftElement(el));
+                if (uploadedImage && opacity > 0) { ctx.globalAlpha = opacity; let imgRatio = uploadedImage.width / uploadedImage.height; let canvasRatio = canvas.width / canvas.height; let drawW, drawH, drawX, drawY; if (imgRatio > canvasRatio) { drawW = canvas.width; drawH = canvas.width / imgRatio; drawX = 0; drawY = (canvas.height - drawH) / 2; } else { drawH = canvas.height; drawW = canvas.height * imgRatio; drawX = (canvas.width - drawW) / 2; drawY = 0; } ctx.drawImage(uploadedImage, drawX, drawY, drawW, drawH); ctx.globalAlpha = 1.0; }
+                historyStack.forEach((el, idx) => renderDraftElement(el, idx === selectedDraftIdx));
                 if(currentPath.length > 0) {
-                    renderDraftElement({ type: mode, points: currentPath }); let lastPt = currentPath[currentPath.length - 1]; let previewPt = {x: mousePos.x, y: mousePos.y};
+                    ctx.strokeStyle = "rgba(41, 128, 185, 0.7)"; ctx.lineWidth = 3 / currentZoom; ctx.setLineDash([10/currentZoom, 10/currentZoom]); drawPathArray(ctx, currentPath);
+                    let lastPt = currentPath[currentPath.length - 1]; let previewPt = applyShiftSnap(lastPt, mousePos, isShiftPressed);
                     if(typedDistance !== "") { let angle = Math.atan2(mousePos.y - lastPt.y, mousePos.x - lastPt.x); let dist = parseFloat(typedDistance); previewPt = {x: lastPt.x + Math.cos(angle)*dist, y: lastPt.y + Math.sin(angle)*dist}; cadBox.style.display = 'block'; cadBox.style.left = (event.pageX + 15) + 'px'; cadBox.style.top = (event.pageY - 20) + 'px'; cadValue.textContent = typedDistance; } 
-                    else if(snapPoint) { previewPt = snapPoint; ctx.beginPath(); ctx.arc(snapPoint.x, snapPoint.y, 15, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3; ctx.stroke(); }
-                    ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y); ctx.lineTo(previewPt.x, previewPt.y); ctx.strokeStyle = "rgba(41, 128, 185, 0.7)"; ctx.lineWidth = 3; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]);
+                    else if(snapPoint) { previewPt = snapPoint; ctx.beginPath(); ctx.arc(snapPoint.x, snapPoint.y, 15/currentZoom, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3/currentZoom; ctx.stroke(); }
+                    ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y); ctx.lineTo(previewPt.x, previewPt.y); ctx.stroke(); ctx.setLineDash([]);
                 }
                 drawTexts(historyStack, false);
             } else {
-                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.lineWidth = 2; ctx.lineCap = 'round';
+                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.lineWidth = 2 / currentZoom; ctx.lineCap = 'round';
                 finalSegments.forEach((s, idx) => {
-                    ctx.strokeStyle = (idx === hoverSegmentIdx && (editMode==='trim'||editMode==='smartText')) ? "#e74c3c" : "#000000"; ctx.lineWidth = (idx === hoverSegmentIdx) ? 6 : 2; 
-                    if (s.dash) ctx.setLineDash([15, 15]); else ctx.setLineDash([]);
+                    ctx.strokeStyle = (idx === hoverSegmentIdx && (editMode==='trim'||editMode==='smartText')) ? "#e74c3c" : "#000000"; ctx.lineWidth = (idx === hoverSegmentIdx) ? 6/currentZoom : 2/currentZoom; 
+                    if (s.dash) ctx.setLineDash([15/currentZoom, 15/currentZoom]); else ctx.setLineDash([]);
                     ctx.beginPath(); ctx.moveTo(s.A.x, s.A.y); ctx.lineTo(s.B.x, s.B.y); ctx.stroke();
                 }); ctx.setLineDash([]); 
-                if(editMode === 'editLine' && hoveredNode && !draggedNode) { let pt = hoveredNode.isA ? finalSegments[hoveredNode.segIdx].A : finalSegments[hoveredNode.segIdx].B; ctx.beginPath(); ctx.arc(pt.x, pt.y, 15, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3; ctx.stroke(); }
+                if(editMode === 'editLine' && hoveredNode && !draggedNode) { let pt = hoveredNode.isA ? finalSegments[hoveredNode.segIdx].A : finalSegments[hoveredNode.segIdx].B; ctx.beginPath(); ctx.arc(pt.x, pt.y, 15/currentZoom, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3/currentZoom; ctx.stroke(); }
                 drawTexts(finalTexts, true);
             }
         }
 
-        function generateOfficialPDF() {
-            let officeLines = document.getElementById('docOffice').value.split('\n');
-            document.getElementById('printOfficeLine1').innerText = officeLines[0] || "";
-            document.getElementById('printOfficeLine2').innerText = officeLines.slice(1).join('\n') || "";
-            document.getElementById('printVillage').innerText = document.getElementById('docVillage').value;
-            document.getElementById('printKhasra').innerText = document.getElementById('docKhasra').value;
-            document.getElementById('printPatwari').innerText = document.getElementById('docPatwari').value;
-            
-            let dateVal = document.getElementById('docDate').value; 
-            document.getElementById('printDateValue').innerText = dateVal ? dateVal : "_ _ _ _ _ _ _ _ 2026";
-            
-            document.getElementById('printMapImage').src = canvas.toDataURL('image/jpeg', 1.0);
-            
-            setTimeout(() => { window.print(); }, 300);
-        }
+        function pointToSegmentDistance(p, v, w) { let l2 = (v.x - w.x)**2 + (v.y - w.y)**2; if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y); let t = Math.max(0, Math.min(1, ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2)); return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y))); }
+        function findClosestSegment(p) { let minDist = 30/currentZoom; let bestIdx = -1; for(let i=0; i<finalSegments.length; i++) { let dist = pointToSegmentDistance(p, finalSegments[i].A, finalSegments[i].B); if(dist < minDist) { minDist = dist; bestIdx = i; } } return bestIdx; }
+        function findClosestNode(p) { let minDist = 30/currentZoom; let bestNode = null; for(let i=0; i<finalSegments.length; i++) { let d1 = Math.hypot(p.x - finalSegments[i].A.x, p.y - finalSegments[i].A.y); let d2 = Math.hypot(p.x - finalSegments[i].B.x, p.y - finalSegments[i].B.y); if(d1 < minDist) { minDist = d1; bestNode = {segIdx: i, isA: true}; } if(d2 < minDist) { minDist = d2; bestNode = {segIdx: i, isA: false}; } } return bestNode; }
+        function findClosestDraftShape(p) { let minDist = 40/currentZoom; let bestIdx = -1; for(let i=historyStack.length-1; i>=0; i--) { if(historyStack[i].type === 'text') continue; let pts = historyStack[i].points; for(let j=0; j<pts.length-1; j++) { if(pointToSegmentDistance(p, pts[j], pts[j+1]) < minDist) { minDist = pointToSegmentDistance(p, pts[j], pts[j+1]); bestIdx = i; } } } return bestIdx; }
+        function findClosestDraftNode(p) { let minDist = 20/currentZoom; let bestNode = null; for(let i=historyStack.length-1; i>=0; i--) { if(historyStack[i].type === 'text') continue; let pts = historyStack[i].points; for(let j=0; j<pts.length; j++) { if(Math.hypot(p.x - pts[j].x, p.y - pts[j].y) < minDist) { minDist = Math.hypot(p.x - pts[j].x, p.y - pts[j].y); bestNode = {shapeIdx: i, nodeIdx: j}; } } } return bestNode; }
+        function findClosestText(p) { let minDist = 40/currentZoom; let bestIdx = -1; for(let i=0; i<finalTexts.length; i++) { let dist = Math.hypot(p.x - finalTexts[i].x, p.y - finalTexts[i].y); if(dist < minDist) { minDist = dist; bestIdx = i; } } return bestIdx; }
 
-        function downloadImage(format) { const link = document.createElement('a'); link.download = `RockTech_Map.${format}`; link.href = canvas.toDataURL(`image/${format}`, 1.0); link.click(); }
+        function spawnFloatingTextarea(e, onSave) { if(document.querySelector('.floating-input-container')) return; const container = document.createElement('div'); container.className = 'floating-input-container'; container.style.left = e.pageX + 'px'; container.style.top = (e.pageY - 20) + 'px'; const textarea = document.createElement('textarea'); textarea.className = 'floating-textarea'; textarea.placeholder = "टेक्स्ट लिखें..."; const btn = document.createElement('button'); btn.textContent = "✔ सेव करें"; btn.className = "btn btn-primary"; btn.style.marginTop = "5px"; container.appendChild(textarea); container.appendChild(btn); document.body.appendChild(container); textarea.focus(); const saveText = () => { let val = textarea.value.trim(); if(val !== "") onSave(val); if(document.body.contains(container)) document.body.removeChild(container); drawCanvas(); }; btn.addEventListener('click', saveText); }
+        function promptSingleLine(msg, onSave) { let val = prompt(msg); if(val && val.trim() !== "") onSave(val.trim()); }
+        function updateTextProp(prop, val) { if (isGenerated && selectedTextIdx !== -1 && finalTexts[selectedTextIdx]) { if(prop === 'size') finalTexts[selectedTextIdx].fontSize = parseInt(val); if(prop === 'angle') finalTexts[selectedTextIdx].angle = parseInt(val) * (Math.PI / 180); if(prop === 'content') finalTexts[selectedTextIdx].text = val; drawCanvas(); markUnsaved(); } }
+        function deleteSelectedText() { if (isGenerated && selectedTextIdx !== -1) { saveState(); finalTexts.splice(selectedTextIdx, 1); selectedTextIdx = -1; document.getElementById('textContentInput').value = ""; document.getElementById('textControls').style.display='none'; drawCanvas(); } }
+
+        // --- MOUSE EVENTS (WITH PAN & SHIFT SNAP) ---
+        const vp = document.getElementById('viewport');
         
-        function downloadSVG() {
-            let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1740" width="160mm" height="174mm" style="width:160mm; height:174mm;">\n<rect width="100%" height="100%" fill="white" stroke="none"/>\n`;
-            finalSegments.forEach(s => { let dash = s.dash ? `stroke-dasharray="15,15"` : ""; svg += `<line x1="${s.A.x}" y1="${s.A.y}" x2="${s.B.x}" y2="${s.B.y}" stroke="black" stroke-width="2" stroke-linecap="round" ${dash} />\n`; });
-            finalTexts.forEach(el => {
-                let deg = el.angle * (180 / Math.PI); let size = el.fontSize || 35; let strokeW = Math.max(2, size/6);
-                let lines = el.text.split('\n'); let lineHeight = size * 1.2; let startY = el.y - ((lines.length - 1) * lineHeight) / 2;
-                let whiteTextGrp = `<text font-family="Poppins, Arial" font-size="${size}" font-weight="600" fill="white" stroke="white" stroke-width="${strokeW}" text-anchor="middle" transform="rotate(${deg}, ${el.x}, ${el.y})">\n`;
-                let blackTextGrp = `<text font-family="Poppins, Arial" font-size="${size}" font-weight="600" fill="black" stroke="none" text-anchor="middle" transform="rotate(${deg}, ${el.x}, ${el.y})">\n`;
-                lines.forEach((line, i) => { let lineY = startY + (i * lineHeight) + (size * 0.3); whiteTextGrp += `<tspan x="${el.x}" y="${lineY}">${line}</tspan>\n`; blackTextGrp += `<tspan x="${el.x}" y="${lineY}">${line}</tspan>\n`; });
-                whiteTextGrp += `</text>\n`; blackTextGrp += `</text>\n`; svg += whiteTextGrp + blackTextGrp;
-            });
-            svg += `</svg>`; saveAs(new Blob([svg], {type: "image/svg+xml;charset=utf-8"}), "RockTech_Word_Shapes.svg");
+        vp.addEventListener('mousedown', (e) => {
+            if(e.button === 1 || e.button === 2 || isSpacePressed || mode === 'pan') {
+                isPanning = true; panStart = {x: e.clientX - panX, y: e.clientY - panY};
+                vp.style.cursor = 'grabbing'; return;
+            }
+            if(e.target.id !== 'mapCanvas') return;
+            if(document.querySelector('.floating-input-container')) return; 
+            const coords = getCoords(e);
+            
+            if (isGenerated) {
+                if (editMode === 'trim' && hoverSegmentIdx !== -1) { saveState(); finalSegments.splice(hoverSegmentIdx, 1); hoverSegmentIdx = -1; drawCanvas(); }
+                else if (editMode === 'editLine' && hoveredNode) { saveState(); draggedNode = hoveredNode; }
+                else if (editMode === 'smartText') { let segIdx = findClosestSegment(coords); if(segIdx !== -1) { let seg = finalSegments[segIdx]; let midX = (seg.A.x + seg.B.x) / 2; let midY = (seg.A.y + seg.B.y) / 2; let angle = Math.atan2(seg.B.y - seg.A.y, seg.B.x - seg.A.x); if (angle > Math.PI/2) angle -= Math.PI; if (angle < -Math.PI/2) angle += Math.PI; promptSingleLine("मार्ग का नाम:", (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: midX, y: midY, angle: angle, fontSize: size }); drawCanvas(); }); } else { alert("सड़क की लाइन पर क्लिक करें।"); } }
+                else if (editMode === 'freeText') { spawnFloatingTextarea(e, (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: coords.x, y: coords.y, angle: 0, fontSize: size }); drawCanvas(); }); }
+                else if (editMode === 'editText') { let clickedIdx = findClosestText(coords); if(clickedIdx !== -1) { saveState(); selectedTextIdx = clickedIdx; isDraggingText = true; document.getElementById('textSizeSlider').value = finalTexts[clickedIdx].fontSize || 35; document.getElementById('textAngleSlider').value = Math.round((finalTexts[clickedIdx].angle || 0) * (180/Math.PI)); document.getElementById('textContentInput').value = finalTexts[clickedIdx].text; drawCanvas(); document.getElementById('textControls').style.display = 'block'; } else { selectedTextIdx = -1; document.getElementById('textContentInput').value = ""; document.getElementById('textControls').style.display = 'none'; drawCanvas(); } } return;
+            }
+
+            if(!mode || mode === 'pan') return;
+            if(mode === 'text') { spawnFloatingTextarea(e, (val) => { saveState(); historyStack.push({ type: 'text', text: val, x: coords.x, y: coords.y, angle: 0, fontSize: 35 }); drawCanvas(); }); return; }
+            if(mode === 'editDraft') {
+                let node = findClosestDraftNode(coords);
+                if (node) { draggedDraftNode = node; selectedDraftIdx = node.shapeIdx; saveState(); }
+                else {
+                    let shapeIdx = findClosestDraftShape(coords);
+                    if (shapeIdx !== -1) {
+                        selectedDraftIdx = shapeIdx; draggedWholeDraft = {idx: shapeIdx, lastX: coords.x, lastY: coords.y}; saveState();
+                        document.getElementById('draftPropsPanel').style.display = 'block';
+                        let el = historyStack[shapeIdx];
+                        document.getElementById('draftWidthRange').value = el.customWidth || (el.type === 'main' ? 75 : el.type === 'link' ? 55 : 40); document.getElementById('draftWidthVal').innerText = el.customWidth || (el.type === 'main' ? 75 : el.type === 'link' ? 55 : 40);
+                        document.getElementById('draftCurveRange').value = el.curveRadius || 0; document.getElementById('draftCurveVal').innerText = el.curveRadius || 0;
+                        document.getElementById('draftStyleSelect').value = el.type || 'main';
+                    } else { selectedDraftIdx = -1; document.getElementById('draftPropsPanel').style.display = 'none'; }
+                } drawCanvas(); return;
+            }
+
+            saveState();
+            let snappedCoords = currentPath.length > 0 ? applyShiftSnap(currentPath[currentPath.length-1], coords, isShiftPressed) : coords;
+            if(snapPoint) { currentPath.push({x: snapPoint.x, y: snapPoint.y}); commitCurrentPath(); snapPoint = null; } 
+            else if(typedDistance !== "") { let lastPt = currentPath[currentPath.length - 1]; let angle = Math.atan2(coords.y - lastPt.y, coords.x - lastPt.x); currentPath.push({x: lastPt.x + Math.cos(angle) * parseFloat(typedDistance), y: lastPt.y + Math.sin(angle) * parseFloat(typedDistance)}); typedDistance = ""; } 
+            else { currentPath.push(snappedCoords); } drawCanvas();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if(isPanning) { panX = e.clientX - panStart.x; panY = e.clientY - panStart.y; updateCanvasTransform(); return; }
+            mousePos = getCoords(e);
+            if (isGenerated) {
+                if (editMode === 'trim' || editMode === 'smartText') { hoverSegmentIdx = findClosestSegment(mousePos); drawCanvas(); } 
+                else if (editMode === 'editLine') { if (draggedNode) { if(draggedNode.isA) finalSegments[draggedNode.segIdx].A = {x: mousePos.x, y: mousePos.y}; else finalSegments[draggedNode.segIdx].B = {x: mousePos.x, y: mousePos.y}; drawCanvas(); } else { hoveredNode = findClosestNode(mousePos); drawCanvas(); } }
+                else if (editMode === 'editText' && isDraggingText && selectedTextIdx !== -1) { finalTexts[selectedTextIdx].x = mousePos.x; finalTexts[selectedTextIdx].y = mousePos.y; drawCanvas(); }
+            } else if (!isGenerated) {
+                if (mode === 'editDraft') {
+                    if (draggedDraftNode) { historyStack[draggedDraftNode.shapeIdx].points[draggedDraftNode.nodeIdx] = {x: mousePos.x, y: mousePos.y}; drawCanvas(); }
+                    else if (draggedWholeDraft) { let dx = mousePos.x - draggedWholeDraft.lastX; let dy = mousePos.y - draggedWholeDraft.lastY; historyStack[draggedWholeDraft.idx].points.forEach(p => { p.x += dx; p.y += dy; }); draggedWholeDraft.lastX = mousePos.x; draggedWholeDraft.lastY = mousePos.y; drawCanvas(); }
+                } else if(currentPath.length > 0) {
+                    let startPt = currentPath[0]; let distToStart = Math.hypot(mousePos.x - startPt.x, mousePos.y - startPt.y); snapPoint = (distToStart < 30/currentZoom && currentPath.length > 2) ? startPt : null; 
+                    drawCanvas(); 
+                }
+            }
+        });
+
+        window.addEventListener('mouseup', () => { 
+            if(isPanning) { isPanning = false; vp.style.cursor = isSpacePressed || mode === 'pan' ? 'grab' : 'default'; return; }
+            isDraggingText = false; if(draggedNode) { draggedNode = null; saveState(); } if(draggedDraftNode) { draggedDraftNode = null; saveState(); } if(draggedWholeDraft) { draggedWholeDraft = null; saveState(); } 
+        });
+
+        canvas.addEventListener('dblclick', () => { if(mode === 'text' || mode === 'editDraft' || !mode || currentPath.length === 0 || isGenerated) return; saveState(); commitCurrentPath(); snapPoint = null; drawCanvas(); });
+
+        // Print and Export Functions (WITH FIXES)
+        function generateOfficialPDF() { 
+            try {
+                let safeSetText = (id, txt) => { let el = document.getElementById(id); if(el) el.innerText = txt; };
+                let docOfficeVal = document.getElementById('docOffice') ? document.getElementById('docOffice').value : "";
+                let officeLines = docOfficeVal.split('\n'); 
+                
+                safeSetText('printOfficeLine1', officeLines[0] || "");
+                safeSetText('printOfficeLine2', officeLines.slice(1).join('\n') || "");
+                safeSetText('printVillage', document.getElementById('docVillage') ? document.getElementById('docVillage').value : "");
+                safeSetText('printKhasra', document.getElementById('docKhasra') ? document.getElementById('docKhasra').value : "");
+                safeSetText('printPatwari', document.getElementById('docPatwari') ? document.getElementById('docPatwari').value : "");
+                
+                let dateVal = document.getElementById('docDate') ? document.getElementById('docDate').value : "";
+                safeSetText('printDateValue', dateVal ? dateVal : "_ _ _ _ _ _ _ _ 2026");
+
+                let imgEl = document.getElementById('printMapImage');
+                let printDiv = document.getElementById('printArea');
+                
+                if (imgEl && printDiv) {
+                    // 1. नक्शे का स्नैपशॉट लेने के लिए ज़ूम/पैन को रीसेट करें
+                    let oldX = panX, oldY = panY, oldZ = currentZoom;
+                    panX = 0; panY = 0; currentZoom = 1; updateCanvasTransform(); drawCanvas();
+                    
+                    let dataUrl = canvas.toDataURL('image/png', 1.0); 
+                    
+                    // 2. स्नैपशॉट लेते ही तुरंत वापस पुराने ज़ूम पर आएं (ताकि यूज़र को स्क्रीन हिलती हुई न दिखे)
+                    panX = oldX; panY = oldY; currentZoom = oldZ; updateCanvasTransform(); drawCanvas();
+
+                    // 3. इमेज लोड होने पर बैकग्राउंड में प्रिंट कमांड चलाएं
+                    imgEl.onload = function() {
+                        printDiv.style.display = 'block'; // यह स्क्रीन के बाहर (-20000px) लोड होगा
+                        setTimeout(() => { 
+                            window.print(); 
+                            printDiv.style.display = 'none'; // प्रिंट डायलॉग बंद होने के बाद वापस छिपा दें
+                        }, 150); 
+                    };
+                    imgEl.src = dataUrl;
+                } else { 
+                    window.print(); 
+                }
+            } catch(e) { alert("प्रिंट तैयार करने में त्रुटि: " + e.message); }
         }
 
-        document.fonts.ready.then(() => { drawCanvas(); });
+        function downloadImage(format) { 
+            const link = document.createElement('a'); 
+            link.download = `RockTech_Map.${format}`; 
+            link.href = canvas.toDataURL(`image/${format}`, 1.0); 
+            link.click(); 
+        }
+
+        
+        
+        function downloadSVG() { 
+            if (!isGenerated) { alert("कृपया पहले '✨ लाइन आर्ट तैयार करें' बटन दबाएं, उसके बाद ही SVG सेव करें!"); return; }
+            try {
+                let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1740" width="160mm" height="174mm" style="background-color: white;">\n<rect width="100%" height="100%" fill="white" stroke="none" />\n`;
+                finalSegments.forEach(s => { let dash = s.dash ? `stroke-dasharray="15,15"` : ""; svg += `<line x1="${s.A.x}" y1="${s.A.y}" x2="${s.B.x}" y2="${s.B.y}" stroke="black" stroke-width="2" stroke-linecap="round" ${dash} />\n`; });
+                finalTexts.forEach(el => {
+                    let deg = (el.angle || 0) * (180 / Math.PI); let size = el.fontSize || 35; let strokeW = Math.max(2, size/6);
+                    let lines = (el.text || "").split('\n'); let lineHeight = size * 1.2; let startY = el.y - ((lines.length - 1) * lineHeight) / 2;
+                    let whiteTextGrp = `<text font-family="Poppins, Arial" font-size="${size}" font-weight="600" fill="white" stroke="white" stroke-width="${strokeW}" text-anchor="middle" transform="rotate(${deg}, ${el.x}, ${el.y})">\n`;
+                    let blackTextGrp = `<text font-family="Poppins, Arial" font-size="${size}" font-weight="600" fill="black" stroke="none" text-anchor="middle" transform="rotate(${deg}, ${el.x}, ${el.y})">\n`;
+                    lines.forEach((line, i) => { let lineY = startY + (i * lineHeight) + (size * 0.3); whiteTextGrp += `<tspan x="${el.x}" y="${lineY}">${line}</tspan>\n`; blackTextGrp += `<tspan x="${el.x}" y="${lineY}">${line}</tspan>\n`; });
+                    whiteTextGrp += `</text>\n`; blackTextGrp += `</text>\n`; svg += whiteTextGrp + blackTextGrp;
+                });
+                svg += `</svg>`; 
+                let blob = new Blob([svg], {type: "image/svg+xml;charset=utf-8"});
+                if (window.saveAs) { window.saveAs(blob, "RockTech_Map.svg"); } else { let url = URL.createObjectURL(blob); let a = document.createElement("a"); a.href = url; a.download = "RockTech_Map.svg"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
+            } catch(e) { alert("SVG सेव करने में त्रुटि: " + e.message); }
+        }
+
+        document.fonts.ready.then(() => { checkAutoSave(); drawCanvas(); });
     </script>
 </body>
 </html>
