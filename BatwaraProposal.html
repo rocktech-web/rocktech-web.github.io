@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>स्मार्ट फर्द बटवारा निर्माण</title>
+    <title>स्मार्ट फर्द बटवारा निर्माण - RockTechnology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* =========================================
-           GLOBAL VARIABLES & PREMIUM CORPORATE THEME
+           GLOBAL VARIABLES & DESKTOP CAD THEME
            ========================================= */
         :root {
-            /* Theme Colors (Matched with PLM Suite) */
-            --bg-body: #F1F5F9;       /* Soft Slate 50 */
-            --bg-surface: #FFFFFF;    /* Pure White */
-            --border-color: #E2E8F0;  /* Slate 200 */
-            
-            --primary: #1E293B;       /* Deep Navy / Slate 800 */
+            --bg-app: #e2e8f0;        /* Soft Slate 50 */
+            --bg-panel: #FFFFFF;      /* Pure White */
+            --border-light: #E2E8F0;  /* Slate 200 */
+            --border-dark: #CBD5E1;   /* Slate 300 */
+            --primary: #1E293B;       /* Deep Navy */
             --primary-light: #334155; /* Slate 700 */
-            
             --accent: #0EA5E9;        /* Sky Blue 500 */
             --accent-hover: #0284C7;  /* Sky Blue 600 */
             --accent-light: #E0F2FE;  /* Sky Blue 50 */
-            
             --text-main: #334155;     /* Slate 700 */
             --text-muted: #64748B;    /* Slate 500 */
-            
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.1);
-            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+            --success: #10B981;       /* Emerald 500 */
+            --danger: #EF4444;        /* Red 500 */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 10px rgba(0,0,0,0.1);
             
             --page-width: 297mm; 
             --page-height: 210mm;
@@ -34,107 +33,86 @@
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-body); }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         html, body { 
-            font-family: 'Poppins', 'Segoe UI', sans-serif; 
-            background: var(--bg-body); 
-            margin: 0; padding: 0; 
-            height: 100vh; display: flex; flex-direction: column; 
+            font-family: 'Poppins', sans-serif; background: var(--bg-app); 
+            margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; 
             overflow: hidden; color: var(--text-main);
         }
         
         /* =========================================
-           TOP CONTROL PANEL
+           DESKTOP MENU BAR
            ========================================= */
-        .top-container { 
-            flex-shrink: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            padding: 15px 25px; box-shadow: var(--shadow-md); z-index: 1000; 
-            display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid var(--border-color);
-        }
+        .menu-bar { background: #FFFFFF; border-bottom: 1px solid var(--border-dark); display: flex; align-items: center; padding: 0 15px; height: 35px; box-shadow: var(--shadow-sm); z-index: 100; flex-shrink: 0;}
+        .menu-item { position: relative; padding: 8px 15px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--primary); user-select: none; }
+        .menu-item:hover { background: var(--bg-app); }
+        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; background: #FFFFFF; border: 1px solid var(--border-dark); box-shadow: var(--shadow-md); min-width: 180px; z-index: 1000; border-radius: 0 0 4px 4px; overflow: hidden;}
+        .menu-item:hover .dropdown-content { display: block; }
+        .dropdown-content a { display: block; padding: 8px 15px; font-size: 13px; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border-light); }
+        .dropdown-content a:hover { background: var(--accent-light); color: var(--accent-hover); }
         
-        .controls-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        
-        /* Action Bar (Highlighted Area) */
-        .action-bar { 
-            background: var(--bg-body); padding: 10px 15px; border-radius: 8px; 
-            display: flex; gap: 15px; border: 1px solid var(--border-color); 
-            align-items: center; flex-wrap: wrap; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
-        }
-        .action-group { display: flex; gap: 6px; align-items: center; border-right: 2px solid var(--border-color); padding-right: 15px; }
-        .action-group:last-child { border-right: none; }
-        .action-label { font-size: 13px; font-weight: 600; color: var(--primary); }
-
-        /* Inputs & Textareas */
-        .top-container textarea { 
-            width: 100%; height: 45px; padding: 10px 14px; border: 1px solid var(--border-color); 
-            border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text-main);
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: var(--transition); outline: none; box-sizing: border-box;
-        }
-        .top-container textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-
-        select { 
-            padding: 8px 12px; border: 1px solid var(--border-color); font-size: 13px; 
-            border-radius: 8px; outline: none; background: #FFFFFF; color: var(--text-main);
-            transition: var(--transition); font-weight: 500; cursor: pointer;
-        }
-        select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-
-        /* Buttons */
-        button { 
-            padding: 8px 14px; background: var(--primary-light); color: white; 
-            border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;
-            transition: var(--transition); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 4px;
-        }
-        button:hover { background: var(--primary); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        button:active { transform: translateY(0); }
-        
-        button.danger { background: #EF4444; } button.danger:hover { background: #DC2626; }
-        button.success { background: #10B981; } button.success:hover { background: #059669; }
-        button.file-btn { background: var(--accent); } button.file-btn:hover { background: var(--accent-hover); }
-        button.excel-btn { background: #059669; } button.excel-btn:hover { background: #047857; } 
-
-        #current-file-name { 
-            font-size: 12px; background: var(--accent-light); color: var(--accent-hover); 
-            padding: 6px 12px; border-radius: 6px; font-weight: 600; display: inline-block; 
-            margin-left: auto; border: 1px solid #BAE6FD; font-family: 'Courier New', monospace;
-        }
-        .unsaved { background: #FEF2F2 !important; color: #EF4444 !important; border-color: #FCA5A5 !important; }
+        #current-file-name { font-size: 12px; background: var(--accent-light); color: var(--accent-hover); padding: 4px 10px; border-radius: 4px; font-weight: 600; font-family: monospace; margin-left: auto; border: 1px solid #BAE6FD;}
+        #current-file-name.unsaved { background: #FEF2F2 !important; color: #EF4444 !important; border-color: #FCA5A5 !important; }
 
         /* =========================================
-           CANVAS & PAGE LAYOUT
+           SINGLE LINE TOOLBAR (TABLE ACTIONS)
            ========================================= */
-        .canvas-wrapper {
-            flex-grow: 1; width: 100%; overflow: auto; background: var(--bg-body);
-            padding: 30px 20px; box-sizing: border-box; text-align: center; 
-        }
+        .toolbar { background: #F8FAFC; border-bottom: 1px solid var(--border-dark); padding: 8px 15px; display: flex; align-items: center; gap: 6px; overflow-x: auto; white-space: nowrap; flex-shrink: 0; }
+        .btn { padding: 6px 12px; border: 1px solid var(--border-dark); border-radius: 4px; background: #FFFFFF; color: var(--text-main); font-weight: 500; font-family: inherit; font-size: 12px; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 5px; }
+        .btn:hover { background: #E2E8F0; }
+        .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        .btn-danger { background: #FEF2F2; border-color: #FCA5A5; color: var(--danger); }
+        .btn-danger:hover { background: #FEE2E2; }
+        .divider-v { width: 1px; height: 20px; background: var(--border-dark); margin: 0 5px; }
+        .action-label { font-size: 12px; font-weight: 600; padding: 0 5px; }
 
+        /* =========================================
+           MAIN WORKSPACE & SIDEBAR
+           ========================================= */
+        .workspace { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Canvas Area */
+        .canvas-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-app); position: relative; }
+        .canvas-wrapper { flex-grow: 1; width: 100%; overflow: auto; background: var(--bg-app); padding: 30px 20px; box-sizing: border-box; text-align: center; }
+        
         .page {
-            background: var(--bg-surface); box-shadow: var(--shadow-md);
+            background: var(--bg-panel); box-shadow: var(--shadow-md);
             padding: 15mm; position: relative; box-sizing: border-box; 
             width: var(--page-width); min-height: var(--page-height);
             display: inline-block; text-align: left; margin: 0 auto; 
-            transition: width 0.3s ease; border: 1px solid var(--border-color); border-radius: 4px;
+            transition: width 0.3s ease; border: 1px solid var(--border-dark); border-radius: 4px;
         }
 
+        /* Right Sidebar */
+        .right-sidebar { width: 320px; background: #FFFFFF; border-left: 1px solid var(--border-dark); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0;}
+        .sidebar-section { padding: 15px; border-bottom: 1px solid var(--border-light); }
+        .section-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; font-size: 11px;}
+        .form-input { width: 100%; padding: 6px 8px; border: 1px solid var(--border-dark); border-radius: 4px; font-family: inherit; font-size: 12px; outline: none; box-sizing: border-box; transition: var(--transition); font-weight: 500;}
+        .form-input:focus { border-color: var(--accent); }
+
+        /* =========================================
+           TABLE DESIGN (UNCHANGED CORE)
+           ========================================= */
         .office-heading { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 15px; width: 100%; display: block; color: #000; }
         .village-input { border-bottom: 1px dashed #000; display: inline-block; min-width: 120px; padding: 0 5px; outline: none; font-weight: bold; }
         .village-input:empty:before { content: '...................'; color: #aaa; font-weight: normal; }
 
-        /* =========================================
-           TABLE DESIGN (HIGH READABILITY)
-           ========================================= */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; color: #000; }
         th, td { border: 1px solid #000; padding: 6px 8px; text-align: center; vertical-align: middle; position: relative; word-wrap: break-word; }
         
-        .header-bg { font-weight: bold; background-color: var(--bg-body); color: #000; }
-        .total-row { font-weight: bold; background-color: #E2E8F0; } /* Slate 200 for strong totals */
+        .header-bg { font-weight: bold; background-color: #f8fafc; color: #000; }
+        .total-row { font-weight: bold; background-color: #e2e8f0; } 
         .owner-header { background-color: var(--accent-light) !important; color: #000; }
         
-        .error-row { background-color: #FEF2F2 !important; } /* Soft red for errors */
-        .selected-cell { background-color: #FFFBEB !important; outline: 2px solid #F59E0B; z-index: 5; } /* Soft yellow focus */
+        .error-row { background-color: #FEF2F2 !important; } 
+        .selected-cell { background-color: #FFFBEB !important; outline: 2px solid #F59E0B; z-index: 5; } 
         
         .row-diff { display: block; font-size: 11px; margin-top: 4px; user-select: none; pointer-events: none; font-family: monospace; font-weight: 600; }
         .total-diff { font-size: 11px; font-family: monospace; font-weight: 600; }
@@ -142,18 +120,16 @@
         .resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; z-index: 10; transition: background 0.2s; }
         .resizer:hover { background: var(--accent); }
 
-        .bottom-note { 
-            margin-top: 20px; font-size: 14px; font-weight: bold; width: 100%; 
-            text-align: center; border: none; outline: none; background: transparent; 
-            font-family: inherit; display: block; padding: 5px; color: #000;
-        }
+        .bottom-note { margin-top: 20px; font-size: 14px; font-weight: bold; width: 100%; text-align: center; border: none; outline: none; background: transparent; font-family: inherit; display: block; padding: 5px; color: #000; }
 
         /* =========================================
-           PRINT MEDIA QUERIES (CLEAN NO-THEME PRINT)
+           PRINT MEDIA QUERIES
            ========================================= */
         @media print {
             html, body { overflow: visible !important; width: auto !important; height: auto !important; margin: 0; padding: 0; display: block !important; background: white !important; }
-            .top-container { display: none !important; }
+            .menu-bar, .toolbar, .right-sidebar { display: none !important; }
+            .workspace { display: block !important; overflow: visible !important; height: auto !important; }
+            .canvas-area { display: block !important; overflow: visible !important; height: auto !important; background: white !important; }
             .canvas-wrapper { display: block !important; overflow: visible !important; height: auto !important; padding: 0 !important; margin: 0 !important; text-align: left !important; background: white !important; }
             
             .page { margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; page-break-inside: avoid; display: block !important; zoom: 1 !important; border-radius: 0; }
@@ -175,91 +151,116 @@
 </head>
 <body>
 
-<div class="top-container">
-    <div class="controls-row">
-        <button class="file-btn" onclick="App.createNewFile()" style="background:#16a085;">📄 नई फ़ाइल</button>
-        <button class="file-btn" onclick="App.openFile()">📂 ओपन</button>
-        <button class="file-btn" onclick="App.saveFile()">💾 सेव</button>
-        <button class="file-btn" onclick="App.saveAsFile()">💾 सेव ऐज़</button>
-
-        <span style="border-left: 2px solid #ccc; height: 20px; margin: 0 5px;"></span>
-        <button onclick="App.undo()" style="background:#7f8c8d;" title="Undo (Ctrl+Z)">↩ Undo</button>
-        <button onclick="App.redo()" style="background:#7f8c8d;" title="Redo (Ctrl+Y)">↪ Redo</button>
-
-        <span style="border-left: 2px solid #ccc; height: 20px; margin: 0 5px;"></span>
-
-        <select id="format-select" onchange="App.changeFormat()">
-            <option value="1">प्रारूप 1</option><option value="2" selected>प्रारूप 2</option>
-            <option value="3">प्रारूप 3</option><option value="4">प्रारूप 4</option>
-        </select>
-        <select id="paper-select" onchange="App.changePaperSize()">
-            <option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="A1">A1</option>
-        </select>
-        <select id="orientation-select" onchange="App.changePaperSize()">
-            <option value="landscape">लैंडस्केप</option><option value="portrait">पोर्ट्रेट</option>
-        </select>
-        
-        <select id="font-select" onchange="App.changeFont()" style="background:#e8f4f8; font-weight:bold;">
-            <option value="'Nirmala UI', sans-serif">फॉन्ट: Nirmala UI</option>
-            <option value="'Kokila', serif">फॉन्ट: Kokila (कोकिला)</option>
-            <option value="'Poppins', sans-serif">फॉन्ट: Poppins</option>
-            <option value="'Aparajita', serif">फॉन्ट: Aparajita (अपराजिता)</option>
-        </select>
-
-        <button class="success" onclick="App.toggleGramColumn()">+ ग्राम कॉलम</button>
-        <button class="excel-btn" onclick="App.exportToExcel()">📊 Excel Export</button>
-        
+    <div class="menu-bar">
+        <div class="menu-item">File
+            <div class="dropdown-content">
+                <a href="#" onclick="App.createNewFile()">📄 New Project</a>
+                <a href="#" onclick="App.openFile()">📂 Open Project...</a>
+                <a href="#" onclick="App.saveFile()">💾 Save</a>
+                <a href="#" onclick="App.saveAsFile()">💾 Save As...</a>
+                <a href="#" onclick="App.exportToExcel()" style="color: var(--success); font-weight: bold;">📊 Export to Excel</a>
+                <a href="#" onclick="window.print()" style="color: var(--accent-hover); font-weight: bold;">🖨️ Print / PDF</a>
+            </div>
+        </div>
+        <div class="menu-item">Edit
+            <div class="dropdown-content">
+                <a href="#" onclick="App.undo()">↩ Undo (Ctrl+Z)</a>
+                <a href="#" onclick="App.redo()">↪ Redo (Ctrl+Y)</a>
+            </div>
+        </div>
+        <div class="menu-item" onclick="App.toggleGramColumn()">+ Toggle Gram Column</div>
         <span id="current-file-name">📄 फ़ाइल: नई फ़ाइल</span>
-        <button onclick="window.print()">🖨️ Print / PDF</button>
     </div>
 
-    <div class="controls-row action-bar">
-        <div class="action-group">
-            <span class="action-label" id="lbl-khata" style="color:#e67e22;">खाता <b>(-)</b>:</span>
-            <button onclick="App.actionKhata('add-up')">⬆ ऊपर जोड़ें</button>
-            <button onclick="App.actionKhata('add-down')">⬇ नीचे जोड़ें</button>
-            <button onclick="App.actionKhata('move-up')" style="background:#f39c12;">⬆ ऊपर खिसकाएं</button>
-            <button onclick="App.actionKhata('move-down')" style="background:#f39c12;">⬇ नीचे खिसकाएं</button>
-            <button onclick="App.actionKhata('del')" class="danger">🗑️ हटाएं</button>
+    <div class="toolbar">
+        <span class="action-label" id="lbl-khata" style="color:#e67e22;">खाता <b>(-)</b>:</span>
+        <button class="btn" onclick="App.actionKhata('add-up')">⬆ ऊपर जोड़ें</button>
+        <button class="btn" onclick="App.actionKhata('add-down')">⬇ नीचे जोड़ें</button>
+        <button class="btn" onclick="App.actionKhata('move-up')">⬆ ऊपर खिसकाएं</button>
+        <button class="btn" onclick="App.actionKhata('move-down')">⬇ नीचे खिसकाएं</button>
+        <button class="btn btn-danger" onclick="App.actionKhata('del')">🗑️ हटाएं</button>
+        
+        <div class="divider-v"></div>
+        
+        <span class="action-label" id="lbl-row" style="color:#8e44ad;">रो <b>(-)</b>:</span>
+        <button class="btn" style="background:#f3e8ff; color:#6b21a8; border-color:#d8b4fe; font-weight:bold;" onclick="App.actionRow('split')">➗ स्प्लिट (Split)</button>
+
+        <div class="divider-v"></div>
+
+        <span class="action-label" id="lbl-set" style="color:#10b981;">सेट <b>(-)</b>:</span>
+        <button class="btn" onclick="App.actionSet('add-left')">◀ बाएं जोड़ें</button>
+        <button class="btn" onclick="App.actionSet('add-right')">▶ दाएं जोड़ें</button>
+        <button class="btn" onclick="App.actionSet('move-left')">⬅ बाएं खिसकाएं</button>
+        <button class="btn" onclick="App.actionSet('move-right')">➡ दाएं खिसकाएं</button>
+        <button class="btn btn-danger" onclick="App.actionSet('del')">🗑️ हटाएं</button>
+    </div>
+
+    <div class="workspace">
+        
+        <div class="canvas-area">
+            <div class="canvas-wrapper" id="canvas-area">
+                <div id="print-page" class="page">
+                    <div class="office-heading">
+                        बटवारा प्रस्ताव (ग्राम- <span contenteditable="true" class="village-input" id="village-name"></span>)
+                    </div>
+                    <table id="batwara-table">
+                        <colgroup id="table-colgroup"></colgroup>
+                        <thead id="table-head"></thead>
+                        <tbody id="table-body"></tbody>
+                        <tfoot id="table-foot"></tfoot>
+                    </table>
+                    <div contenteditable="true" class="bottom-note" oninput="App.markDirty()">उपरोक्त बटवारा प्रस्ताव आवेदक व अनावेदक के स्वत्व के आधार पर तैयार किया गया है।</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-sidebar">
+            <div class="sidebar-section" style="background: #f8fafc;">
+                <div class="section-title">📄 पेज सेटिंग्स</div>
+                
+                <div class="form-group">
+                    <label>प्रारूप (Format):</label>
+                    <select id="format-select" class="form-input" onchange="App.changeFormat()">
+                        <option value="1">प्रारूप 1</option><option value="2" selected>प्रारूप 2</option>
+                        <option value="3">प्रारूप 3</option><option value="4">प्रारूप 4</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>पेपर साइज़:</label>
+                        <select id="paper-select" class="form-input" onchange="App.changePaperSize()">
+                            <option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="A1">A1</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>ओरिएंटेशन:</label>
+                        <select id="orientation-select" class="form-input" onchange="App.changePaperSize()">
+                            <option value="landscape">लैंडस्केप</option><option value="portrait">पोर्ट्रेट</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>फॉन्ट (Font):</label>
+                    <select id="font-select" class="form-input" onchange="App.changeFont()">
+                        <option value="'Nirmala UI', sans-serif">Nirmala UI</option>
+                        <option value="'Kokila', serif">Kokila (कोकिला)</option>
+                        <option value="'Poppins', sans-serif">Poppins</option>
+                        <option value="'Aparajita', serif">Aparajita (अपराजिता)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sidebar-section" style="flex: 1; display: flex; flex-direction: column; background: #fffbeb;">
+                <div class="section-title" style="color: #d97706;">⚡ B1 डेटा एक्सट्रैक्टर</div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-top: 0; margin-bottom: 8px;">B1 Extractor से प्राप्त 'Extracted Data' को यहाँ एक साथ पेस्ट करें:</p>
+                <textarea id="combined-text" class="form-input" style="flex: 1; resize: none; min-height: 200px; margin-bottom: 10px;" oninput="App.markDirty()"></textarea>
+                <button class="btn btn-primary" style="justify-content: center; padding: 10px; font-size: 14px; font-weight: bold; background: #d97706; border-color: #d97706;" onclick="App.processData()">डेटा जोड़ें ⚡</button>
+            </div>
         </div>
         
-        <div class="action-group">
-            <span class="action-label" id="lbl-row" style="color:#8e44ad;">रो <b>(-)</b>:</span>
-            <button onclick="App.actionRow('split')" style="background:#9b59b6;">➗ स्प्लिट (Split)</button>
-        </div>
-
-        <div class="action-group">
-            <span class="action-label" id="lbl-set" style="color:#e67e22;">सेट <b>(-)</b>:</span>
-            <button onclick="App.actionSet('add-left')">◀ बाएं जोड़ें</button>
-            <button onclick="App.actionSet('add-right')">▶ दाएं जोड़ें</button>
-            <button onclick="App.actionSet('move-left')" style="background:#f39c12;">⬅ बाएं खिसकाएं</button>
-            <button onclick="App.actionSet('move-right')" style="background:#f39c12;">➡ दाएं खिसकाएं</button>
-            <button onclick="App.actionSet('del')" class="danger">🗑️ हटाएं</button>
-        </div>
     </div>
-
-    <div class="controls-row">
-        <div style="flex: 1;">
-            <textarea id="combined-text" placeholder="B1 Extractor से प्राप्त 'Extracted Data (खसरा एवं भूमिस्वामी विवरण)' को यहाँ एक साथ पेस्ट करें..." oninput="App.markDirty()"></textarea>
-        </div>
-        <button onclick="App.processData()" style="height: 45px; font-size: 14px; padding: 0 20px; background: #e67e22;">डेटा जोड़ें ⚡</button>
-    </div>
-</div>
-
-<div class="canvas-wrapper" id="canvas-area">
-    <div id="print-page" class="page">
-        <div class="office-heading">
-            बटवारा प्रस्ताव (ग्राम- <span contenteditable="true" class="village-input" id="village-name"></span>)
-        </div>
-        <table id="batwara-table">
-            <colgroup id="table-colgroup"></colgroup>
-            <thead id="table-head"></thead>
-            <tbody id="table-body"></tbody>
-            <tfoot id="table-foot"></tfoot>
-        </table>
-        <div contenteditable="true" class="bottom-note" oninput="App.markDirty()">उपरोक्त बटवारा प्रस्ताव आवेदक व अनावेदक के स्वत्व के आधार पर तैयार किया गया है।</div>
-    </div>
-</div>
 
 <script>
 const App = (function() {
@@ -554,9 +555,8 @@ const App = (function() {
     function actionRow(action) {
         if(activeKhata === null || activeKhasra === null) return alert("कृपया पहले टेबल में किसी 'रो' पर क्लिक करें।");
         
-        // नया बदलाव: स्प्लिट केवल प्रारूप 2 में ही काम करेगा
         if (action === 'split' && state.format !== '2') {
-            return alert("स्प्लिट (Split) का विकल्प केवल 'प्रारूप 2' में ही उपलब्ध है। कृपया ऊपर से 'प्रारूप 2' चुनें।");
+            return alert("स्प्लिट (Split) का विकल्प केवल 'प्रारूप 2' में ही उपलब्ध है। कृपया दाएँ पैनल से 'प्रारूप 2' चुनें।");
         }
 
         markDirty(); 
@@ -637,37 +637,30 @@ const App = (function() {
                 kh.khasras.splice(ksIdx + p, 0, newKs);
             }
         } 
-        // डिलीट (del) वाला ब्लॉक यहाँ से हटा दिया गया है
         
         renderTable(); 
         saveState(); 
     }
 
-    // === यहाँ बदलाव किया गया है ===
-    // इसे App के return में एक्सपोज़ किया गया है ताकि HTML इसे कॉल कर सके।
     function handleRakbaInput(khIdx, ksIdx, setIdx, rawRakbaValue) {
-        // 1. फालतू स्पेस या न्यू-लाइन हटा दें
         let cleanValue = rawRakbaValue.replace(/\n/g, '').trim();
         
         let kh = state.data[khIdx];
         let ks = kh.khasras[ksIdx];
         
-        // 2. रकवा और हिस्से (Fraction) की स्मार्ट गणना करें
         let formattedRakba = "";
         
         if (cleanValue !== "") {
-            // यदि यूज़र ने हिस्सा (जैसे 1/2 या 1/3) डाला है
             if (cleanValue.includes('/')) {
                 let parts = cleanValue.split('/');
                 if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parseFloat(parts[1]) !== 0) {
-                    let origRakba = parseFloat(ks.r) || 0; // वर्तमान खसरे का मूल (कुल) रकवा
+                    let origRakba = parseFloat(ks.r) || 0; 
                     let fractionVal = origRakba * (parseFloat(parts[0]) / parseFloat(parts[1]));
-                    formattedRakba = fractionVal.toFixed(4); // हिस्से को 4 डिजिट में बदलें
+                    formattedRakba = fractionVal.toFixed(4); 
                 } else {
-                    formattedRakba = cleanValue; // यदि यूज़र ने गलत फॉर्मेट डाला है
+                    formattedRakba = cleanValue; 
                 }
             } 
-            // यदि यूज़र ने सीधा नंबर (जैसे 0.02) डाला है
             else {
                 let floatVal = parseFloat(cleanValue);
                 if (!isNaN(floatVal)) {
@@ -678,11 +671,9 @@ const App = (function() {
             }
         }
 
-        // 3. फॉर्मेटेड रकवा को सेव करें
         if (!ks.proposed[setIdx]) ks.proposed[setIdx] = { k: '', r: '', o: '' };
         ks.proposed[setIdx].r = formattedRakba;
 
-        // बेस खसरा प्राप्त करें (जैसे 966/1/1...)
         let baseKhasra = ks.k; 
         if (!baseKhasra) {
             renderTable();
@@ -691,40 +682,32 @@ const App = (function() {
         }
 
         let splitGroupId = ks.splitId;
-        
-        // यदि रो स्प्लिट है तो पूरा ग्रुप लें, अन्यथा केवल इसी सिंगल रो को लें
         let groupToProcess = splitGroupId ? kh.khasras.filter(row => row.splitId === splitGroupId) : [ks];
-
         let batankanCounter = 1;
 
-        // सभी प्रस्तावित सेट्स (कॉलम) में बाएं से दाएं जाएं
         for (let s = 0; s < state.proposedSets; s++) {
-            
-            // प्रत्येक सेट के अंदर मौजूद रोज़ (ऊपर से नीचे) चेक करें
             groupToProcess.forEach(row => {
                 if (!row.proposed[s]) row.proposed[s] = { k: '', r: '', o: '' };
                 let pData = row.proposed[s];
 
-                // यह चेक करें कि क्या यह सेल मर्ज होने के कारण छिपी (hidden) तो नहीं है?
                 let isHidden = false;
                 if (row.p_ui && row.p_ui[s] && row.p_ui[s]['p_rakba'] && row.p_ui[s]['p_rakba'].disp === 'none') {
                     isHidden = true;
                 }
 
                 if (isHidden) {
-                    pData.k = ""; // छिपी हुई रो को खसरा नंबर नहीं देना है
+                    pData.k = ""; 
                     return;
                 }
 
                 let rVal = pData.r ? pData.r.toString().trim() : "";
                 let numericRakba = parseFloat(rVal);
                 
-                // यदि रकवा भरा हुआ है और शून्य (0.0000) से अधिक है, तो क्रम से बटांक दें
                 if (!isNaN(numericRakba) && numericRakba > 0) {
                     pData.k = baseKhasra + "/" + batankanCounter;
                     batankanCounter++;
                 } else {
-                    pData.k = ""; // यदि रकवा खाली या शून्य है, तो खसरा भी खाली कर दें
+                    pData.k = ""; 
                 }
             });
         }
@@ -789,6 +772,21 @@ const App = (function() {
     function encryptData(obj) { return btoa(encodeURIComponent(JSON.stringify(obj))); }
     function decryptData(str) { return JSON.parse(decodeURIComponent(atob(str))); }
 
+    // फ़ाइल में लिखने (Write) की परमिशन चेक करने और मांगने का फ़ंक्शन
+    async function verifyPermission(fileHandle) {
+        const options = { mode: 'readwrite' };
+        // 1. चेक करें कि क्या पहले से अनुमति मिली हुई है
+        if ((await fileHandle.queryPermission(options)) === 'granted') {
+            return true;
+        }
+        // 2. अगर अनुमति नहीं है, तो ब्राउज़र से अनुमति मांगें (पॉपअप आएगा)
+        if ((await fileHandle.requestPermission(options)) === 'granted') {
+            return true;
+        }
+        // 3. अगर यूज़र ने 'Deny' कर दिया
+        return false;
+    }
+
     async function openFile() {
         if (isDirty) {
             if (!confirm("आपके बदलाव सेव नहीं हुए हैं। क्या आप बिना सेव किए दूसरी फ़ाइल खोलना चाहते हैं?")) return;
@@ -838,13 +836,25 @@ const App = (function() {
         try {
             if (window.showSaveFilePicker) {
                 if (!fileHandle) { return await saveAsFile(); }
+                
+                // नया कोड: परमिशन चेक करें
+                const hasPermission = await verifyPermission(fileHandle);
+                if (!hasPermission) {
+                    alert("फ़ाइल को अपडेट करने की अनुमति नहीं मिली। कृपया 'Save As' का उपयोग करें।");
+                    return await saveAsFile();
+                }
+
                 const writable = await fileHandle.createWritable();
                 await writable.write(encryptData(state));
                 await writable.close();
                 clearDirty();
-                alert("फ़ाइल सफलतापूर्वक अपडेट (Save) हो गई।");
+                alert("✅ फ़ाइल सफलतापूर्वक अपडेट (Save) हो गई है।");
             } else { saveAsBlob(); }
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            console.error("Save Error:", error);
+            alert("⚠️ फ़ाइल को उसी जगह पर अपडेट करने में समस्या आई। हम 'Save As' डायलॉग खोल रहे हैं...");
+            await saveAsFile();
+        }
     }
 
     async function saveAsFile() {
@@ -1102,7 +1112,6 @@ const App = (function() {
                         let isOwnerCol = field === 'p_owner';
                         let uiProp = getUI(khasra, field, s, isOwnerCol && kIndex !== 0, isOwnerCol ? rowCount : 1);
                         
-                        // === यहाँ बदलाव किया गया है: onblur App.handleRakbaInput को कॉल करेगा ===
                         if (field === 'p_rakba') {
                             tr.innerHTML += `<td contenteditable="true" 
                                                 data-field="${field}" 
@@ -1197,16 +1206,6 @@ const App = (function() {
                 calculateTotals();
             }
         });
-
-        // इसे रोक दिया गया है ताकि ये नए लॉजिक के साथ क्लैश न करे
-        /*
-        document.getElementById('table-body').addEventListener('input', function(e) {
-            markDirty();
-            if (e.target.classList.contains('p-rakba') || e.target.classList.contains('c-rakba')) {
-                // ... पुराना ऑटो खसरा लॉजिक ...
-            }
-        });
-        */
     }
 
     function calculateTotals() {
@@ -1226,7 +1225,6 @@ const App = (function() {
             if (row.classList.contains('subtotal-row')) {
                 row.querySelector('.sub-kita').innerText = `किता ${khataKita}`;
                 
-                // === सुधार 1: खाते के योग में सटीक 4 डिजिट का अंतर ===
                 let gDiff = Number((khataRakba - khataProposedRakba).toFixed(4)); 
                 let gDiffHtml = '';
                 if(khataRakba > 0) {
@@ -1272,7 +1270,6 @@ const App = (function() {
                 if (rVal > 0) {
                     let totalGroupProposedSum = groupProposedSums.reduce((a, b) => a + b, 0);
                     
-                    // === सुधार 2: प्रत्येक रो में सटीक 4 डिजिट का अंतर ===
                     let diff = Number((rVal - totalGroupProposedSum).toFixed(4)); 
                     let diffHtml = '';
                     if(diff === 0) { diffHtml = `<span class="row-diff" style="color:green; display:block; margin-top:4px;">(शेष: 0.0000)</span>`; row.classList.remove('error-row'); }
@@ -1286,8 +1283,6 @@ const App = (function() {
         }
 
         if (state.data.length > 1) {
-            
-            // === सुधार 3: महायोग (Grand Total) में सटीक 4 डिजिट का अंतर ===
             let gDiff = Number((grandRakba - grandGlobalProposedRakba).toFixed(4)); 
             let gDiffHtml = '';
             if(grandRakba > 0) {
@@ -1295,7 +1290,7 @@ const App = (function() {
                 else if (gDiff > 0) gDiffHtml = `<span class="total-diff" style="color:blue; display:block; margin-top:4px;">(शेष: ${gDiff.toFixed(4)})</span>`;
                 else gDiffHtml = `<span class="total-diff" style="color:red; display:block; margin-top:4px;">(अधिक: ${Math.abs(gDiff).toFixed(4)})</span>`;
             }
-            let html = `<tr class="total-row" style="background:#d1d8e0; font-size: 14px;">`;
+            let html = `<tr class="total-row" style="background:#e2e8f0; font-size: 14px;">`;
             let preKhasraCount = currentCols.findIndex(c => c.f === 'khasra');
             html += `<td colspan="${preKhasraCount}" style="text-align:right; padding-right:15px;">महायोग (Grand Total)</td>`;
             html += `<td>किता ${grandKita}</td>`; html += `<td style="line-height: 1.2;">${grandRakba.toFixed(4)} ${gDiffHtml}</td>`;
@@ -1379,7 +1374,6 @@ const App = (function() {
         processData, openFile, saveFile, saveAsFile, createNewFile, 
         exportToExcel, actionKhata, actionSet, actionRow, markDirty,
         undo, redo, handleRakbaInput 
-        // ^^^ यहाँ handleRakbaInput को एक्सपोर्ट किया गया है
     };
 })();
 
