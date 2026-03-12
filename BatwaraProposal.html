@@ -147,6 +147,35 @@
             
             @page { size: auto; margin: 10mm; @bottom-center { content: "Page " counter(page) " to " counter(pages); } } 
         }
+        /* =========================================
+           RESPONSIVE & OVERFLOW FIXES (ADDED)
+           ========================================= */
+        body {
+            width: 100vw;
+            max-width: 100%;
+        }
+        .toolbar, .menu-bar, .workspace {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* छोटी स्क्रीन (टैबलेट/छोटे लैपटॉप) के लिए स्मार्ट लेआउट */
+        @media (max-width: 992px) {
+            .workspace {
+                flex-direction: column; /* साइडबार को नीचे खिसकाएं */
+            }
+            .canvas-area {
+                flex: 1;
+                min-height: 55vh; /* कैनवस को 55% जगह दें */
+            }
+            .right-sidebar {
+                width: 100%; /* साइडबार पूरी चौड़ाई ले लेगा */
+                flex: 1; /* बची हुई जगह साइडबार को दें */
+                border-left: none;
+                border-top: 2px solid var(--accent);
+                box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            }
+        }
     </style>
 </head>
 <body>
@@ -184,7 +213,8 @@
         
         <span class="action-label" id="lbl-row" style="color:#8e44ad;">रो <b>(-)</b>:</span>
         <button class="btn" style="background:#f3e8ff; color:#6b21a8; border-color:#d8b4fe; font-weight:bold;" onclick="App.actionRow('split')">➗ स्प्लिट (Split)</button>
-
+        <div class="divider-v"></div>
+        <button class="btn" id="btn-pan" onclick="App.togglePanMode()" style="background:#f0fdf4; color:#166534; border-color:#bbf7d0;" title="Spacebar दबाकर रखें या क्लिक करें">✋ खिसकाएं (Pan)</button>
         <div class="divider-v"></div>
 
         <span class="action-label" id="lbl-set" style="color:#10b981;">सेट <b>(-)</b>:</span>
@@ -281,13 +311,28 @@ const App = (function() {
     // मजबूत Undo/Redo सिस्टम
     let historyStack = [];
     let historyIndex = -1;
+    let isPanMode = false, isPanning = false, panStartX, panStartY, scrollL, scrollT, isSpacePressed = false;
 
     const PAPER_DIMS = { 'A4': {w: 210, h: 297}, 'A3': {w: 297, h: 420}, 'A2': {w: 420, h: 594}, 'A1': {w: 594, h: 841} };
 
+    // यह नया की-बोर्ड कंट्रोल पुराने वाले से बदल दें
     document.addEventListener('keydown', function(e) {
+        // Spacebar दबाने पर Pan एक्टिवेट करें (अगर किसी इनपुट फील्ड में टाइप नहीं कर रहे हैं)
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable) {
+            e.preventDefault();
+            isSpacePressed = true;
+            document.getElementById('canvas-area').style.cursor = 'grab';
+        }
         if (e.target.isContentEditable || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
         if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
         if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+    });
+
+    document.addEventListener('keyup', function(e) {
+        if (e.code === 'Space') {
+            isSpacePressed = false;
+            if (!isPanMode) document.getElementById('canvas-area').style.cursor = 'default';
+        }
     });
 
     function saveState() {
@@ -391,25 +436,80 @@ const App = (function() {
         });
     }
 
+    function togglePanMode() {
+        isPanMode = !isPanMode;
+        let btn = document.getElementById('btn-pan');
+        let canvasArea = document.getElementById('canvas-area');
+        if (isPanMode) {
+            btn.style.background = '#dcfce7'; btn.style.fontWeight = 'bold';
+            canvasArea.style.cursor = 'grab';
+        } else {
+            btn.style.background = '#f0fdf4'; btn.style.fontWeight = 'normal';
+            canvasArea.style.cursor = 'default';
+        }
+    }
+
     function attachZoomAndPanLogic() {
         let currentZoom = 1;
+        let panX = 0, panY = 0; // पेज को खिसकाने के लिए कस्टम कोऑर्डिनेट्स
         const pageEl = document.getElementById('print-page');
-        const canvasArea = document.getElementById('canvas-area'); 
-        
+        const canvasArea = document.getElementById('canvas-area');
+
+        // ज़ूम सेंटर से हो, इसके लिए ओरिजिन सेट कर रहे हैं
+        pageEl.style.transformOrigin = "top center";
+
+        // यह फंक्शन स्मूथ स्केलिंग और पैनिंग (खिसकाना) अप्लाई करेगा
+        function applyTransform() {
+            pageEl.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+            pageEl.style.zoom = 1; // पुराने CSS ज़ूम को दरकिनार करें
+        }
+
+        // 1. Zoom Logic (Ctrl + Mouse Wheel)
         canvasArea.addEventListener('wheel', function(e) {
             if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
 
             if (e.ctrlKey) {
-                e.preventDefault(); 
-                if (e.deltaY < 0) currentZoom += 0.1; else currentZoom -= 0.1; 
-                currentZoom = Math.min(Math.max(0.4, currentZoom), 3); 
-                pageEl.style.zoom = currentZoom;
-            } 
-            else if (e.altKey || e.shiftKey) {
                 e.preventDefault();
-                canvasArea.scrollBy({ left: e.deltaY > 0 ? 150 : -150, behavior: 'auto' });
+                if (e.deltaY < 0) currentZoom += 0.1; else currentZoom -= 0.1;
+                currentZoom = Math.min(Math.max(0.4, currentZoom), 3);
+                applyTransform();
             }
         }, { passive: false });
+
+        // 2. Panning Logic (CAD Style Mouse Drag)
+        canvasArea.addEventListener('mousedown', (e) => {
+            if (isPanMode || isSpacePressed) {
+                isPanning = true;
+                pageEl.style.transition = "none"; // खिसकाते समय डिले (Delay) रोकने के लिए
+                canvasArea.style.cursor = 'grabbing';
+                // मौजूदा X/Y पोजीशन के आधार पर क्लिक का पॉइंट सेट करें
+                panStartX = e.clientX - panX; 
+                panStartY = e.clientY - panY;
+                e.preventDefault(); 
+            }
+        });
+
+        canvasArea.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            e.preventDefault();
+            // माउस के साथ-साथ पेज को स्वतंत्र रूप से खिसकाएं
+            panX = e.clientX - panStartX;
+            panY = e.clientY - panStartY;
+            applyTransform();
+        });
+
+        const stopPan = () => {
+            isPanning = false;
+            pageEl.style.transition = "transform 0.1s ease-out"; // स्मूथनेस वापस चालू करें
+            canvasArea.style.cursor = (isPanMode || isSpacePressed) ? 'grab' : 'default';
+        };
+
+        canvasArea.addEventListener('mouseup', stopPan);
+        canvasArea.addEventListener('mouseleave', stopPan);
+
+        // 3. Print Guard (ताकि प्रिंट करते समय पेज खिसका हुआ न आए)
+        window.addEventListener('beforeprint', () => { pageEl.style.transform = 'none'; });
+        window.addEventListener('afterprint', () => { applyTransform(); });
     }
 
     function applyFont() {
@@ -1438,7 +1538,7 @@ const App = (function() {
         init, changeFormat, changePaperSize, changeFont, toggleGramColumn, 
         processData, openFile, saveFile, saveAsFile, createNewFile, 
         exportToExcel, actionKhata, actionSet, actionRow, markDirty,
-        undo, redo, handleRakbaInput, changeFontSize // <-- यहाँ changeFontSize जोड़ा गया है
+        undo, redo, handleRakbaInput, changeFontSize, togglePanMode // <-- यहाँ changeFontSize जोड़ा गया है
     };
 })();
 
