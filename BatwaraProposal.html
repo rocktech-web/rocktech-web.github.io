@@ -120,19 +120,19 @@
         .resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; z-index: 10; transition: background 0.2s; }
         .resizer:hover { background: var(--accent); }
 
-        .bottom-note { margin-top: 20px; font-size: 14px; font-weight: bold; width: 100%; text-align: center; border: none; outline: none; background: transparent; font-family: inherit; display: block; padding: 5px; color: #000; }
+        .bottom-note { margin-top: 20px; font-size: 16px; font-weight: bold; width: 100%; text-align: center; border: none; outline: none; background: transparent; font-family: inherit; display: block; padding: 5px; color: #000; }
 
         /* =========================================
            PRINT MEDIA QUERIES
            ========================================= */
         @media print {
-            html, body { overflow: visible !important; width: auto !important; height: auto !important; margin: 0; padding: 0; display: block !important; background: white !important; }
+            html, body { overflow: visible !important; width: auto !important; height: auto !important; min-height: 0; margin: 0; padding: 0; display: block !important; background: white !important; }
             .menu-bar, .toolbar, .right-sidebar { display: none !important; }
             .workspace { display: block !important; overflow: visible !important; height: auto !important; }
             .canvas-area { display: block !important; overflow: visible !important; height: auto !important; background: white !important; }
             .canvas-wrapper { display: block !important; overflow: visible !important; height: auto !important; padding: 0 !important; margin: 0 !important; text-align: left !important; background: white !important; }
             
-            .page { margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; page-break-inside: avoid; display: block !important; zoom: 1 !important; border-radius: 0; }
+            .page { margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; width: 100% !important; height: max-content !important; min-height: 0 !important; page-break-after: avoid; page-break-inside: avoid; display: block !important; zoom: 1 !important; border-radius: 0; }
             ::-webkit-scrollbar { display: none !important; }
             * { scrollbar-width: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
@@ -209,7 +209,7 @@
                         <tbody id="table-body"></tbody>
                         <tfoot id="table-foot"></tfoot>
                     </table>
-                    <div contenteditable="true" class="bottom-note" oninput="App.markDirty()">उपरोक्त बटवारा प्रस्ताव आवेदक व अनावेदक के स्वत्व के आधार पर तैयार किया गया है।</div>
+                    <div contenteditable="true" class="bottom-note" oninput="App.markDirty()">उपरोक्त बटवारा प्रस्ताव आवेदक के स्वत्व के आधार पर तैयार किया गया है।</div>
                 </div>
             </div>
         </div>
@@ -221,7 +221,7 @@
                 <div class="form-group">
                     <label>प्रारूप (Format):</label>
                     <select id="format-select" class="form-input" onchange="App.changeFormat()">
-                        <option value="1">प्रारूप 1</option><option value="2" selected>प्रारूप 2</option>
+                        <option value="1" selected>प्रारूप 1</option><option value="2">प्रारूप 2</option>
                         <option value="3">प्रारूप 3</option><option value="4">प्रारूप 4</option>
                     </select>
                 </div>
@@ -240,15 +240,21 @@
                         </select>
                     </div>
                 </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>फॉन्ट (Font):</label>
+                        <select id="font-select" class="form-input" onchange="App.changeFont()">
+                            <option value="'Poppins', sans-serif">Poppins</option>
+                            <option value="'Nirmala UI', sans-serif">Nirmala UI</option>
+                            <option value="'Kokila', serif">Kokila (कोकिला)</option>
+                            <option value="'Aparajita', serif">Aparajita (अपराजिता)</option>
+                        </select>                
+                    </div>
 
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label>फॉन्ट (Font):</label>
-                    <select id="font-select" class="form-input" onchange="App.changeFont()">
-                        <option value="'Nirmala UI', sans-serif">Nirmala UI</option>
-                        <option value="'Kokila', serif">Kokila (कोकिला)</option>
-                        <option value="'Poppins', sans-serif">Poppins</option>
-                        <option value="'Aparajita', serif">Aparajita (अपराजिता)</option>
-                    </select>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>टेबल डेटा साइज़ (px में):</label>
+                        <input type="number" id="font-size-input" class="form-input" value="13" step="0.5" oninput="App.changeFontSize()">
+                    </div>
                 </div>
             </div>
 
@@ -264,7 +270,7 @@
 
 <script>
 const App = (function() {
-    let state = { format: '2', font: "'Nirmala UI', sans-serif", proposedSets: 1, hasGram: false, data: [], colsWidth: {}, headerOwners: [] };
+    let state = { format: '1', font: "'Poppins', sans-serif", fontSize: '14', proposedSets: 1, hasGram: false, data: [], colsWidth: {}, headerOwners: [] };
     let fileHandle = null; 
     let currentFileName = "नई फ़ाइल";
     let activeKhata = null;
@@ -370,6 +376,7 @@ const App = (function() {
         updateFileName("नई फ़ाइल");
         applyFont();
         saveState(); 
+        applyFontSize();
 
         window.addEventListener('beforeunload', function (e) {
             if (isDirty) { e.preventDefault(); e.returnValue = ''; }
@@ -799,7 +806,7 @@ const App = (function() {
                 state = decryptData(text); 
                 document.getElementById('format-select').value = state.format;
                 document.getElementById('village-name').innerText = state.village || '';
-                if(!state.font) state.font = "'Nirmala UI', sans-serif";
+                if(!state.font) state.font = "'Poppins', sans-serif";
                 applyFont();
                 historyStack = []; historyIndex = -1;
                 renderTable();
@@ -817,7 +824,7 @@ const App = (function() {
                         state = decryptData(event.target.result);
                         document.getElementById('format-select').value = state.format;
                         document.getElementById('village-name').innerText = state.village || '';
-                        if(!state.font) state.font = "'Nirmala UI', sans-serif";
+                        if(!state.font) state.font = "'Poppins', sans-serif";
                         applyFont();
                         historyStack = []; historyIndex = -1;
                         renderTable();
@@ -894,64 +901,108 @@ const App = (function() {
     function exportToExcel() {
         syncTableToState();
         let tableClone = document.getElementById("batwara-table").cloneNode(true);
-        let totalWidthPt = 0;
-        let colgroup = tableClone.querySelector('colgroup');
-        if(colgroup) {
-            colgroup.querySelectorAll('col').forEach(c => {
-                let px = parseFloat(c.style.width.replace('px', ''));
-                if(!isNaN(px)) {
-                    let pt = Math.round(px * 0.75);
-                    c.setAttribute('width', pt); c.style.width = pt + 'pt'; c.style.cssText += 'mso-width-source:userset;'; 
-                    totalWidthPt += pt;
-                }
-            });
-        }
-        tableClone.setAttribute('width', totalWidthPt);
-        tableClone.style.width = totalWidthPt + 'pt'; tableClone.style.tableLayout = 'fixed';
         
+        // गैर-जरूरी चीजें हटाएं
         tableClone.querySelectorAll('td[style*="display: none"], td[style*="display:none"]').forEach(cell => cell.remove());
         tableClone.querySelectorAll('.row-diff, .total-diff').forEach(el => el.remove());
         tableClone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
 
+        // बेसिक स्टाइलिंग
         tableClone.setAttribute('border', '1');
         tableClone.style.borderCollapse = 'collapse';
+        tableClone.style.tableLayout = 'fixed'; 
         tableClone.style.fontFamily = state.font ? state.font.split(',')[0].replace(/'/g, '') : 'Arial';
-        tableClone.style.fontSize = '11pt';
         
-        tableClone.querySelectorAll('td, th').forEach(cell => {
-            cell.style.verticalAlign = 'middle';
-            if (!cell.style.textAlign) cell.style.textAlign = 'center';
-            let text = cell.innerText.trim(); let field = cell.getAttribute('data-field');
-            if (/^\(\d+\)$/.test(text) || field === 'khasra' || field === 'p_khasra' || text.match(/^\d+[\/\d]+$/)) {
-                cell.setAttribute('style', (cell.getAttribute('style') || '') + '; mso-number-format:"\\@";');
-            }
-            else if (cell.classList.contains('c-rakba') || cell.classList.contains('p-rakba') || (!isNaN(text) && text.includes('.'))) {
-                cell.setAttribute('style', (cell.getAttribute('style') || '') + '; mso-number-format:"0\\.0000";');
+        // फॉन्ट साइज को px से pt में बदलें
+        let fontSizePx = parseFloat(state.fontSize || '13');
+        let fontSizePt = Math.round(fontSizePx * 0.75);
+        tableClone.style.fontSize = fontSizePt + 'pt';
+
+        // 1. एक्सेल के लिए नई Colgroup बनाना (चौड़ाई मापने का पक्का तरीका)
+        let colgroup = document.getElementById('table-colgroup');
+        let excelColgroup = document.createElement('colgroup');
+        let totalWidthPt = 0;
+        
+        if(colgroup) {
+            colgroup.querySelectorAll('col').forEach(c => {
+                let px = parseFloat(c.style.width.replace('px', ''));
+                if(!isNaN(px)) {
+                    let pt = Math.round(px * 0.75); 
+                    let newCol = document.createElement('col');
+                    newCol.setAttribute('width', pt);
+                    // एक्सेल चौड़ाई के लिए यह लाइन सबसे जरूरी है
+                    newCol.style.cssText = `width: ${pt}pt; mso-width-source: userset;`; 
+                    excelColgroup.appendChild(newCol);
+                    totalWidthPt += pt;
+                }
+            });
+        }
+        
+        // पुरानी colgroup को हटाकर नई लगाएं
+        let oldColgroup = tableClone.querySelector('colgroup');
+        if(oldColgroup) oldColgroup.replaceWith(excelColgroup);
+        else tableClone.insertBefore(excelColgroup, tableClone.firstChild);
+
+        tableClone.setAttribute('width', totalWidthPt);
+        tableClone.style.width = totalWidthPt + 'pt';
+
+        // 2. सेल्स और नंबर फॉर्मेटिंग
+        tableClone.querySelectorAll('tr').forEach(row => {
+            let cells = row.children;
+            for(let i = 0; i < cells.length; i++) {
+                let cell = cells[i];
+                cell.style.verticalAlign = 'middle';
+                if (!cell.style.textAlign) cell.style.textAlign = 'center';
+                
+                let text = cell.innerText.trim(); 
+                let field = cell.getAttribute('data-field');
+                
+                if (/^\(\d+\)$/.test(text) || field === 'khasra' || field === 'p_khasra' || text.match(/^\d+[\/\d]+$/)) {
+                    cell.setAttribute('style', (cell.getAttribute('style') || '') + '; mso-number-format:"\\@";'); 
+                }
+                else if (cell.classList.contains('c-rakba') || cell.classList.contains('p-rakba') || (!isNaN(text) && text.includes('.'))) {
+                    cell.setAttribute('style', (cell.getAttribute('style') || '') + '; mso-number-format:"0\\.0000";');
+                }
             }
         });
 
+        // 3. हेडर (ग्राम का नाम) सेट करना
         let vName = document.getElementById("village-name").innerText.trim();
         let thead = tableClone.querySelector('thead');
-        let headerTr = document.createElement('tr'); let headerTh = document.createElement('th');
-        let totalCols = colgroup ? colgroup.querySelectorAll('col').length : 20;
-        headerTh.setAttribute('colspan', totalCols); headerTh.innerText = "बटवारा प्रस्ताव (ग्राम- " + vName + ")";
-        headerTh.style.fontSize = "16pt"; headerTh.style.fontWeight = "bold"; headerTh.style.textAlign = "center";
-        headerTh.style.border = "none"; headerTh.style.height = "40pt";
-        headerTr.appendChild(headerTh); thead.insertBefore(headerTr, thead.firstChild);
+        let headerTr = document.createElement('tr'); 
+        let headerTh = document.createElement('th');
+        let totalColsCount = excelColgroup.children.length || 20;
+        
+        headerTh.setAttribute('colspan', totalColsCount); 
+        headerTh.innerText = "बटवारा प्रस्ताव (ग्राम- " + vName + ")";
+        headerTh.style.fontSize = "16pt"; 
+        headerTh.style.fontWeight = "bold"; 
+        headerTh.style.textAlign = "center";
+        headerTh.style.border = "none"; 
+        headerTh.style.height = "40pt";
+        headerTr.appendChild(headerTh); 
+        thead.insertBefore(headerTr, thead.firstChild);
 
+        // 4. एक्सेल एक्सपोर्ट
         let isLandscape = document.getElementById('orientation-select').value === 'landscape';
         let orientStr = isLandscape ? 'landscape' : 'portrait';
-        let excelCSS = "@page { margin: 0.3937in; mso-header-margin: 0.2in; mso-footer-margin: 0.2in; mso-page-orientation: " + orientStr + "; } " +
-                       "table { border-collapse: collapse; table-layout: fixed; } " +
+        let excelCSS = "@page { margin: 0.3937in; mso-page-orientation: " + orientStr + "; } " +
+                       "table { border-collapse: collapse; table-layout: fixed; width: " + totalWidthPt + "pt; } " +
                        "th, td { border: .5pt solid windowtext; vertical-align: middle; word-wrap: break-word; } " +
                        ".header-bg { background-color: #f2f2f2; font-weight: bold; } .total-row { background-color: #e6e6e6; font-weight: bold; }";
 
         let fullHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
-        '<head><meta charset="UTF-8"><style>' + excelCSS + '<' + '/style><' + '/head><body>' + tableClone.outerHTML + '<' + '/body><' + '/html>';
+        '<head><meta charset="UTF-8"><style>' + excelCSS + '</style></head><body>' + tableClone.outerHTML + '</body></html>';
+        
         let blob = new Blob([fullHtml], {type: "application/vnd.ms-excel;charset=utf-8"});
-        let url = URL.createObjectURL(blob); let a = document.createElement("a");
-        a.href = url; a.download = "Batwara_" + (vName || "Project") + ".xls";
-        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        let url = URL.createObjectURL(blob); 
+        let a = document.createElement("a");
+        a.href = url; 
+        a.download = "Batwara_" + (vName || "Project") + ".xls";
+        document.body.appendChild(a); 
+        a.click(); 
+        document.body.removeChild(a); 
+        URL.revokeObjectURL(url);
     }
 
     function toggleGramColumn() { markDirty(); state.hasGram = !state.hasGram; renderTable(); saveState(); }
@@ -1333,6 +1384,20 @@ const App = (function() {
         dragCol = null; linkType = null; document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); 
     }
 
+    function applyFontSize() {
+        let size = state.fontSize || '13';
+        document.getElementById('table-body').style.fontSize = size + 'px';
+        document.getElementById('table-foot').style.fontSize = size + 'px';
+        document.getElementById('font-size-input').value = size;
+    }
+
+    function changeFontSize() {
+        markDirty();
+        state.fontSize = document.getElementById('font-size-input').value;
+        applyFontSize();
+        saveState();
+    }
+    
     function attachRowResizer() {
         const tbody = document.getElementById('table-body');
         let isResizingRow = false; let currentDragRow = null; let startY = 0; let startH = 0;
@@ -1373,7 +1438,7 @@ const App = (function() {
         init, changeFormat, changePaperSize, changeFont, toggleGramColumn, 
         processData, openFile, saveFile, saveAsFile, createNewFile, 
         exportToExcel, actionKhata, actionSet, actionRow, markDirty,
-        undo, redo, handleRakbaInput 
+        undo, redo, handleRakbaInput, changeFontSize // <-- यहाँ changeFontSize जोड़ा गया है
     };
 })();
 
