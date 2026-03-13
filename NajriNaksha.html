@@ -642,7 +642,43 @@
         function findClosestNode(p) { let minDist = 30/currentZoom; let bestNode = null; for(let i=0; i<finalSegments.length; i++) { let d1 = Math.hypot(p.x - finalSegments[i].A.x, p.y - finalSegments[i].A.y); let d2 = Math.hypot(p.x - finalSegments[i].B.x, p.y - finalSegments[i].B.y); if(d1 < minDist) { minDist = d1; bestNode = {segIdx: i, isA: true}; } if(d2 < minDist) { minDist = d2; bestNode = {segIdx: i, isA: false}; } } return bestNode; }
         function findClosestDraftShape(p) { let minDist = 40/currentZoom; let bestIdx = -1; for(let i=historyStack.length-1; i>=0; i--) { if(historyStack[i].type === 'text') continue; let pts = historyStack[i].points; for(let j=0; j<pts.length-1; j++) { if(pointToSegmentDistance(p, pts[j], pts[j+1]) < minDist) { minDist = pointToSegmentDistance(p, pts[j], pts[j+1]); bestIdx = i; } } } return bestIdx; }
         function findClosestDraftNode(p) { let minDist = 20/currentZoom; let bestNode = null; for(let i=historyStack.length-1; i>=0; i--) { if(historyStack[i].type === 'text') continue; let pts = historyStack[i].points; for(let j=0; j<pts.length; j++) { if(Math.hypot(p.x - pts[j].x, p.y - pts[j].y) < minDist) { minDist = Math.hypot(p.x - pts[j].x, p.y - pts[j].y); bestNode = {shapeIdx: i, nodeIdx: j}; } } } return bestNode; }
-        function findClosestText(p) { let minDist = 40/currentZoom; let bestIdx = -1; for(let i=0; i<finalTexts.length; i++) { let dist = Math.hypot(p.x - finalTexts[i].x, p.y - finalTexts[i].y); if(dist < minDist) { minDist = dist; bestIdx = i; } } return bestIdx; }
+        function findClosestText(p) {
+            // सबसे पहले, ऊपर वाले (Top-most) टेक्स्ट को चेक करने के लिए लूप को उल्टा चलाएंगे
+            for(let i = finalTexts.length - 1; i >= 0; i--) {
+                let el = finalTexts[i];
+                let size = el.fontSize || 35;
+                let txt = el.text || "";
+                let lines = txt.split('\n');
+
+                // 1. टेक्स्ट की असली चौड़ाई (Width) नापें
+                ctx.font = `600 ${size}px Poppins, Arial`;
+                let maxW = 0;
+                lines.forEach(l => {
+                    let w = ctx.measureText(l).width;
+                    if(w > maxW) maxW = w;
+                });
+                
+                // 2. क्लिक करने के लिए थोड़ी अतिरिक्त जगह (Padding/Hitbox) दें
+                let padding = 40 / currentZoom; 
+                let w = maxW + padding; 
+                let h = (lines.length * size * 1.2) + padding;
+
+                // 3. टेक्स्ट के घुमाव (Angle) के अनुसार क्लिक की पोज़िशन को रिवर्स करें (गणित)
+                let cx = el.x, cy = el.y;
+                let angle = el.angle || 0;
+                let dx = p.x - cx;
+                let dy = p.y - cy;
+                
+                let rotX = dx * Math.cos(-angle) - dy * Math.sin(-angle);
+                let rotY = dx * Math.sin(-angle) + dy * Math.cos(-angle);
+
+                // 4. अगर क्लिक इस अदृश्य बॉक्स के अंदर है, तो तुरंत उस टेक्स्ट को चुन लें
+                if(Math.abs(rotX) <= w/2 && Math.abs(rotY) <= h/2) {
+                    return i;
+                }
+            }
+            return -1; // अगर किसी भी टेक्स्ट पर क्लिक नहीं हुआ
+        }
 
         function spawnFloatingTextarea(e, onSave) { if(document.querySelector('.floating-input-container')) return; const container = document.createElement('div'); container.className = 'floating-input-container'; container.style.left = e.pageX + 'px'; container.style.top = (e.pageY - 20) + 'px'; const textarea = document.createElement('textarea'); textarea.className = 'floating-textarea'; textarea.placeholder = "टेक्स्ट लिखें..."; const btn = document.createElement('button'); btn.textContent = "✔ सेव करें"; btn.className = "btn btn-primary"; btn.style.marginTop = "5px"; container.appendChild(textarea); container.appendChild(btn); document.body.appendChild(container); textarea.focus(); const saveText = () => { let val = textarea.value.trim(); if(val !== "") onSave(val); if(document.body.contains(container)) document.body.removeChild(container); drawCanvas(); }; btn.addEventListener('click', saveText); }
         function promptSingleLine(msg, onSave) { let val = prompt(msg); if(val && val.trim() !== "") onSave(val.trim()); }
