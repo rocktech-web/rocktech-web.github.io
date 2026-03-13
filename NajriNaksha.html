@@ -544,6 +544,9 @@
                     let angle = Math.atan2(targetPt.y - lastPt.y, targetPt.x - lastPt.x); 
                     saveState(); currentPath.push({x: lastPt.x + Math.cos(angle) * parseFloat(typedDistance), y: lastPt.y + Math.sin(angle) * parseFloat(typedDistance)}); typedDistance = ""; drawCanvas(); 
                 }
+                else if(e.key === 'Enter' && typedDistance === "") { 
+                    saveState(); commitCurrentPath(); snapPoint = null; drawCanvas(); 
+                }
             }
         });
 
@@ -586,10 +589,29 @@
                 if (uploadedImage && opacity > 0) { ctx.globalAlpha = opacity; let imgRatio = uploadedImage.width / uploadedImage.height; let canvasRatio = canvas.width / canvas.height; let drawW, drawH, drawX, drawY; if (imgRatio > canvasRatio) { drawW = canvas.width; drawH = canvas.width / imgRatio; drawX = 0; drawY = (canvas.height - drawH) / 2; } else { drawH = canvas.height; drawW = canvas.height * imgRatio; drawX = (canvas.width - drawW) / 2; drawY = 0; } ctx.drawImage(uploadedImage, drawX, drawY, drawW, drawH); ctx.globalAlpha = 1.0; }
                 historyStack.forEach((el, idx) => renderDraftElement(el, idx === selectedDraftIdx));
                 if(currentPath.length > 0) {
-                    ctx.strokeStyle = "rgba(41, 128, 185, 0.7)"; ctx.lineWidth = 3 / currentZoom; ctx.setLineDash([10/currentZoom, 10/currentZoom]); drawPathArray(ctx, currentPath);
-                    let lastPt = currentPath[currentPath.length - 1]; let previewPt = applyShiftSnap(lastPt, mousePos, isShiftPressed);
-                    if(typedDistance !== "") { let angle = Math.atan2(mousePos.y - lastPt.y, mousePos.x - lastPt.x); let dist = parseFloat(typedDistance); previewPt = {x: lastPt.x + Math.cos(angle)*dist, y: lastPt.y + Math.sin(angle)*dist}; cadBox.style.display = 'block'; cadBox.style.left = (event.pageX + 15) + 'px'; cadBox.style.top = (event.pageY - 20) + 'px'; cadValue.textContent = typedDistance; } 
-                    else if(snapPoint) { previewPt = snapPoint; ctx.beginPath(); ctx.arc(snapPoint.x, snapPoint.y, 15/currentZoom, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3/currentZoom; ctx.stroke(); }
+                    // 1. जो लाइनें बन चुकी हैं, उन्हें असली रंग और मोटाई में लाइव दिखाएं
+                    if(currentPath.length > 1) {
+                        let defaultWidth = mode === 'main' ? 75 : mode === 'link' ? 55 : 40;
+                        renderDraftElement({ type: mode, points: currentPath, customWidth: defaultWidth, curveRadius: 0 }, false);
+                    }
+                    
+                    // 2. माउस पॉइंटर तक केवल एक डैश्ड (Dashed) लाइन दिखाएं
+                    let lastPt = currentPath[currentPath.length - 1]; 
+                    let previewPt = applyShiftSnap(lastPt, mousePos, isShiftPressed);
+                    
+                    if(typedDistance !== "") { 
+                        let angle = Math.atan2(mousePos.y - lastPt.y, mousePos.x - lastPt.x); 
+                        let dist = parseFloat(typedDistance); 
+                        previewPt = {x: lastPt.x + Math.cos(angle)*dist, y: lastPt.y + Math.sin(angle)*dist}; 
+                        cadBox.style.display = 'block'; cadBox.style.left = (event.pageX + 15) + 'px'; cadBox.style.top = (event.pageY - 20) + 'px'; cadValue.textContent = typedDistance; 
+                    } 
+                    else if(snapPoint) { 
+                        previewPt = snapPoint; 
+                        ctx.beginPath(); ctx.arc(snapPoint.x, snapPoint.y, 15/currentZoom, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3/currentZoom; ctx.stroke(); 
+                    }
+                    
+                    // रबर-बैंड (Rubber-band) इफ़ेक्ट
+                    ctx.strokeStyle = "rgba(41, 128, 185, 0.7)"; ctx.lineWidth = 3 / currentZoom; ctx.setLineDash([10/currentZoom, 10/currentZoom]);
                     ctx.beginPath(); ctx.moveTo(lastPt.x, lastPt.y); ctx.lineTo(previewPt.x, previewPt.y); ctx.stroke(); ctx.setLineDash([]);
                 }
                 drawTexts(historyStack, false);
