@@ -209,11 +209,14 @@
                 <input type="text" id="textContentInput" class="form-group input" style="width: 100%; padding: 6px; margin-bottom: 8px;" placeholder="टेक्स्ट..." oninput="updateTextProp('content', this.value)" onchange="saveState()">
                 <div class="control-group">
                     <label style="width: 40px;">साइज़:</label>
-                    <input type="range" id="textSizeSlider" min="15" max="100" value="35" style="flex: 1;" oninput="updateTextProp('size', this.value)" onchange="saveState()">
+                    <input type="range" id="textSizeSlider" min="15" max="100" value="35" style="flex: 1;" oninput="document.getElementById('textSizeInput').value = this.value; updateTextProp('size', this.value)" onchange="saveState()">
+                    <input type="number" id="textSizeInput" value="35" style="width: 45px; padding: 2px 4px; text-align: center; border: 1px solid var(--border-dark); border-radius: 4px; font-size: 12px; outline: none;" oninput="document.getElementById('textSizeSlider').value = this.value; updateTextProp('size', this.value)" onchange="saveState()">
                 </div>
+                
                 <div class="control-group">
                     <label style="width: 40px;">घुमाव:</label>
-                    <input type="range" id="textAngleSlider" min="-180" max="180" value="0" style="flex: 1;" oninput="updateTextProp('angle', this.value)" onchange="saveState()">
+                    <input type="range" id="textAngleSlider" min="-180" max="180" value="0" style="flex: 1;" oninput="document.getElementById('textAngleInput').value = this.value; updateTextProp('angle', this.value)" onchange="saveState()">
+                    <input type="number" id="textAngleInput" value="0" style="width: 45px; padding: 2px 4px; text-align: center; border: 1px solid var(--border-dark); border-radius: 4px; font-size: 12px; outline: none;" oninput="document.getElementById('textAngleSlider').value = this.value; updateTextProp('angle', this.value)" onchange="saveState()">
                 </div>
                 <button class="btn btn-danger" style="width: 100%; justify-content: center; margin-top: 5px;" onclick="deleteSelectedText()">🗑️ डिलीट करें</button>
             </div>
@@ -663,7 +666,33 @@
                 else if (editMode === 'editLine' && hoveredNode) { saveState(); draggedNode = hoveredNode; }
                 else if (editMode === 'smartText') { let segIdx = findClosestSegment(coords); if(segIdx !== -1) { let seg = finalSegments[segIdx]; let midX = (seg.A.x + seg.B.x) / 2; let midY = (seg.A.y + seg.B.y) / 2; let angle = Math.atan2(seg.B.y - seg.A.y, seg.B.x - seg.A.x); if (angle > Math.PI/2) angle -= Math.PI; if (angle < -Math.PI/2) angle += Math.PI; promptSingleLine("मार्ग का नाम:", (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: midX, y: midY, angle: angle, fontSize: size }); drawCanvas(); }); } else { alert("सड़क की लाइन पर क्लिक करें।"); } }
                 else if (editMode === 'freeText') { spawnFloatingTextarea(e, (val) => { saveState(); let size = parseInt(document.getElementById('textSizeSlider').value) || 35; finalTexts.push({ text: val, x: coords.x, y: coords.y, angle: 0, fontSize: size }); drawCanvas(); }); }
-                else if (editMode === 'editText') { let clickedIdx = findClosestText(coords); if(clickedIdx !== -1) { saveState(); selectedTextIdx = clickedIdx; isDraggingText = true; document.getElementById('textSizeSlider').value = finalTexts[clickedIdx].fontSize || 35; document.getElementById('textAngleSlider').value = Math.round((finalTexts[clickedIdx].angle || 0) * (180/Math.PI)); document.getElementById('textContentInput').value = finalTexts[clickedIdx].text; drawCanvas(); document.getElementById('textControls').style.display = 'block'; } else { selectedTextIdx = -1; document.getElementById('textContentInput').value = ""; document.getElementById('textControls').style.display = 'none'; drawCanvas(); } } return;
+                else if (editMode === 'editText') { 
+                    let clickedIdx = findClosestText(coords); 
+                    if(clickedIdx !== -1) { 
+                        saveState(); 
+                        selectedTextIdx = clickedIdx; 
+                        isDraggingText = true; 
+                        
+                        let curSize = finalTexts[clickedIdx].fontSize || 35;
+                        let curAngle = Math.round((finalTexts[clickedIdx].angle || 0) * (180/Math.PI));
+
+                        // स्लाइडर के साथ इनपुट बॉक्स को भी अपडेट करें
+                        document.getElementById('textSizeSlider').value = curSize; 
+                        document.getElementById('textSizeInput').value = curSize; // नई लाइन
+                        
+                        document.getElementById('textAngleSlider').value = curAngle; 
+                        document.getElementById('textAngleInput').value = curAngle; // नई लाइन
+                        
+                        document.getElementById('textContentInput').value = finalTexts[clickedIdx].text; 
+                        drawCanvas(); 
+                        document.getElementById('textControls').style.display = 'block'; 
+                    } else { 
+                        selectedTextIdx = -1; 
+                        document.getElementById('textContentInput').value = ""; 
+                        document.getElementById('textControls').style.display = 'none'; 
+                        drawCanvas(); 
+                    } 
+                }
             }
 
             if(!mode || mode === 'pan') return;
