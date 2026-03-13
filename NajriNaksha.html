@@ -312,6 +312,7 @@
         let hoverSegmentIdx = -1; let selectedTextIdx = -1; let isDraggingText = false;
         let hoveredNode = null; let draggedNode = null; 
         let currentPath = []; let mousePos = {x: 0, y: 0}; let typedDistance = ""; let snapPoint = null; 
+        let lastGlobalX = 0, lastGlobalY = 0;
 
         // File System & Auto-save
         let hasUnsavedChanges = false; const originalTitle = document.title;
@@ -603,8 +604,14 @@
                         let angle = Math.atan2(mousePos.y - lastPt.y, mousePos.x - lastPt.x); 
                         let dist = parseFloat(typedDistance); 
                         previewPt = {x: lastPt.x + Math.cos(angle)*dist, y: lastPt.y + Math.sin(angle)*dist}; 
-                        cadBox.style.display = 'block'; cadBox.style.left = (event.pageX + 15) + 'px'; cadBox.style.top = (event.pageY - 20) + 'px'; cadValue.textContent = typedDistance; 
-                    } 
+                        
+                        // बॉक्स को हमेशा कर्सर के ठीक ऊपर फिक्स करने का लॉजिक
+                        cadBox.style.display = 'block'; 
+                        cadBox.style.position = 'fixed'; 
+                        cadBox.style.left = (lastGlobalX + 15) + 'px'; 
+                        cadBox.style.top = (lastGlobalY - 25) + 'px'; 
+                        cadValue.textContent = typedDistance; 
+                    }
                     else if(snapPoint) { 
                         previewPt = snapPoint; 
                         ctx.beginPath(); ctx.arc(snapPoint.x, snapPoint.y, 15/currentZoom, 0, 2*Math.PI); ctx.fillStyle = "rgba(46, 204, 113, 0.6)"; ctx.fill(); ctx.strokeStyle = "#27ae60"; ctx.lineWidth=3/currentZoom; ctx.stroke(); 
@@ -685,6 +692,9 @@
         });
 
         window.addEventListener('mousemove', (e) => {
+            lastGlobalX = e.clientX; 
+            lastGlobalY = e.clientY;
+            
             if(isPanning) { panX = e.clientX - panStart.x; panY = e.clientY - panStart.y; updateCanvasTransform(); return; }
             mousePos = getCoords(e);
             if (isGenerated) {
